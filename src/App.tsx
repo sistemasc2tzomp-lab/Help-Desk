@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -13,7 +15,7 @@ import SettingsPage from './components/SettingsPage';
 import SetupPage from './components/SetupPage';
 import { isSupabaseConfigured } from './lib/supabase';
 
-function AppInner() {
+function AppContent() {
   const { currentUser, page, loading } = useApp();
   const [configured, setConfigured] = useState(isSupabaseConfigured());
 
@@ -50,7 +52,6 @@ function AppInner() {
   return (
     <div className="flex min-h-screen bg-[#0f1117]">
       <Sidebar />
-      {/* pt-14 on mobile to account for fixed top navbar; no padding on lg+ */}
       <main className="flex-1 overflow-y-auto relative pt-14 lg:pt-0">
         {loading && (
           <div className="absolute top-16 lg:top-3 right-4 z-50">
@@ -72,7 +73,14 @@ function AppInner() {
 export default function App() {
   return (
     <AppProvider>
-      <AppInner />
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/app/*" element={<AppContent />} />
+          {/* Re-route any unknown to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
     </AppProvider>
   );
 }
