@@ -12,7 +12,7 @@ const navItems: NavItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
         <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
       </svg>
@@ -22,12 +22,11 @@ const navItems: NavItem[] = [
     id: 'tickets',
     label: 'Tickets',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
         <polyline points="14,2 14,8 20,8"/>
         <line x1="16" y1="13" x2="8" y2="13"/>
         <line x1="16" y1="17" x2="8" y2="17"/>
-        <line x1="10" y1="9" x2="8" y2="9"/>
       </svg>
     ),
   },
@@ -35,7 +34,7 @@ const navItems: NavItem[] = [
     id: 'new-ticket',
     label: 'Nuevo Ticket',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="8" x2="12" y2="16"/>
         <line x1="8" y1="12" x2="16" y2="12"/>
@@ -49,7 +48,7 @@ const adminNavItems: NavItem[] = [
     id: 'departments',
     label: 'Departamentos',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
@@ -59,7 +58,7 @@ const adminNavItems: NavItem[] = [
     id: 'reports',
     label: 'Reportes',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
         <line x1="12" y1="20" x2="12" y2="4"/>
         <line x1="6" y1="20" x2="6" y2="14"/>
@@ -70,7 +69,7 @@ const adminNavItems: NavItem[] = [
     id: 'users',
     label: 'Usuarios',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -82,7 +81,7 @@ const adminNavItems: NavItem[] = [
     id: 'settings',
     label: 'Configuración',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
         <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
@@ -92,13 +91,8 @@ const adminNavItems: NavItem[] = [
 ];
 
 const Logo = () => (
-  <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shrink-0">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-      <polyline points="14,2 14,8 20,8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-    </svg>
+  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.3)] shrink-0">
+    <img src="favicon_io/android-chrome-192x192.png" alt="TZ" className="w-7 h-7" />
   </div>
 );
 
@@ -121,16 +115,21 @@ export default function Sidebar() {
     <button
       key={item.id}
       onClick={() => handleNav(item.id)}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold tracking-wide transition-all duration-300 relative group overflow-hidden ${
         isActive(item.id)
-          ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/20'
-          : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+          ? 'text-[#00f0ff] shadow-[inset_0_0_20px_rgba(0,240,255,0.05)] border border-[#00f0ff]/20'
+          : 'text-[#8888aa] hover:text-white hover:bg-white/5 border border-transparent'
       }`}
     >
-      {item.icon}
-      <span className="flex-1 text-left">{item.label}</span>
+      {isActive(item.id) && (
+        <div className="absolute left-0 top-0 w-1 h-full bg-[#00f0ff] shadow-[0_0_15px_#00f0ff]" />
+      )}
+      <span className={`${isActive(item.id) ? 'text-[#00f0ff]' : 'group-hover:text-[#00f0ff]'} transition-colors`}>
+        {item.icon}
+      </span>
+      <span className="flex-1 text-left uppercase font-rajdhani">{item.label}</span>
       {item.id === 'tickets' && openCount > 0 && (
-        <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center animate-pulse">
           {openCount}
         </span>
       )}
@@ -138,26 +137,29 @@ export default function Sidebar() {
   );
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/5">
+    <div className="flex flex-col h-full bg-[#030014]/80 backdrop-blur-xl border-r border-white/5">
+      {/* Brand */}
+      <div className="flex items-center gap-4 px-6 py-8 border-b border-white/5 relative overflow-hidden group">
+        <div className="absolute -left-10 -top-10 w-20 h-20 bg-[#00f0ff]/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
         <Logo />
-        <div>
-          <span className="text-white font-bold text-sm leading-tight block">Tickets Tzompantepec</span>
-          <div className="text-indigo-400 text-xs">Sistema de Tickets</div>
+        <div className="min-w-0">
+          <span className="text-white font-black text-lg font-orbitron leading-none block tracking-tighter">TZOMP</span>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="text-[#00f0ff] text-[9px] font-bold tracking-[3px] uppercase">HELP DESK</div>
+            <div className="bg-[#00f0ff]/10 text-[#00f0ff] text-[7px] font-black px-1.5 py-0.5 rounded border border-[#00f0ff]/20 uppercase">v2.0</div>
+          </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      {/* Nav Section */}
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
         {navItems.map(item => <NavButton key={item.id} item={item} />)}
 
         {isAdmin && (
           <>
-            <div className="pt-4 pb-2 px-3">
-              <div className="flex items-center gap-2">
-                <div className="h-px flex-1 bg-white/5" />
-                <span className="text-slate-600 text-xs font-semibold uppercase tracking-widest">Admin</span>
+            <div className="pt-8 pb-3 px-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[#8888aa] text-[9px] font-black uppercase tracking-[4px]">Núcleo Admin</span>
                 <div className="h-px flex-1 bg-white/5" />
               </div>
             </div>
@@ -166,31 +168,34 @@ export default function Sidebar() {
         )}
       </nav>
 
-      {/* User info */}
-      <div className="px-3 py-4 border-t border-white/5">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5">
+      {/* Profile Section */}
+      <div className="px-4 py-6 border-t border-white/5 bg-gradient-to-b from-transparent to-black/20">
+        <div className="flex items-center gap-3 p-3 rounded-2xl glass-panel border border-white/5 group">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-            style={{ backgroundColor: currentUser?.avatarColor }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-lg transform group-hover:scale-105 transition-transform"
+            style={{ 
+              background: `linear-gradient(135deg, ${currentUser?.avatarColor || '#7b2fff'}, #000000)`,
+              border: `1px solid ${currentUser?.avatarColor || '#7b2fff'}44`
+            }}
           >
             {currentUser?.initials}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white text-sm font-medium truncate">{currentUser?.name}</div>
-            <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                currentUser?.role === 'Admin' ? 'bg-purple-400' :
-                currentUser?.role === 'Agente' ? 'bg-blue-400' : 'bg-emerald-400'
+            <div className="text-white text-xs font-bold truncate uppercase tracking-tighter">{currentUser?.name}</div>
+            <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
+              <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor] ${
+                currentUser?.role === 'Admin' ? 'text-purple-400 bg-purple-400' :
+                currentUser?.role === 'Agente' ? 'text-blue-400 bg-blue-400' : 'text-[#00f0ff] bg-[#00f0ff]'
               }`} />
-              <span className="text-slate-500 text-xs">{currentUser?.role}</span>
+              <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">{currentUser?.role}</span>
             </div>
           </div>
           <button
             onClick={logout}
-            className="text-slate-500 hover:text-red-400 transition p-1"
+            className="text-[#8888aa] hover:text-red-400 transition-all hover:scale-110 p-2"
             title="Cerrar sesión"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
@@ -203,49 +208,48 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ── Mobile top bar ── */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#13151f] border-b border-white/5 flex items-center justify-between px-4 py-3">
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#030014]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
           <Logo />
           <div>
-            <span className="text-white font-bold text-sm leading-tight block">Tickets Tzompantepec</span>
-            <div className="text-indigo-400 text-xs">Sistema de Tickets</div>
+            <span className="text-white font-black text-sm font-orbitron tracking-tighter">TZOMP</span>
+            <div className="text-[#00f0ff] text-[8px] font-bold tracking-[2px]">HELP DESK</div>
           </div>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-slate-400 hover:text-white transition p-2"
-          aria-label="Abrir menú"
+          className="w-10 h-10 flex items-center justify-center text-[#8888aa] hover:text-white transition rounded-xl bg-white/5 border border-white/10"
         >
           {mobileOpen ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           )}
         </button>
       </div>
 
-      {/* ── Mobile drawer overlay ── */}
+      {/* Backdrop */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-[60] bg-[#030014]/60 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* ── Mobile drawer ── */}
-      <aside className={`lg:hidden fixed top-0 left-0 z-40 h-full w-72 bg-[#13151f] border-r border-white/5 transform transition-transform duration-300 ${
+      {/* Sidebar - Mobile */}
+      <aside className={`lg:hidden fixed top-0 left-0 z-[70] h-full w-[280px] transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <SidebarContent />
       </aside>
 
-      {/* ── Desktop sidebar ── */}
-      <aside className="hidden lg:flex w-60 bg-[#13151f] border-r border-white/5 flex-col h-screen sticky top-0">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden lg:flex w-64 flex-col h-screen sticky top-0 z-40">
         <SidebarContent />
       </aside>
     </>

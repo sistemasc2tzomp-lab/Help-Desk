@@ -5,17 +5,17 @@ import { formatDate } from '../utils/date';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-  'En Progreso': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  'Resuelto': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-  'Cerrado': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+  'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]',
+  'En Progreso': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]',
+  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
+  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20 shadow-[0_0_10px_rgba(100,116,139,0.1)]',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'bg-red-500/20 text-red-400 border border-red-500/30',
-  'Alta': 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
-  'Media': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  'Baja': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+  'Urgente': 'text-red-400 border-red-500/20 bg-red-500/5',
+  'Alta': 'text-orange-400 border-orange-500/20 bg-orange-500/5',
+  'Media': 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5',
+  'Baja': 'text-slate-400 border-slate-500/20 bg-slate-500/5',
 };
 
 export default function TicketDetail() {
@@ -40,9 +40,16 @@ export default function TicketDetail() {
 
   if (!ticket) {
     return (
-      <div className="p-6 text-center text-slate-400">
-        Ticket no encontrado.
-        <button onClick={() => setPage('tickets')} className="ml-2 text-indigo-400 hover:underline">Volver</button>
+      <div className="flex flex-col items-center justify-center p-20 min-h-[60vh] text-center space-y-6">
+        <div className="text-6xl animate-bounce">🔍</div>
+        <h2 className="text-white font-black font-orbitron tracking-widest text-xl">NODO NO LOCALIZADO</h2>
+        <p className="text-[#8888aa] text-xs font-bold tracking-[3px] uppercase">El ticket solicitado no existe en la base de datos actua</p>
+        <button 
+          onClick={() => setPage('tickets')} 
+          className="btn-futuristic px-8 py-3 text-[10px] tracking-[2px]"
+        >
+          REGRESAR AL NÚCLEO
+        </button>
       </div>
     );
   }
@@ -95,322 +102,355 @@ export default function TicketDetail() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
-      {/* Back */}
+    <div className="p-6 sm:p-10 max-w-6xl mx-auto space-y-8 bg-[#030014] min-h-screen">
+      {/* Navigation */}
       <button
         onClick={() => setPage('tickets')}
-        className="flex items-center gap-2 text-slate-400 hover:text-white transition text-sm"
+        className="group flex items-center gap-3 text-[#8888aa] hover:text-[#00f0ff] transition-all text-[10px] font-black uppercase tracking-[3px]"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
           <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
-        Volver a tickets
+        Regresar al registro
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Header */}
-          <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <span className="text-indigo-400 text-sm font-mono font-semibold">{ticket.id}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[ticket.status]}`}>
-                    {ticket.status}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Main Console */}
+        <div className="lg:col-span-3 space-y-8">
+          {/* Ticket Header & Body */}
+          <div className="glass-panel rounded-[40px] border border-white/5 p-8 sm:p-12 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#00f0ff]/5 to-transparent blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="relative z-10">
+              <div className="flex flex-wrap items-center gap-4 mb-8">
+                <span className="text-[#00f0ff] text-xs font-mono font-black tracking-widest bg-[#00f0ff]/10 px-4 py-1.5 rounded-full border border-[#00f0ff]/20">#{ticket.id.slice(0,12)}</span>
+                <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest ${statusColors[ticket.status]}`}>
+                  {ticket.status}
+                </span>
+                <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest border ${priorityColors[ticket.priority]}`}>
+                  {ticket.priority}
+                </span>
+                {dept && (
+                   <span className="text-[10px] px-4 py-1.5 rounded-full bg-white/5 text-[#8888aa] border border-white/10 font-bold uppercase tracking-widest">
+                    {dept.name}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[ticket.priority]}`}>
-                    {ticket.priority}
-                  </span>
-                  {dept && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10">
-                      🏢 {dept.name}
-                    </span>
-                  )}
-                </div>
-                <h1 className="text-white text-xl font-bold">{ticket.title}</h1>
+                )}
               </div>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed">{ticket.description}</p>
 
-            {/* Ticket attachment image */}
-            {ticket.imageUrl && (
-              <div className="mt-4">
-                <p className="text-xs text-slate-500 mb-2 uppercase tracking-wider font-semibold">Imagen adjunta</p>
-                <div
-                  className="rounded-xl overflow-hidden border border-white/10 cursor-pointer max-w-sm hover:opacity-90 transition"
-                  onClick={() => setLightboxUrl(ticket.imageUrl!)}
-                >
-                  <img src={ticket.imageUrl} alt="Adjunto del ticket" className="w-full max-h-48 object-cover" />
-                </div>
+              <h1 className="text-3xl sm:text-4xl font-black text-white font-orbitron tracking-tight mb-6 leading-tight uppercase underline decoration-[#00f0ff]/20 decoration-4 underline-offset-8">
+                {ticket.title}
+              </h1>
+              
+              <div className="prose prose-invert max-w-none">
+                <p className="text-[#8888aa] text-lg font-rajdhani font-semibold leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
               </div>
-            )}
 
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/5 text-xs text-slate-500">
-              <span>Creado por <span className="text-slate-300">{ticket.createdByName}</span></span>
-              <span>·</span>
-              <span>{formatDate(ticket.createdAt)}</span>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="space-y-3">
-            <h2 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">
-              Conversación ({ticket.messages.filter(m => !m.isInternal || currentUser?.role !== 'Cliente').length})
-            </h2>
-            {ticket.messages.length === 0 ? (
-              <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-6 text-center text-slate-500 text-sm">
-                No hay mensajes aún. Sé el primero en responder.
-              </div>
-            ) : (
-              ticket.messages.map(msg => {
-                if (msg.isInternal && currentUser?.role === 'Cliente') return null;
-                return (
+              {ticket.imageUrl && (
+                <div className="mt-10 group/img">
+                  <p className="text-[10px] text-[#00f0ff] mb-4 uppercase tracking-[4px] font-black">Evidencia de entrada</p>
                   <div
-                    key={msg.id}
-                    className={`bg-[#1a1d27] border rounded-2xl p-4 ${
-                      msg.isInternal ? 'border-orange-500/20 bg-orange-500/5' : 'border-white/5'
-                    }`}
+                    className="rounded-[32px] overflow-hidden border-2 border-white/5 cursor-pointer max-w-xl hover:border-[#00f0ff]/40 transition-all duration-500 shadow-2xl relative"
+                    onClick={() => setLightboxUrl(ticket.imageUrl!)}
                   >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
-                        style={{ backgroundColor: msg.authorColor }}
-                      >
-                        {msg.authorInitials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-white text-sm font-medium">{msg.authorName}</span>
-                          <span className="text-slate-500 text-xs">{msg.authorRole}</span>
-                          {msg.isInternal && (
-                            <span className="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full">
-                              Interno
-                            </span>
-                          )}
-                          <span className="text-slate-600 text-xs ml-auto">{formatDate(msg.timestamp)}</span>
-                        </div>
-                        {msg.content && (
-                          <p className="text-slate-300 text-sm leading-relaxed">{msg.content}</p>
-                        )}
-                        {msg.imageUrl && (
-                          <div
-                            className="mt-2 rounded-xl overflow-hidden border border-white/10 max-w-xs cursor-pointer hover:opacity-90 transition"
-                            onClick={() => setLightboxUrl(msg.imageUrl!)}
-                          >
-                            <img src={msg.imageUrl} alt="Imagen adjunta" className="w-full max-h-40 object-cover" />
-                            <div className="px-3 py-1.5 bg-black/30 flex items-center gap-1.5">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                              </svg>
-                              <span className="text-slate-400 text-xs">Ver imagen</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    <img src={ticket.imageUrl} alt="Adjunto del ticket" className="w-full max-h-80 object-cover group-hover/img:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                       <span className="text-white text-[10px] font-black uppercase tracking-[5px] bg-[#030014]/80 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/10">Ampliar Vista</span>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Reply form */}
-          {ticket.status !== 'Cerrado' && (
-            <form onSubmit={handleSendMessage} className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                  style={{ backgroundColor: currentUser?.avatarColor }}
-                >
-                  {currentUser?.initials}
-                </div>
-                <span className="text-slate-300 text-sm font-medium">{currentUser?.name}</span>
-              </div>
-
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Escribe tu respuesta..."
-                rows={3}
-                className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
-              />
-
-              {/* Reply image preview */}
-              {replyPreview && (
-                <div className="relative inline-block">
-                  <img src={replyPreview} alt="Preview" className="rounded-xl h-28 object-cover border border-white/10" />
-                  <button
-                    type="button"
-                    onClick={() => { setReplyImage(null); setReplyPreview(null); if (replyFileRef.current) replyFileRef.current.value = ''; }}
-                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs hover:bg-red-400 transition"
-                  >×</button>
                 </div>
               )}
 
-              <div className="flex items-center gap-3 justify-between">
+              <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
                 <div className="flex items-center gap-3">
-                  {/* Attach image button */}
-                  <button
-                    type="button"
-                    onClick={() => replyFileRef.current?.click()}
-                    className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition text-xs"
-                    title="Adjuntar imagen"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/>
-                      <circle cx="8.5" cy="8.5" r="1.5"/>
-                      <polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    Imagen
-                  </button>
-                  <input ref={replyFileRef} type="file" accept="image/*" onChange={handleReplyImage} className="hidden"/>
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-800 flex items-center justify-center text-white font-black font-orbitron">
+                    {ticket.createdByName.slice(0,1)}
+                  </div>
+                  <div>
+                    <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-widest">Originador</p>
+                    <p className="text-white text-xs font-bold uppercase">{ticket.createdByName}</p>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-white/10" />
+                <div>
+                  <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-widest">Transmisión iniciada</p>
+                  <p className="text-white text-xs font-bold font-mono">{formatDate(ticket.createdAt).toUpperCase()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
+          {/* Connection Stream (Messages) */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <h2 className="text-white font-black font-orbitron tracking-[4px] text-xs uppercase">
+                FLUJO_DE_DATOS ({ticket.messages.filter(m => !m.isInternal || currentUser?.role !== 'Cliente').length})
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+            </div>
+
+            {ticket.messages.length === 0 ? (
+              <div className="glass-panel border-white/5 rounded-3xl p-12 text-center">
+                <p className="text-[#8888aa] font-bold tracking-[3px] uppercase text-xs italic">En espera de respuesta del comando...</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {ticket.messages.map(msg => {
+                  if (msg.isInternal && currentUser?.role === 'Cliente') return null;
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`glass-panel border rounded-[32px] p-6 sm:p-8 transition-all duration-300 relative overflow-hidden ${
+                        msg.isInternal ? 'border-[#ff9d00]/30 bg-[#ff9d00]/5 shadow-[0_0_30px_rgba(255,157,0,0.05)]' : 'border-white/5 hover:border-white/10'
+                      }`}
+                    >
+                      {msg.isInternal && (
+                        <div className="absolute top-0 right-0 px-6 py-2 bg-[#ff9d00] text-[#030014] text-[9px] font-black uppercase tracking-[3px] rounded-bl-3xl">Nota del Sistema</div>
+                      )}
+                      
+                      <div className="flex items-start gap-6">
+                        <div
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-sm font-black font-orbitron shadow-xl shrink-0"
+                          style={{ backgroundColor: msg.authorColor }}
+                        >
+                          {msg.authorInitials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-4 mb-4">
+                            <div>
+                              <span className="text-white font-bold text-sm tracking-tight">{msg.authorName.toUpperCase()}</span>
+                              <span className="text-[#8888aa] text-[10px] font-black uppercase tracking-[3px] ml-3 opacity-60">[{msg.authorRole}]</span>
+                            </div>
+                            <span className="text-[#8888aa] font-mono text-[10px] font-bold">{formatDate(msg.timestamp).toUpperCase()}</span>
+                          </div>
+                          
+                          <div className="text-[#8888aa] text-base font-rajdhani font-semibold leading-relaxed">
+                            {msg.content}
+                          </div>
+
+                          {msg.imageUrl && (
+                            <div
+                              className="mt-6 rounded-3xl overflow-hidden border-2 border-white/5 max-w-sm cursor-pointer hover:border-[#00f0ff]/40 transition-all group/msg-img shadow-2xl"
+                              onClick={() => setLightboxUrl(msg.imageUrl!)}
+                            >
+                              <img src={msg.imageUrl} alt="Imagen adjunta" className="w-full max-h-52 object-cover group-hover/msg-img:scale-105 transition-transform duration-500" />
+                              <div className="px-4 py-3 bg-[#030014]/50 backdrop-blur-md flex items-center justify-between border-t border-white/5">
+                                <span className="text-white text-[9px] font-black uppercase tracking-[3px]">Visualizar Adjunto</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="3"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Interactive Console (Reply) */}
+          {ticket.status !== 'Cerrado' && (
+            <form onSubmit={handleSendMessage} className="glass-panel border-white/5 rounded-[40px] p-8 sm:p-10 space-y-8 relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/2 to-transparent pointer-events-none" />
+               
+               <div className="flex items-center justify-between relative z-10 pb-4 border-b border-white/5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-[#8888aa] border border-white/10">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <span className="text-white font-black font-orbitron tracking-[3px] text-xs uppercase">Terminal de respuesta</span>
+                  </div>
                   {canManage && (
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <span className={`text-[9px] font-black uppercase tracking-[2px] transition-colors ${isInternal ? 'text-[#ff9d00]' : 'text-[#8888aa]'}`}>
+                        Canal Privado
+                      </span>
                       <div
                         onClick={() => setIsInternal(!isInternal)}
-                        className={`w-9 h-5 rounded-full transition relative ${isInternal ? 'bg-orange-500' : 'bg-white/10'}`}
+                        className={`w-12 h-6 rounded-full transition-all relative border ${isInternal ? 'bg-[#ff9d00]/20 border-[#ff9d00]/50 shadow-[0_0_15px_rgba(255,157,0,0.2)]' : 'bg-white/5 border-white/10'}`}
                       >
-                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${isInternal ? 'left-4' : 'left-0.5'}`}/>
+                        <div className={`absolute top-1 w-4 h-4 rounded-full transition-all duration-300 ${isInternal ? 'left-6 bg-[#ff9d00]' : 'left-1 bg-[#8888aa]'}`}/>
                       </div>
-                      <span className="text-slate-400 text-sm">Nota interna</span>
                     </label>
                   )}
+               </div>
+
+               <div className="relative group z-10">
+                <textarea
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  placeholder="Inyectar mensaje en la transmisión..."
+                  rows={4}
+                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-3xl px-8 py-6 text-white placeholder-slate-700 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#00f0ff]/50 focus:shadow-[0_0_30px_rgba(0,240,255,0.05)] transition-all resize-none"
+                />
+               </div>
+
+              {replyPreview && (
+                <div className="relative inline-block z-10 animate-fade-in">
+                  <div className="rounded-3xl overflow-hidden border-2 border-[#00f0ff]/30 shadow-2xl">
+                    <img src={replyPreview} alt="Preview" className="h-40 object-cover" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyImage(null); setReplyPreview(null); if (replyFileRef.current) replyFileRef.current.value = ''; }}
+                    className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#ff2d95] text-white flex items-center justify-center border-2 border-[#030014] hover:scale-110 transition shadow-lg"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-center gap-6 justify-between relative z-10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => replyFileRef.current?.click()}
+                  className="flex items-center gap-2 group text-[#00f0ff] hover:text-white transition-all text-[10px] font-black uppercase tracking-[3px] bg-[#00f0ff]/10 hover:bg-[#00f0ff] px-6 py-4 rounded-2xl border border-[#00f0ff]/20"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:rotate-12 transition-transform">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  Adjuntar Recursos
+                </button>
+                <input ref={replyFileRef} type="file" accept="image/*" onChange={handleReplyImage} className="hidden"/>
 
                 <button
                   type="submit"
                   disabled={(!message.trim() && !replyImage) || sending}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-xl transition"
+                  className="w-full sm:w-auto btn-futuristic px-10 py-5 text-xs tracking-[4px] font-black group"
                 >
                   {sending ? (
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
-                      <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
+                    <span className="flex items-center gap-3">
+                      <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
+                      SINCRONIZANDO...
+                    </span>
                   ) : (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                    </svg>
+                    <span className="flex items-center gap-3">
+                      ENVIAR TRANSMISIÓN
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
+                        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                    </span>
                   )}
-                  Enviar
                 </button>
               </div>
             </form>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Manage */}
+        {/* Sidebar Intelligence Unit */}
+        <div className="space-y-6">
+          {/* Action Control */}
           {canManage && (
-            <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 space-y-4">
-              <h3 className="text-white font-semibold text-sm">Gestionar Ticket</h3>
-              <div>
-                <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Estado</label>
-                <select
-                  value={ticket.status}
-                  onChange={e => updateTicketStatus(ticket.id, e.target.value as TicketStatus)}
-                  className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-2.5 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
-                >
-                  <option>Abierto</option>
-                  <option>En Progreso</option>
-                  <option>Resuelto</option>
-                  <option>Cerrado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Prioridad</label>
-                <select
-                  value={ticket.priority}
-                  onChange={e => updateTicketPriority(ticket.id, e.target.value as TicketPriority)}
-                  className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-2.5 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
-                >
-                  <option>Urgente</option>
-                  <option>Alta</option>
-                  <option>Media</option>
-                  <option>Baja</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Asignado a</label>
-                <select
-                  value={ticket.assignedToId || ''}
-                  onChange={e => assignTicket(ticket.id, e.target.value)}
-                  className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-2.5 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
-                >
-                  <option value="">Sin asignar</option>
-                  {agents.map(agent => (
-                    <option key={agent.id} value={agent.id}>{agent.name}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="glass-panel border-white/10 rounded-[32px] p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f0ff]/40 to-transparent" />
+               <h3 className="text-white font-black font-orbitron tracking-[3px] text-[10px] uppercase flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00f0ff] animate-pulse" />
+                Control de Incidencia
+               </h3>
+               
+               <div className="space-y-5">
+                <div>
+                  <label className="block text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 ml-1">Estatus</label>
+                  <select
+                    value={ticket.status}
+                    onChange={e => updateTicketStatus(ticket.id, e.target.value as TicketStatus)}
+                    className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                  >
+                    <option>Abierto</option>
+                    <option>En Progreso</option>
+                    <option>Resuelto</option>
+                    <option>Cerrado</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 ml-1">Prioridad</label>
+                  <select
+                    value={ticket.priority}
+                    onChange={e => updateTicketPriority(ticket.id, e.target.value as TicketPriority)}
+                    className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                  >
+                    <option>Urgente</option>
+                    <option>Alta</option>
+                    <option>Media</option>
+                    <option>Baja</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 ml-1">Operador</label>
+                  <select
+                    value={ticket.assignedToId || ''}
+                    onChange={e => assignTicket(ticket.id, e.target.value)}
+                    className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                  >
+                    <option value="">SIN_ASIGNAR</option>
+                    {agents.map(agent => (
+                      <option key={agent.id} value={agent.id}>{agent.name.toUpperCase()}</option>
+                    ))}
+                  </select>
+                </div>
+               </div>
             </div>
           )}
 
-          {/* Info */}
-          <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 space-y-3">
-            <h3 className="text-white font-semibold text-sm">Información</h3>
-            <div className="space-y-2.5">
-              <div>
-                <div className="text-slate-500 text-xs mb-1">Categoría</div>
-                <div className="text-slate-300 text-sm">{ticket.category}</div>
-              </div>
-              {dept && (
-                <div>
-                  <div className="text-slate-500 text-xs mb-1">Departamento</div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: dept.color }} />
-                    <span className="text-slate-300 text-sm">{dept.name}</span>
-                  </div>
-                </div>
-              )}
-              <div>
-                <div className="text-slate-500 text-xs mb-1">Creado por</div>
-                <div className="text-slate-300 text-sm">{ticket.createdByName}</div>
-              </div>
-              {ticket.assignedToName && (
-                <div>
-                  <div className="text-slate-500 text-xs mb-1">Asignado a</div>
-                  <div className="text-slate-300 text-sm">{ticket.assignedToName}</div>
-                </div>
-              )}
-              <div>
-                <div className="text-slate-500 text-xs mb-1">Creado</div>
-                <div className="text-slate-300 text-sm">{formatDate(ticket.createdAt)}</div>
-              </div>
-              <div>
-                <div className="text-slate-500 text-xs mb-1">Última actualización</div>
-                <div className="text-slate-300 text-sm">{formatDate(ticket.updatedAt)}</div>
-              </div>
+          {/* Data Sheet */}
+          <div className="glass-panel border-white/5 rounded-[32px] p-6 sm:p-8 space-y-6">
+            <h3 className="text-white font-black font-orbitron tracking-[3px] text-[10px] uppercase">Ficha de Datos</h3>
+            
+            <div className="space-y-5">
+               {[
+                 { l: 'Categoría', v: ticket.category.toUpperCase() },
+                 { l: 'Departamento', v: dept?.name.toUpperCase() || 'GENERAL' },
+                 { l: 'Creado por', v: ticket.createdByName.toUpperCase() },
+                 { l: 'Asignado a', v: ticket.assignedToName?.toUpperCase() || 'PENDIENTE', c: ticket.assignedToName ? 'text-[#00f0ff]' : 'text-[#ff2d95] italic' },
+               ].map((item, i) => (
+                 <div key={i} className="border-b border-white/5 pb-3">
+                   <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[2px] mb-1">{item.l}</p>
+                   <p className={`text-[11px] font-bold font-rajdhani tracking-widest ${item.c || 'text-white'}`}>{item.v}</p>
+                 </div>
+               ))}
+               <div>
+                 <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[2px] mb-1">Timeline</p>
+                 <div className="space-y-1 mt-2">
+                    <p className="text-[10px] text-white/60 font-mono"><span className="text-[#00f0ff]">INI:</span> {formatDate(ticket.createdAt).toUpperCase()}</p>
+                    <p className="text-[10px] text-white/60 font-mono"><span className="text-[#7b2fff]">MOD:</span> {formatDate(ticket.updatedAt).toUpperCase()}</p>
+                 </div>
+               </div>
             </div>
           </div>
 
-          {/* Status badge */}
-          <div className={`rounded-2xl p-4 border ${statusColors[ticket.status]}`}>
-            <div className="text-xs opacity-70 mb-1">Estado actual</div>
-            <div className="font-semibold">{ticket.status}</div>
+          {/* Status Monitor View */}
+          <div className={`rounded-[32px] p-8 border-2 flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden group ${statusColors[ticket.status]}`}>
+            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <p className="text-[9px] font-black uppercase tracking-[4px] mb-4 opacity-70">Monitor Estatus</p>
+            <p className="text-2xl font-black font-orbitron tracking-tighter uppercase">{ticket.status}</p>
+            <div className="mt-6 flex gap-1">
+               {[1,2,3,4,5].map(i => <div key={i} className="w-3 h-1 bg-current opacity-30 rounded-full" />)}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox Enhancement */}
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
           onClick={() => setLightboxUrl(null)}
         >
-          <div className="relative max-w-4xl max-h-full" onClick={e => e.stopPropagation()}>
-            <img src={lightboxUrl} alt="Imagen ampliada" className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain" />
-            <button
-              onClick={() => setLightboxUrl(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+          <div className="absolute inset-0 bg-[#030014]/95 backdrop-blur-2xl" />
+          <div className="relative max-w-5xl w-full flex flex-col items-center" onClick={e => e.stopPropagation()}>
+            <div className="w-full flex justify-end mb-4">
+               <button
+                onClick={() => setLightboxUrl(null)}
+                className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-[#ff2d95] text-white flex items-center justify-center transition-all border border-white/10 group shadow-2xl"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:rotate-90 transition-transform"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="relative rounded-[40px] overflow-hidden border-4 border-white/10 shadow-[0_0_100px_rgba(0,240,255,0.2)]">
+              <img src={lightboxUrl} alt="Imagen ampliada" className="max-w-full max-h-[80vh] object-contain" />
+              <div className="absolute top-0 left-0 w-full h-full pointer-events-none border-[1px] border-white/20 rounded-[38px] m-1" />
+            </div>
+            <p className="mt-8 text-[#8888aa] font-mono text-[10px] font-black uppercase tracking-[5px]">Visualizador de Alta Resolución v2.0</p>
           </div>
         </div>
       )}

@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+:root {
+  --primary: #00f0ff;
+  --primary-dark: #00a8b5;
+  --secondary: #7b2fff;
+  --accent: #ff2d95;
+  --accent2: #ffaa00;
+  --bg-dark: #030014;
+  --bg-card: rgba(15, 10, 40, 0.6);
+  --text: #e0e0ff;
+  --text-muted: #8888aa;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --gradient-1: linear-gradient(135deg, #00f0ff, #7b2fff);
+  --gradient-2: linear-gradient(135deg, #7b2fff, #ff2d95);
+  --gradient-3: linear-gradient(135deg, #ff2d95, #ffaa00);
+  --shadow-neon: 0 0 30px rgba(0, 240, 255, 0.3);
+  --shadow-purple: 0 0 30px rgba(123, 47, 255, 0.3);
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@layer base {
+  body {
+    @apply bg-[#030014] text-[#e0e0ff] font-sans;
+  }
+}
+
+/* Global Futuristic Utilities */
+.glass-panel {
+  background: rgba(15, 10, 40, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #00f0ff, #7b2fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.neon-border {
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.btn-futuristic {
+  @apply relative overflow-hidden transition-all duration-300 transform rounded-xl active:scale-95;
+  background: linear-gradient(135deg, #00f0ff, #7b2fff);
+  color: #030014;
+  font-weight: 700;
+}
+
+.btn-futuristic:hover {
+  @apply -translate-y-1 shadow-[0_0_30px_rgba(0,240,255,0.4)];
+}

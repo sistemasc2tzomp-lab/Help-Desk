@@ -26,6 +26,7 @@ interface AppContextType {
   supabaseReady: boolean;
   loginWithSupabase: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
+  createUser: (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -480,6 +481,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
+  const createUser = useCallback(async (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => {
+    if (!isSupabaseConfigured()) return { success: false, error: 'Supabase no configurado' };
+    const sb = getSupabase();
+    
+    // Create profile with random UUID. Real Auth requires service role or signup flow.
+    const { error } = await sb.from('perfiles').insert({
+      id: crypto.randomUUID(),
+      nombre: userData.name,
+      email: userData.email,
+      rol: userData.role,
+      departamento_id: userData.departmentId || null,
+      activo: true
+    });
+    if (error) {
+      console.error('Error creating user profile:', error);
+      return { success: false, error: error.message };
+    }
+    
+    await refreshData();
+    return { success: true };
+  }, [refreshData]);
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -505,6 +528,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabaseReady,
       loginWithSupabase,
       logout,
+      createUser,
     }}>
       {children}
     </AppContext.Provider>

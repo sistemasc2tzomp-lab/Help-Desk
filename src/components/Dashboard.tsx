@@ -4,30 +4,31 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-  'En Progreso': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  'Resuelto': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-  'Cerrado': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+  'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
+  'En Progreso': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.2)]',
+  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
+  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20 shadow-[0_0_10px_rgba(100,116,139,0.2)]',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-red-400',
-  'Alta': 'text-orange-400',
-  'Media': 'text-yellow-400',
+  'Urgente': 'text-red-400 font-black',
+  'Alta': 'text-orange-400 font-bold',
+  'Media': 'text-yellow-400 font-semibold',
   'Baja': 'text-slate-400',
 };
 
-const StatCard = ({ label, value, icon, color, sub }: {
-  label: string; value: number; icon: React.ReactNode; color: string; sub?: string
+const StatCard = ({ label, value, icon, gradient, sub }: {
+  label: string; value: number; icon: React.ReactNode; gradient: string; sub?: string
 }) => (
-  <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-center gap-4">
-    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-      {icon}
+  <div className="glass-panel rounded-3xl p-5 sm:p-6 flex items-center gap-5 group hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+    <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transform group-hover:rotate-6 transition-transform duration-500 bg-gradient-to-br ${gradient}`}>
+      <span className="text-white drop-shadow-md">{icon}</span>
     </div>
-    <div>
-      <div className="text-xl sm:text-2xl font-bold text-white">{value}</div>
-      <div className="text-slate-400 text-xs sm:text-sm">{label}</div>
-      {sub && <div className="text-slate-600 text-xs">{sub}</div>}
+    <div className="relative z-10">
+      <div className="text-2xl sm:text-3xl font-black text-white font-orbitron tracking-tighter">{value}</div>
+      <div className="text-[#8888aa] text-[10px] sm:text-xs font-bold uppercase tracking-[2px] font-rajdhani">{label}</div>
+      {sub && <div className="text-[#00f0ff]/40 text-[9px] font-mono mt-1">{sub}</div>}
     </div>
   </div>
 );
@@ -55,139 +56,104 @@ export default function Dashboard() {
     setPage('ticket-detail');
   };
 
-  // Chart data
   const byStatus = [
-    { label: 'Abiertos', count: stats.open, color: '#3b82f6' },
+    { label: 'Abiertos', count: stats.open, color: '#00f0ff' },
     { label: 'En Progreso', count: stats.inProgress, color: '#eab308' },
     { label: 'Resueltos', count: stats.resolved, color: '#10b981' },
   ];
   const maxCount = Math.max(...byStatus.map(s => s.count), 1);
 
-  const byPriority = [
-    { label: 'Urgente', count: filteredTickets.filter(t => t.priority === 'Urgente').length, color: '#ef4444' },
-    { label: 'Alta', count: filteredTickets.filter(t => t.priority === 'Alta').length, color: '#f97316' },
-    { label: 'Media', count: filteredTickets.filter(t => t.priority === 'Media').length, color: '#eab308' },
-    { label: 'Baja', count: filteredTickets.filter(t => t.priority === 'Baja').length, color: '#64748b' },
-  ];
-  const maxPriority = Math.max(...byPriority.map(p => p.count), 1);
-
   const deptMap: Record<string, string> = {};
   departments.forEach(d => { deptMap[d.id] = d.name; });
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Bienvenido, <span className="text-indigo-400 font-medium">{currentUser?.name}</span>
+          <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2">
+            MÓDULO <span className="text-gradient">OPERATIVO</span>
+          </h1>
+          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
+            CONEXIÓN ESTABLECIDA // <span className="text-[#00f0ff] animate-pulse">AGENTE: {currentUser?.name?.toUpperCase()}</span>
           </p>
         </div>
         <button
           onClick={() => setPage('new-ticket')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition self-start sm:self-auto"
+          className="btn-futuristic flex items-center gap-3 px-6 py-4 text-xs tracking-[2px] group"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Nuevo Ticket
+          REGISTRAR REQUERIMIENTO
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard label="Total" value={stats.total} color="bg-indigo-500/20"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <StatCard 
+          label="Total Unidades" 
+          value={stats.total} 
+          gradient="from-[#7b2fff] to-[#00f0ff]"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
+          sub="DATA_SYNC: 100%"
         />
-        <StatCard label="Abiertos" value={stats.open} color="bg-blue-500/20"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+        <StatCard 
+          label="Soporte Activo" 
+          value={stats.open} 
+          gradient="from-[#00f0ff] to-[#00a8b5]"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+          sub="URGENCY: HIGH"
         />
-        <StatCard label="En Progreso" value={stats.inProgress} color="bg-yellow-500/20"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
+        <StatCard 
+          label="En Ejecución" 
+          value={stats.inProgress} 
+          gradient="from-[#eab308] to-[#ffaa00]"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
+          sub="PROCESS_THROTTLE: 0%"
         />
-        <StatCard label="Resueltos" value={stats.resolved} color="bg-emerald-500/20"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+        <StatCard 
+          label="Finalizados" 
+          value={stats.resolved} 
+          gradient="from-[#10b981] to-[#34d399]"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+          sub="STATUS: OPTIMAL"
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* By Status */}
-        <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-5">
-          <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">Distribución por Estado</h3>
-          <div className="space-y-3">
-            {byStatus.map(s => (
-              <div key={s.label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">{s.label}</span>
-                  <span className="text-white font-medium">{s.count}</span>
-                </div>
-                <div className="h-2.5 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(s.count / maxCount) * 100}%`, backgroundColor: s.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* By Priority */}
-        <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4 sm:p-5">
-          <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">Distribución por Prioridad</h3>
-          <div className="space-y-3">
-            {byPriority.map(p => (
-              <div key={p.label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">{p.label}</span>
-                  <span className="text-white font-medium">{p.count}</span>
-                </div>
-                <div className="h-2.5 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(p.count / maxPriority) * 100}%`, backgroundColor: p.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Tickets */}
-      <div className="bg-[#1a1d27] border border-white/5 rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/5">
-          <h3 className="text-white font-semibold text-sm sm:text-base">Tickets Recientes</h3>
-          <button
-            onClick={() => setPage('tickets')}
-            className="text-indigo-400 hover:text-indigo-300 text-xs sm:text-sm font-medium transition"
-          >
-            Ver todos →
-          </button>
-        </div>
-
-        {recentTickets.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="text-4xl mb-3">🎫</div>
-            <p className="text-slate-400 text-sm">No hay tickets aún</p>
-            <button onClick={() => setPage('new-ticket')} className="mt-3 text-indigo-400 text-sm hover:text-indigo-300 transition">
-              Crear primer ticket →
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Panel: Recent Tickets */}
+        <div className="lg:col-span-2 glass-panel rounded-3xl overflow-hidden border border-white/5">
+          <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-white/2">
+            <div>
+              <h3 className="text-white font-bold font-orbitron tracking-tighter uppercase text-sm">LOG DE OPERACIONES</h3>
+              <p className="text-[#8888aa] text-[10px] font-mono">ID_STREAM: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+            </div>
+            <button
+              onClick={() => setPage('tickets')}
+              className="text-[#00f0ff] hover:text-[#7b2fff] text-[10px] font-bold tracking-[2px] transition uppercase group"
+            >
+              ACCEDER AL ARCHIVO <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
-        ) : (
-          <>
-            {/* Desktop table */}
-            <div className="hidden sm:block overflow-x-auto">
+
+          <div className="p-4 sm:p-6 overflow-x-auto">
+            {recentTickets.length === 0 ? (
+              <div className="py-20 text-center">
+                <div className="text-5xl mb-6 grayscale opacity-20">🎫</div>
+                <p className="text-[#8888aa] text-xs font-bold tracking-[3px] uppercase">No se detectan transmisiones activas</p>
+                <button onClick={() => setPage('new-ticket')} className="mt-4 text-[#00f0ff] text-[10px] font-bold hover:underline uppercase tracking-[2px]">
+                  + INICIAR NUEVA SECUENCIA
+                </button>
+              </div>
+            ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/5">
-                    <th className="text-left text-xs text-slate-500 font-medium px-6 py-3 uppercase tracking-wider">Título</th>
-                    <th className="text-left text-xs text-slate-500 font-medium px-4 py-3 uppercase tracking-wider">Estado</th>
-                    <th className="text-left text-xs text-slate-500 font-medium px-4 py-3 uppercase tracking-wider">Prioridad</th>
-                    <th className="text-left text-xs text-slate-500 font-medium px-4 py-3 uppercase tracking-wider hidden lg:table-cell">Departamento</th>
-                    <th className="text-left text-xs text-slate-500 font-medium px-4 py-3 uppercase tracking-wider">Actualizado</th>
+                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">REQUERIMIENTO</th>
+                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">ESTADO</th>
+                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">PRIORIDAD</th>
+                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden sm:table-cell">NÚCLEO</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -195,62 +161,68 @@ export default function Dashboard() {
                     <tr
                       key={ticket.id}
                       onClick={() => handleTicketClick(ticket)}
-                      className="hover:bg-white/5 cursor-pointer transition-colors"
+                      className="hover:bg-[#00f0ff]/5 cursor-pointer transition-colors group"
                     >
-                      <td className="px-6 py-3.5">
-                        <div className="text-white text-sm font-medium truncate max-w-[250px]">{ticket.title}</div>
-                        <div className="text-slate-500 text-xs mt-0.5">{ticket.category}</div>
+                      <td className="px-4 py-5">
+                        <div className="text-white text-sm font-bold truncate max-w-[200px] font-rajdhani">{ticket.title}</div>
+                        <div className="text-[#8888aa] text-[10px] mt-1 font-mono">{ticket.category} — {formatDistanceToNow(ticket.updatedAt)}</div>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center text-xs px-2.5 py-1 rounded-lg font-medium ${statusColors[ticket.status]}`}>
+                      <td className="px-4 py-5">
+                        <span className={`inline-flex items-center text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${statusColors[ticket.status]}`}>
                           {ticket.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className={`text-sm font-medium ${priorityColors[ticket.priority]}`}>
+                      <td className="px-4 py-5">
+                        <span className={`text-[10px] uppercase font-bold tracking-widest ${priorityColors[ticket.priority]}`}>
                           {ticket.priority}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 hidden lg:table-cell">
-                        <span className="text-slate-400 text-xs">
-                          {ticket.departmentId ? deptMap[ticket.departmentId] || '—' : '—'}
+                      <td className="px-4 py-5 hidden sm:table-cell">
+                        <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-tight">
+                          {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
                         </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-slate-500 text-xs">{formatDistanceToNow(ticket.updatedAt)}</span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            )}
+          </div>
+        </div>
 
-            {/* Mobile cards */}
-            <div className="sm:hidden divide-y divide-white/5">
-              {recentTickets.map(ticket => (
-                <button
-                  key={ticket.id}
-                  onClick={() => handleTicketClick(ticket)}
-                  className="w-full text-left px-4 py-3.5 hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-white text-sm font-medium line-clamp-2 flex-1">{ticket.title}</span>
-                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-lg font-medium shrink-0 ${statusColors[ticket.status]}`}>
-                      {ticket.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className={`font-medium ${priorityColors[ticket.priority]}`}>{ticket.priority}</span>
-                    <span className="text-slate-600">•</span>
-                    <span className="text-slate-500">{ticket.category}</span>
-                    <span className="text-slate-600">•</span>
-                    <span className="text-slate-500">{formatDistanceToNow(ticket.updatedAt)}</span>
-                  </div>
-                </button>
-              ))}
+        {/* Side Panel: Analysis */}
+        <div className="glass-panel rounded-3xl p-8 border border-white/5 flex flex-col">
+          <h3 className="text-white font-bold font-orbitron tracking-tighter uppercase text-sm mb-8 border-b border-white/5 pb-4">MÉTRICAS DE RED</h3>
+          
+          <div className="space-y-8 flex-1">
+            {byStatus.map(s => (
+              <div key={s.label} className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-[2px]">{s.label}</span>
+                  <span className="text-white font-black font-orbitron text-lg leading-none">{s.count}</span>
+                </div>
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden neon-border">
+                  <div
+                    className="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_currentColor]"
+                    style={{ 
+                      width: `${(s.count / maxCount) * 100}%`, 
+                      backgroundColor: s.color,
+                      color: s.color 
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-[#7b2fff] to-[#00f0ff] relative overflow-hidden group">
+            <div className="relative z-10">
+              <div className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-1">IA_PREDICTION</div>
+              <div className="text-white font-bold text-sm leading-tight">Optimización de carga sugerida para el turno B.</div>
             </div>
-          </>
-        )}
+            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/20 blur-2xl rounded-full" />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -60,7 +60,6 @@ export default function NewTicket() {
     let imageUrl: string | undefined;
     if (imageFile) {
       imageUrl = await uploadImage(imageFile);
-      // If Supabase not available, use local base64 preview
       if (!imageUrl && imagePreview) imageUrl = imagePreview;
     }
     setUploadingImage(false);
@@ -86,153 +85,152 @@ export default function NewTicket() {
 
   if (submitted) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-h-96">
-        <div className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-5 animate-bounce">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <div className="p-6 flex flex-col items-center justify-center min-vh-[70vh] bg-[#030014]">
+        <div className="w-24 h-24 rounded-full bg-emerald-500/10 border-4 border-emerald-500/30 flex items-center justify-center mb-8 animate-pulse shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2 className="text-white text-2xl font-bold mb-2">¡Ticket creado exitosamente!</h2>
-        <p className="text-slate-400 text-sm">Redirigiendo al ticket...</p>
+        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">TRANSMISIÓN ESTABLECIDA</h2>
+        <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase animate-fade-in">Redirigiendo al núcleo de control...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-2xl mx-auto">
-      <div className="mb-6">
+    <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-10 min-h-screen bg-[#030014]">
+      {/* Header Area */}
+      <div className="space-y-4">
         <button
           onClick={() => setPage('tickets')}
-          className="flex items-center gap-2 text-slate-400 hover:text-white transition text-sm mb-4"
+          className="group flex items-center gap-3 text-[#8888aa] hover:text-[#00f0ff] transition-all text-[10px] font-black uppercase tracking-[3px]"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
           </svg>
-          Volver
+          Abortar Operación
         </button>
-        <h1 className="text-2xl font-bold text-white">Nuevo Ticket</h1>
-        <p className="text-slate-400 text-sm mt-1">Describe tu problema o solicitud para que nuestro equipo pueda ayudarte</p>
+        <div>
+          <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
+            NUEVA <span className="text-gradient">INCIDENCIA</span>
+          </h1>
+          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">MODULO DE REPORTE Y ASIGNACIÓN DE RECURSOS</p>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#1a1d27] border border-white/5 rounded-2xl p-6 space-y-5">
-        {/* Title */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Título <span className="text-red-400">*</span>
-          </label>
+      <form onSubmit={handleSubmit} className="glass-panel border-white/5 rounded-[40px] p-8 sm:p-12 space-y-8 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#00f0ff]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+        
+        {/* Title Node */}
+        <div className="space-y-3 relative z-10">
+          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Cabezal del Reporte (Asunto)</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="Ej: Error al iniciar sesión en el portal"
+            placeholder="SYNTAX_ERROR_IN_CORE_..."
             required
-            className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+            className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#00f0ff]/50 transition-all neon-border"
           />
         </div>
 
-        {/* Description */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Descripción <span className="text-red-400">*</span>
-          </label>
+        {/* Description Base */}
+        <div className="space-y-3 relative z-10">
+          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Bitácora de Detalles</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            placeholder="Describe el problema con el mayor detalle posible. ¿Cuándo ocurre? ¿Qué pasos realizaste? ¿Qué error aparece?"
+            placeholder="Introduce los parámetros técnicos del problema. Incluye códigos de error, capturas y contexto operativo..."
             required
-            rows={5}
-            className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition resize-none"
+            rows={6}
+            className="w-full bg-[#0a0025]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#00f0ff]/50 transition-all resize-none leading-relaxed"
           />
         </div>
 
-        {/* Category & Priority */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría</label>
+        {/* Configuration Unit */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Clasificación</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value as TicketCategory)}
-              className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-3 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="Técnico">Técnico</option>
-              <option value="Facturación">Facturación</option>
-              <option value="Bug">Bug</option>
-              <option value="Feature">Feature</option>
-              <option value="General">General</option>
+              <option value="Técnico">TÉCNICO</option>
+              <option value="Facturación">FACTURACIÓN</option>
+              <option value="Bug">BUG_SISTEMA</option>
+              <option value="Feature">MEJORA_REQUEST</option>
+              <option value="General">GENERAL</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Prioridad</label>
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Nivel_Prioridad</label>
             <select
               value={priority}
               onChange={e => setPriority(e.target.value as TicketPriority)}
-              className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-3 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="Baja">Baja</option>
-              <option value="Media">Media</option>
-              <option value="Alta">Alta</option>
-              <option value="Urgente">Urgente</option>
+              <option value="Baja">BAJA_NODAL</option>
+              <option value="Media">MEDIA_ESTÁNDAR</option>
+              <option value="Alta">ALTA_VALOR</option>
+              <option value="Urgente">URGENTE_CRÍTICO</option>
             </select>
           </div>
         </div>
 
-        {/* Department */}
+        {/* Sector Allocation */}
         {departments.length > 0 && (
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Departamento</label>
+          <div className="space-y-3 relative z-10">
+            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
             <select
               value={departmentId}
               onChange={e => setDepartmentId(e.target.value)}
-              className="w-full bg-[#0f1117] border border-white/10 rounded-xl px-3 py-3 text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="">Sin departamento</option>
+              <option value="">CANAL_GLOBAL</option>
               {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
+                <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>
               ))}
             </select>
           </div>
         )}
 
-        {/* Image Attachment */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Adjuntar Imagen del Problema
-          </label>
+        {/* Visual Documentation Subsystem */}
+        <div className="space-y-4 relative z-10">
+          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Documentación Visual (Adjuntos)</label>
           {imagePreview ? (
-            <div className="relative rounded-xl overflow-hidden border border-white/10 bg-[#0f1117]">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-64 object-contain" />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-              <div className="px-3 py-2 bg-black/40 flex items-center gap-2">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <span className="text-emerald-400 text-xs">{imageFile?.name}</span>
+            <div className="relative rounded-3xl overflow-hidden border-2 border-[#00f0ff]/30 bg-[#030014] group/prev shadow-2xl">
+              <img src={imagePreview} alt="Preview" className="w-full max-h-80 object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/prev:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                <button
+                    type="button"
+                    onClick={removeImage}
+                    className="bg-[#ff2d95] text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] border border-white/20 hover:scale-105 transition-all shadow-2xl"
+                >
+                    Purgar Recurso
+                </button>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#030014]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
+                <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+                <span className="text-[#10b981] text-[10px] font-black uppercase tracking-[2px]">{imageFile?.name} cargado</span>
               </div>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center gap-3 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition group cursor-pointer"
+              className="w-full border-2 border-dashed border-white/10 rounded-[32px] p-12 flex flex-col items-center gap-4 hover:border-[#00f0ff]/40 hover:bg-[#00f0ff]/5 transition-all duration-500 group cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-indigo-500/10 flex items-center justify-center transition">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-20 h-20 rounded-3xl bg-white/5 group-hover:bg-[#00f0ff]/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 border border-white/10">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <polyline points="21 15 16 10 5 21"/>
                 </svg>
               </div>
               <div className="text-center">
-                <p className="text-slate-300 text-sm font-medium">Haz clic para adjuntar una imagen</p>
-                <p className="text-slate-500 text-xs mt-1">PNG, JPG, GIF, WEBP — máx. 5 MB</p>
+                <p className="text-white text-xs font-black uppercase tracking-[3px]">Click para inyectar recursos visuales</p>
+                <p className="text-[#8888aa] text-[9px] font-bold mt-2 tracking-[2px] uppercase opacity-60">Filtro: PNG / JPG / GIF / WEBP — Límite 5MB</p>
               </div>
             </button>
           )}
@@ -245,46 +243,43 @@ export default function NewTicket() {
           />
         </div>
 
-        {/* Priority hint */}
-        <div className="bg-[#0f1117] rounded-xl p-3 text-xs text-slate-500 space-y-1.5">
-          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span><strong className="text-slate-400">Baja:</strong> Consultas generales, mejoras no urgentes</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-500 shrink-0"></span><strong className="text-slate-400">Media:</strong> Problemas que afectan el trabajo pero hay alternativas</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span><strong className="text-slate-400">Alta:</strong> Problemas que impiden el trabajo normal</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 shrink-0"></span><strong className="text-slate-400">Urgente:</strong> Sistema caído, pérdida de datos, impacto crítico</div>
+        {/* Priority Matrix Helper */}
+        <div className="glass-panel rounded-3xl p-5 border border-white/5 space-y-3 relative z-10">
+          <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 opacity-50">Matriz de Priorización Operativa</p>
+          <div className="grid grid-cols-2 gap-4">
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-slate-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">BAJA: CONSULTAS Y MEJORAS</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-yellow-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">MEDIA: FLUJO REDUCIDO</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-orange-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">ALTA: BLOQUEO OPERATIVO</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-red-500 animate-pulse" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase text-red-400">URGENTE: CRÍTICO / DOWN</div></div>
+          </div>
         </div>
 
-        {/* Submit */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        {/* Transmission Controls */}
+        <div className="flex items-center justify-end gap-6 pt-6 relative z-10">
           <button
             type="button"
             onClick={() => setPage('tickets')}
-            className="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition text-sm font-medium"
+            className="text-[#8888aa] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[4px]"
           >
-            Cancelar
+            Purgar Entrada
           </button>
           <button
             type="submit"
             disabled={!title.trim() || !description.trim() || uploadingImage}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition shadow-lg shadow-indigo-900/30"
+            className="btn-futuristic px-12 py-5 text-xs font-black tracking-[5px] group"
           >
             {uploadingImage ? (
-              <>
-                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
-                  <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                Subiendo imagen...
-              </>
+              <span className="flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
+                Dumping_Buff...
+              </span>
             ) : (
-              <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="12" y1="18" x2="12" y2="12"/>
-                  <line x1="9" y1="15" x2="15" y2="15"/>
+              <span className="flex items-center gap-3">
+                LANZAR TRANSMISIÓN
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
+                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-                Crear Ticket
-              </>
+              </span>
             )}
           </button>
         </div>

@@ -4,28 +4,21 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-  'En Progreso': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  'Resuelto': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-  'Cerrado': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
+  'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]',
+  'En Progreso': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]',
+  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
+  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20 shadow-[0_0_10px_rgba(100,116,139,0.1)]',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'bg-red-500/20 text-red-400 border border-red-500/30',
-  'Alta': 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
-  'Media': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  'Baja': 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
-};
-
-const priorityDot: Record<string, string> = {
-  'Urgente': 'bg-red-400',
-  'Alta': 'bg-orange-400',
-  'Media': 'bg-yellow-400',
-  'Baja': 'bg-slate-400',
+  'Urgente': 'text-red-400 border-red-500/20 bg-red-500/5',
+  'Alta': 'text-orange-400 border-orange-500/20 bg-orange-500/5',
+  'Media': 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5',
+  'Baja': 'text-slate-400 border-slate-500/20 bg-slate-500/5',
 };
 
 export default function TicketList() {
-  const { tickets, currentUser, setPage, setSelectedTicketId, departments } = useApp();
+  const { tickets, currentUser, setPage, setSelectedTicketId, departments, loading, refreshData } = useApp();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -61,196 +54,167 @@ export default function TicketList() {
   const hasFilters = search || statusFilter !== 'all' || priorityFilter !== 'all';
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 max-w-7xl mx-auto">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Tickets</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            {sorted.length} ticket{sorted.length !== 1 ? 's' : ''}
-            {hasFilters ? ' (filtrados)' : ''}
+          <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
+            ARCHIVOS <span className="text-gradient">TICKETS</span>
+          </h1>
+          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
+            REGISTRO DE INCIDENCIAS // {sorted.length} ENTRADAS LOCALIZADAS
           </p>
         </div>
-        <button
-          onClick={() => setPage('new-ticket')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition self-start sm:self-auto"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Nuevo Ticket
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={refreshData}
+            disabled={loading}
+            className="flex items-center gap-2 glass-panel border border-white/5 hover:border-[#00f0ff]/30 text-[#8888aa] hover:text-[#00f0ff] px-5 py-3 rounded-2xl text-[10px] font-bold tracking-[2px] transition uppercase"
+          >
+            <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Sincronizar
+          </button>
+          <button
+            onClick={() => setPage('new-ticket')}
+            className="btn-futuristic flex items-center gap-3 px-6 py-4 text-[10px] tracking-[2px] group"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            NUEVA SOLICITUD
+          </button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-[#1a1d27] border border-white/5 rounded-2xl p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+      {/* Filters Control Unit */}
+      <div className="glass-panel rounded-3xl p-6 border border-white/5">
+        <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full group">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00f0ff]/40 group-focus-within:text-[#00f0ff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               type="text"
-              placeholder="Buscar tickets..."
+              placeholder="ESCANEAR_BASES_DE_DATOS..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#0f1117] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#0a0025]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono"
             />
           </div>
-          {/* Status filter */}
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="bg-[#0f1117] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 transition min-w-[140px]"
-          >
-            <option value="all">Todos los estados</option>
-            <option value="Abierto">Abierto</option>
-            <option value="En Progreso">En Progreso</option>
-            <option value="Resuelto">Resuelto</option>
-            <option value="Cerrado">Cerrado</option>
-          </select>
-          {/* Priority filter */}
-          <select
-            value={priorityFilter}
-            onChange={e => setPriorityFilter(e.target.value)}
-            className="bg-[#0f1117] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 transition min-w-[150px]"
-          >
-            <option value="all">Todas las prioridades</option>
-            <option value="Urgente">Urgente</option>
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
-          </select>
-          {hasFilters && (
-            <button onClick={clearFilters} className="text-slate-400 hover:text-white text-sm transition px-2 shrink-0">
-              Limpiar
-            </button>
-          )}
+          <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto">
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="flex-1 lg:min-w-[180px] bg-[#0a0025]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#00f0ff]/50 cursor-pointer transition-all"
+            >
+              <option value="all">TODOS LOS ESTADOS</option>
+              <option value="Abierto">ABIERTO</option>
+              <option value="En Progreso">EN PROGRESO</option>
+              <option value="Resuelto">RESUELTO</option>
+              <option value="Cerrado">CERRADO</option>
+            </select>
+            <select
+              value={priorityFilter}
+              onChange={e => setPriorityFilter(e.target.value)}
+              className="flex-1 lg:min-w-[180px] bg-[#0a0025]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#00f0ff]/50 cursor-pointer transition-all"
+            >
+              <option value="all">TODAS LAS PRIORIDADES</option>
+              <option value="Urgente">URGENTE</option>
+              <option value="Alta">ALTA</option>
+              <option value="Media">MEDIA</option>
+              <option value="Baja">BAJA</option>
+            </select>
+            {hasFilters && (
+              <button onClick={clearFilters} className="px-4 py-4 text-[#ff2d95] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[2px] underline underline-offset-4 decoration-[#ff2d95]/40 shrink-0">
+                PURGAR_FILTROS
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Ticket List */}
+      {/* Main Stream */}
       {sorted.length === 0 ? (
-        <div className="bg-[#1a1d27] border border-white/5 rounded-2xl py-16 text-center">
-          <div className="text-5xl mb-4">🎫</div>
-          <p className="text-white font-medium mb-1">No se encontraron tickets</p>
-          <p className="text-slate-400 text-sm mb-4">
-            {hasFilters ? 'Intenta cambiar los filtros' : 'Crea tu primer ticket de soporte'}
+        <div className="glass-panel border-dashed border-2 border-white/5 rounded-[40px] py-32 text-center">
+          <div className="text-6xl mb-8 opacity-20 filter grayscale">🎫</div>
+          <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-lg mb-2">Sin transmisiones activas</h3>
+          <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase">
+            {hasFilters ? 'Reconfigura los parámetros de búsqueda' : 'Registra la primera incidencia en el sistema'}
           </p>
-          {!hasFilters && (
-            <button
-              onClick={() => setPage('new-ticket')}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"
-            >
-              Nuevo Ticket
-            </button>
-          )}
         </div>
       ) : (
-        <>
-          {/* Desktop Table */}
-          <div className="hidden md:block bg-[#1a1d27] border border-white/5 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-xs text-slate-500 font-semibold px-6 py-3 uppercase tracking-wider">Ticket</th>
-                    <th className="text-left text-xs text-slate-500 font-semibold px-4 py-3 uppercase tracking-wider">Estado</th>
-                    <th className="text-left text-xs text-slate-500 font-semibold px-4 py-3 uppercase tracking-wider">Prioridad</th>
-                    <th className="text-left text-xs text-slate-500 font-semibold px-4 py-3 uppercase tracking-wider hidden lg:table-cell">Departamento</th>
-                    <th className="text-left text-xs text-slate-500 font-semibold px-4 py-3 uppercase tracking-wider hidden lg:table-cell">Asignado a</th>
-                    <th className="text-left text-xs text-slate-500 font-semibold px-4 py-3 uppercase tracking-wider">Fecha</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {sorted.map(ticket => (
-                    <tr
-                      key={ticket.id}
-                      onClick={() => handleTicketClick(ticket)}
-                      className="hover:bg-white/5 cursor-pointer transition-colors group"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="text-white text-sm font-medium group-hover:text-indigo-300 transition truncate max-w-[260px]">
-                          {ticket.title}
+        <div className="glass-panel rounded-[40px] overflow-hidden border border-white/5 shadow-2xl">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/2">
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">IDENTIFICADOR / ASUNTO</th>
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px]">ESTADO_ACTUAL</th>
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px]">PRIORIDAD</th>
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden lg:table-cell">SECTOR</th>
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">STREAM_TIME</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {sorted.map(ticket => (
+                  <tr
+                    key={ticket.id}
+                    onClick={() => handleTicketClick(ticket)}
+                    className="hover:bg-[#00f0ff]/5 cursor-pointer transition-all group relative duration-300"
+                  >
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <div className="text-white text-sm font-bold font-orbitron tracking-tighter group-hover:text-[#00f0ff] transition-colors truncate max-w-[300px]">
+                          {ticket.title.toUpperCase()}
                         </div>
-                        <div className="text-slate-500 text-xs mt-0.5 flex items-center gap-2">
-                          <span>{ticket.category}</span>
+                        <div className="text-[#8888aa] text-[10px] mt-2 font-mono flex items-center gap-3">
+                          <span className="text-[#00f0ff]/50">ID: {ticket.id.slice(0,8)}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                          <span>{ticket.category.toUpperCase()}</span>
                           {ticket.messages.length > 0 && (
                             <>
-                              <span>•</span>
-                              <span>{ticket.messages.length} mensaje{ticket.messages.length !== 1 ? 's' : ''}</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                              <span className="text-[#7b2fff] font-bold">{ticket.messages.length} COMENTARIOS</span>
                             </>
                           )}
                         </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex text-xs px-2.5 py-1 rounded-lg font-medium ${statusColors[ticket.status]}`}>
-                          {ticket.status}
+                      </div>
+                    </td>
+                    <td className="px-4 py-6">
+                      <span className={`inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-lg ${statusColors[ticket.status]}`}>
+                        {ticket.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-6">
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-black uppercase border tracking-[2px] ${priorityColors[ticket.priority]}`}>
+                         {ticket.priority}
+                      </span>
+                    </td>
+                    <td className="px-4 py-6 hidden lg:table-cell">
+                      <div className="flex items-center gap-2">
+                         <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                         <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">
+                          {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
                         </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg font-medium ${priorityColors[ticket.priority]}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${priorityDot[ticket.priority]}`} />
-                          {ticket.priority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
-                        <span className="text-slate-400 text-xs">
-                          {ticket.departmentId ? deptMap[ticket.departmentId] || '—' : '—'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
-                        {ticket.assignedToName ? (
-                          <span className="text-slate-300 text-xs">{ticket.assignedToName}</span>
-                        ) : (
-                          <span className="text-slate-600 text-xs italic">Sin asignar</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col items-end">
+                        <span className="text-white font-mono text-[11px] font-bold">{formatDistanceToNow(ticket.createdAt).toUpperCase()}</span>
+                        {ticket.assignedToName && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[9px] text-[#8888aa] font-bold tracking-widest">OP:</span>
+                            <span className="text-[#00f0ff] text-[9px] font-bold uppercase tracking-tighter">{ticket.assignedToName}</span>
+                          </div>
                         )}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-slate-500 text-xs">{formatDistanceToNow(ticket.createdAt)}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Mobile Cards */}
-          <div className="md:hidden space-y-2">
-            {sorted.map(ticket => (
-              <button
-                key={ticket.id}
-                onClick={() => handleTicketClick(ticket)}
-                className="w-full text-left bg-[#1a1d27] border border-white/5 rounded-2xl p-4 hover:border-indigo-500/30 transition-all"
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-white text-sm font-medium line-clamp-2 flex-1">{ticket.title}</span>
-                  <span className={`inline-flex text-xs px-2 py-0.5 rounded-lg font-medium shrink-0 ${statusColors[ticket.status]}`}>
-                    {ticket.status}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium ${priorityColors[ticket.priority]}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${priorityDot[ticket.priority]}`} />
-                    {ticket.priority}
-                  </span>
-                  <span className="text-slate-500">{ticket.category}</span>
-                  {ticket.departmentId && deptMap[ticket.departmentId] && (
-                    <span className="text-slate-500">• {deptMap[ticket.departmentId]}</span>
-                  )}
-                  <span className="text-slate-600 ml-auto">{formatDistanceToNow(ticket.createdAt)}</span>
-                </div>
-                {ticket.assignedToName && (
-                  <div className="mt-1.5 text-xs text-slate-500">
-                    Asignado: <span className="text-slate-400">{ticket.assignedToName}</span>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
