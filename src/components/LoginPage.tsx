@@ -40,7 +40,7 @@ export default function LoginPage() {
       {/* Logo & Title */}
       <div className="flex flex-col items-center mb-8 relative z-10">
         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] flex items-center justify-center mb-4 shadow-[0_0_40px_rgba(0,240,255,0.3)] transform hover:rotate-6 transition-transform duration-500">
-          <img src="favicon_io/android-chrome-192x192.png" alt="Tzomp Logo" className="w-12 h-12" />
+          <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="w-14 h-14 rounded-full object-contain" />
         </div>
         <h1 className="text-white text-3xl sm:text-4xl font-extrabold tracking-tight text-center font-orbitron">
            HELP <span className="text-gradient">DESK</span>

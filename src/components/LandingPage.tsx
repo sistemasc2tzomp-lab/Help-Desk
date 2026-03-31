@@ -323,7 +323,7 @@ const LandingPage: React.FC = () => {
       {/* LOADER */}
       <div className={`loader-screen ${isLoaderHidden ? 'hidden' : ''}`} id="loader">
         <img 
-          src="favicon_io/android-chrome-512x512.png" 
+          src="img/logo_tzompantepec.png" 
           alt="Tzomp Logo" 
           className="loader-logo" 
         />
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
+          <img src="img/logo_tzompantepec.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]" />
           <span className="nav-title">TZOMP LAB</span>
         </a>
 
@@ -408,7 +408,7 @@ const LandingPage: React.FC = () => {
               <div className="hologram-ring ring-2"></div>
               <div className="hologram-ring ring-3"></div>
 
-              <img src="favicon_io/android-chrome-512x512.png" alt="Tzomp System" className="hero-center-icon" />
+              <img src="img/logo_tzompantepec.png" alt="Tzomp System" className="hero-center-icon rounded-full" />
             </div>
           </div>
         </div>
