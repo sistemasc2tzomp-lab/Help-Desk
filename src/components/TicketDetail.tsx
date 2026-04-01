@@ -1,8 +1,83 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketStatus, TicketPriority } from '../types';
 import { formatDate } from '../utils/date';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+
+function generateProfessionalTicketReport(doc: jsPDF, ticket: any, dept: any) {
+  // Config
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Header Box
+  doc.setFillColor(240, 240, 240);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+  
+  // Title
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HELP DESK TZOMP', 14, 20);
+  
+  doc.setFontSize(10);
+  doc.text('SISTEMAS & INTELIGENCIA ARTIFICIAL', 14, 28);
+  doc.setTextColor(100, 100, 100);
+  doc.text('MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 34);
+
+  // Ticket ID (Right aligned)
+  doc.setTextColor(0, 240, 255);
+  doc.setFontSize(14);
+  doc.text(`TICKET: ${ticket.id.slice(0,10).toUpperCase()}`, pageWidth - 14, 25, { align: 'right' });
+  
+  // Body Space
+  let y = 60;
+  doc.setTextColor(50, 50, 50);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DATOS DE LA SOLICITUD', 14, y);
+  doc.line(14, y + 2, pageWidth - 14, y + 2);
+  
+  y += 15;
+  autoTable(doc, {
+    startY: y,
+    head: [['Campo', 'Valor']],
+    body: [
+      ['Título', ticket.title.toUpperCase()],
+      ['Prioridad', ticket.priority.toUpperCase()],
+      ['Estado Actual', ticket.status.toUpperCase()],
+      ['Departamento', dept?.name.toUpperCase() || 'GENERAL'],
+      ['Solicitante', ticket.createdByName.toUpperCase()],
+      ['Fecha de Reporte', formatDate(ticket.createdAt)],
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [0, 240, 255], textColor: [0, 0, 0] },
+    styles: { fontSize: 10, cellPadding: 5 }
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFontSize(12);
+  doc.text('DESCRIPCION DETALLADA', 14, y);
+  doc.line(14, y+2, pageWidth - 14, y + 2);
+  
+  y += 10;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  const splitDesc = doc.splitTextToSize(ticket.description, pageWidth - 28);
+  doc.text(splitDesc, 14, y);
+  
+  y += (splitDesc.length * 5) + 20;
+  
+  // Footer / Signature Area
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, 260, 80, 260);
+  doc.text('FIRMA SOLICITANTE', 14, 265);
+  
+  doc.line(pageWidth - 80, 260, pageWidth - 14, 260);
+  doc.text('FIRMA AREA TECNICA', pageWidth - 14, 265, { align: 'right' });
+  
+  doc.save(`SOLICITUD-${ticket.id.slice(0,6)}.pdf`);
+}
 
 const statusColors: Record<TicketStatus, string> = {
   'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]',
@@ -22,7 +97,7 @@ export default function TicketDetail() {
   const {
     selectedTicketId, getTicketById, currentUser,
     updateTicketStatus, updateTicketPriority, assignTicket,
-    addMessage, users, departments, setPage,
+    addMessage, users, departments, setPage, refreshData,
   } = useApp();
 
   const ticket = getTicketById(selectedTicketId || '');
@@ -37,6 +112,28 @@ export default function TicketDetail() {
 
   // Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  // Auto-scroll to latest message
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [ticket?.messages?.length]);
+
+  // ── Supabase Realtime subscription for live chat ──────────────────────────
+  useEffect(() => {
+    if (!selectedTicketId || !isSupabaseConfigured()) return;
+    const sb = getSupabase();
+    const channel = sb
+      .channel(`ticket-messages-${selectedTicketId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `ticket_id=eq.${selectedTicketId}` },
+        () => { refreshData(); }
+      )
+      .subscribe();
+    return () => { sb.removeChannel(channel); };
+  }, [selectedTicketId, refreshData]);
+
 
   if (!ticket) {
     return (
@@ -104,15 +201,29 @@ export default function TicketDetail() {
   return (
     <div className="p-6 sm:p-10 max-w-6xl mx-auto space-y-8 bg-[#030014] min-h-screen">
       {/* Navigation */}
-      <button
-        onClick={() => setPage('tickets')}
-        className="group flex items-center gap-3 text-[#8888aa] hover:text-[#00f0ff] transition-all text-[10px] font-black uppercase tracking-[3px]"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
-          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-        </svg>
-        Regresar al registro
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setPage('tickets')}
+          className="group flex items-center gap-3 text-[#8888aa] hover:text-[#00f0ff] transition-all text-[10px] font-black uppercase tracking-[3px]"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Regresar al registro
+        </button>
+
+        <button
+          onClick={() => {
+            const doc = new jsPDF();
+            // ... (I'll implement the logic below or in a separate helper)
+            generateProfessionalTicketReport(doc, ticket, dept);
+          }}
+          className="flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="3"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          IMPRIMIR SOLICITUD
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Console */}
@@ -246,6 +357,8 @@ export default function TicketDetail() {
                 })}
               </div>
             )}
+            {/* Auto-scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Interactive Console (Reply) */}

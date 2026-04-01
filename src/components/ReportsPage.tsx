@@ -9,7 +9,13 @@ import * as XLSX from 'xlsx';
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
 const STATUSES: TicketStatus[] = ['Abierto', 'En Progreso', 'Resuelto', 'Cerrado'];
 const PRIORITIES: TicketPriority[] = ['Urgente', 'Alta', 'Media', 'Baja'];
-const CATEGORIES = ['Técnico', 'Facturación', 'Bug', 'Feature', 'General'];
+const CATEGORIES = [
+  'Servidores y Almacenamiento',
+  'Redes y Conectividad',
+  'Seguridad de la Información',
+  'Soporte Técnico',
+  'Infraestructura Física'
+];
 
 const statusColor: Record<TicketStatus, string> = {
   'Abierto': '#00f0ff',
@@ -82,28 +88,41 @@ function SectionHeader({ title, subtitle, icon, children }: { title: string; sub
 
 /* ─── PDF generators ───────────────────────────────────────────────────────── */
 function addPdfHeader(doc: jsPDF, title: string) {
-  doc.setFillColor(10, 10, 20);
-  doc.rect(0, 0, 210, 297, 'F');
-  
+  const pw = doc.internal.pageSize.getWidth();
+
+  // Dark background fill
+  doc.setFillColor(3, 0, 20);
+  doc.rect(0, 0, pw, 38, 'F');
+
+  // Cyan top border
   doc.setFillColor(0, 240, 255);
-  doc.rect(0, 0, 210, 2, 'F');
-  
+  doc.rect(0, 0, pw, 2.5, 'F');
+
+  // Bottom separator line
+  doc.setDrawColor(0, 240, 255);
+  doc.setLineWidth(0.5);
+  doc.line(0, 38, pw, 38);
+
+  // Main title
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('HELP DESK TZOMP', 14, 15);
-  
-  doc.setFontSize(10);
-  doc.setTextColor(0, 240, 255);
-  doc.text(title.toUpperCase(), 210 - 14, 15, { align: 'right' });
-  
-  doc.setTextColor(136, 136, 170);
+  doc.text('HELP DESK TZOMP', 14, 17);
+
+  // Sub-title / institution
   doc.setFontSize(8);
-  doc.text(`HASH_GEN: ${new Date().getTime().toString(16).toUpperCase()}`, 14, 25);
-  doc.text(`TIMESTAMP: ${new Date().toLocaleString()}`, 210 - 14, 25, { align: 'right' });
-  
-  doc.setDrawColor(255, 255, 255, 0.1);
-  doc.line(14, 30, 210 - 14, 30);
+  doc.setTextColor(136, 136, 170);
+  doc.text('SISTEMAS & INTELIGENCIA ARTIFICIAL | MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 25);
+
+  // Report title (right)
+  doc.setFontSize(11);
+  doc.setTextColor(0, 240, 255);
+  doc.text(title.toUpperCase(), pw - 14, 17, { align: 'right' });
+
+  // Metadata (right)
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 130);
+  doc.text(`FOLIO: ${new Date().getTime().toString(36).toUpperCase()}  |  EMITIDO: ${new Date().toLocaleString()}`, pw - 14, 25, { align: 'right' });
 }
 
 /* ─── Excel helper ─────────────────────────────────────────────────────────── */
@@ -211,9 +230,83 @@ export default function ReportsPage() {
     setExportLoading(null);
   };
 
-  const exportTicketsPDF = () => {/* logic simplified */}
-  const exportAgentsPDF = () => {/* logic simplified */}
-  const exportDeptPDF = () => {/* logic simplified */}
+  const exportTicketsPDF = () => {
+    setExportLoading('tickets-pdf');
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const pw = doc.internal.pageSize.getWidth();
+    addPdfHeader(doc, 'Bitácora de Incidencias');
+    autoTable(doc, {
+      startY: 48,
+      head: [['FOLIO', 'TÍTULO', 'SOLICITANTE', 'DEPTO', 'PRIORIDAD', 'ESTADO', 'ASIGNADO', 'FECHA']],
+      body: filtered.map(t => [
+        t.id.slice(0, 8).toUpperCase(),
+        t.title.substring(0, 50),
+        t.createdByName,
+        departments.find(d => d.id === t.departmentId)?.name ?? '—',
+        t.priority,
+        t.status,
+        users.find(u => u.id === t.assignedToId)?.name ?? 'PENDIENTE',
+        formatDate(t.createdAt),
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: [0, 240, 255], textColor: [3, 0, 20], fontStyle: 'bold', fontSize: 8 },
+      styles: { fontSize: 7, cellPadding: 3 },
+      alternateRowStyles: { fillColor: [8, 4, 30] },
+      columnStyles: { 1: { cellWidth: 70 } },
+      didDrawPage: (d) => {
+        doc.setFontSize(7);
+        doc.setTextColor(100);
+        doc.text(`Página ${d.pageNumber}`, pw / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
+      }
+    });
+    doc.save(`BITACORA-TICKETS-${new Date().getTime()}.pdf`);
+    setExportLoading(null);
+  };
+
+  const exportAgentsPDF = () => {
+    setExportLoading('agents-pdf');
+    const doc = new jsPDF();
+    addPdfHeader(doc, 'Rendimiento por Agente');
+    autoTable(doc, {
+      startY: 48,
+      head: [['AGENTE', 'ASIGNADOS', 'RESUELTOS', 'EFICIENCIA', 'MENSAJES']],
+      body: agentStats.map(({ agent, total: tot, resolved: res, rate, msgs }) => [
+        agent.name,
+        tot,
+        res,
+        `${rate}%`,
+        msgs,
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [123, 47, 255], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 4 },
+    });
+    doc.save(`REPORTE-AGENTES-${new Date().getTime()}.pdf`);
+    setExportLoading(null);
+  };
+
+  const exportDeptPDF = () => {
+    setExportLoading('dept-pdf');
+    const doc = new jsPDF();
+    addPdfHeader(doc, 'Diagrama Departamental');
+    autoTable(doc, {
+      startY: 48,
+      head: [['DEPARTAMENTO', 'TOTAL', 'ABIERTOS', 'EN PROGRESO', 'RESUELTOS', 'CARGA %']],
+      body: byDept.map(({ d, n }) => {
+        const dt = filtered.filter(t => t.departmentId === d.id);
+        const open = dt.filter(t => t.status === 'Abierto').length;
+        const ip   = dt.filter(t => t.status === 'En Progreso').length;
+        const res  = dt.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
+        return [d.name, n, open, ip, res, `${pct(n, total)}%`];
+      }),
+      theme: 'striped',
+      headStyles: { fillColor: [16, 185, 129], textColor: [3, 0, 20], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 4 },
+      alternateRowStyles: { fillColor: [8, 4, 30] },
+    });
+    doc.save(`REPORTE-DEPT-${new Date().getTime()}.pdf`);
+    setExportLoading(null);
+  };
 
   const exportGeneralExcel = () => {
     downloadExcel([

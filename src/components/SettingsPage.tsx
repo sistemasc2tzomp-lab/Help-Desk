@@ -32,7 +32,30 @@ function saveSettings(s: AppSettings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-/* ─── sub-components ───────────────────────────────────────────────────────── */
+/* ─── Cyber Beep ───────────────────────────────────────────────────────────── */
+const playBeep = () => {
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  } catch (e) {
+    console.warn('Audio play failed', e);
+  }
+};
+
+/* ─── UI Components ────────────────────────────────────────────────────────── */
 function SectionCard({ title, description, icon, children }: {
   title: string;
   description: string;
@@ -80,9 +103,14 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
   );
 }
 
-function Toggle({ checked, onChange, label, description }: {
-  checked: boolean; onChange: (v: boolean) => void; label: string; description?: string;
+function Toggle({ checked, onChange, label, description, onToggleSound }: {
+  checked: boolean; onChange: (v: boolean) => void; label: string; description?: string; onToggleSound?: boolean;
 }) {
+  const handleToggle = () => {
+    onChange(!checked);
+    if (onToggleSound) playBeep();
+  };
+
   return (
     <div className="flex items-center justify-between py-6 border-b border-white/5 last:border-0 group/toggle">
       <div>
@@ -90,7 +118,7 @@ function Toggle({ checked, onChange, label, description }: {
         {description && <div className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest mt-1">{description}</div>}
       </div>
       <button
-        onClick={() => onChange(!checked)}
+        onClick={handleToggle}
         className={`relative w-14 h-8 rounded-full transition-all shrink-0 ml-4 border-2 ${checked ? 'bg-[#00f0ff] border-[#00f0ff]' : 'bg-white/5 border-white/10'}`}
       >
         <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all shadow-xl ${checked ? 'translate-x-6 bg-[#030014]' : 'bg-[#8888aa]'}`} />
@@ -103,10 +131,11 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#00f0ff', '#7b2fff', '#10b981', '#ff2d95', '#eab308', '#0ea5e9', '#f43f5e', '#84cc16'];
 
 export default function SettingsPage() {
-  const { currentUser } = useApp();
+  const { currentUser, sbStatus, lastPing } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
+  const [audioAlerts, setAudioAlerts] = useState(true);
 
   if (currentUser?.role !== 'Admin') {
     return (
@@ -130,6 +159,7 @@ export default function SettingsPage() {
   const handleSave = () => {
     saveSettings(settings);
     setSaved(true);
+    if (audioAlerts) playBeep();
     setTimeout(() => setSaved(false), 3000);
   };
 
@@ -192,7 +222,10 @@ export default function SettingsPage() {
             {sections.map(s => (
               <button
                 key={s.id}
-                onClick={() => setActiveSection(s.id)}
+                onClick={() => {
+                  setActiveSection(s.id);
+                  if (audioAlerts) playBeep();
+                }}
                 className={`flex-1 lg:w-full flex items-center gap-4 px-6 py-5 rounded-[24px] text-[10px] font-black tracking-[3px] transition-all duration-500 uppercase whitespace-nowrap ${
                   activeSection === s.id
                     ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#030014] scale-[1.02]'
@@ -247,7 +280,10 @@ export default function SettingsPage() {
                   {PRIORITY_OPTIONS.map(p => (
                     <button
                       key={p}
-                      onClick={() => set('defaultPriority', p)}
+                      onClick={() => {
+                        set('defaultPriority', p);
+                        if (audioAlerts) playBeep();
+                      }}
                       className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[2px] transition-all border ${
                         settings.defaultPriority === p
                           ? 'bg-[#00f0ff] text-[#030014] border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.3)]'
@@ -279,31 +315,13 @@ export default function SettingsPage() {
                 </div>
               </Field>
 
-              <Field label="CUOTA DE DATOS (MB)" hint="Límite máximo por archivo transferido">
-                <div className="flex items-center gap-6 bg-[#0a0025]/50 p-6 rounded-3xl border border-white/5">
-                  <input
-                    type="range"
-                    min={1}
-                    max={100}
-                    value={settings.maxAttachmentMB}
-                    onChange={e => set('maxAttachmentMB', Number(e.target.value))}
-                    className="flex-1 accent-[#7b2fff]"
-                  />
-                  <div className="w-20 h-14 flex flex-col items-center justify-center bg-[#030014] border border-[#7b2fff]/30 rounded-2xl shadow-inner">
-                    <span className="text-[12px] font-black font-orbitron text-[#7b2fff]">
-                      {settings.maxAttachmentMB}MB
-                    </span>
-                    <span className="text-[7px] font-black text-[#8888aa] uppercase tracking-widest mt-0.5">SIZE</span>
-                  </div>
-                </div>
-              </Field>
-
               <div className="pt-4">
                 <Toggle
                   checked={settings.allowClientRegistration}
                   onChange={v => set('allowClientRegistration', v)}
                   label="REGISTRO DE CLIENTES OPEN"
                   description="HABILITA EL ACCESO A NUEVOS USUARIOS DESDE LA LANDING"
+                  onToggleSound={audioAlerts}
                 />
               </div>
             </SectionCard>
@@ -316,32 +334,35 @@ export default function SettingsPage() {
               description="REGLAS DE COMUNICACIÓN DE RED"
               icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>}
             >
-              <div className="flex items-center gap-5 bg-[#ff2d95]/5 border border-[#ff2d95]/20 rounded-3xl p-6 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#ff2d95]/10 flex items-center justify-center text-[#ff2d95] shrink-0 border border-[#ff2d95]/20 animate-pulse">
-                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                </div>
-                <div>
-                   <h5 className="text-[#ff2d95] text-[10px] font-black uppercase tracking-[3px] mb-1">PROTOCOLO DE RED REQUERIDO</h5>
-                   <p className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest leading-relaxed">Las alertas requieren configuración de SMTPS/Edge Functions en el servidor Supabase para la entrega final.</p>
-                </div>
-              </div>
+              <Toggle
+                checked={audioAlerts}
+                onChange={v => {
+                   setAudioAlerts(v);
+                   if (v) playBeep();
+                }}
+                label="ALERTAS SONORAS DE SISTEMA"
+                description="ACTIVA PINGS CRÍTICOS PARA EVENTOS DE LA MATRIZ"
+              />
               <Toggle
                 checked={settings.notifyOnNewTicket}
                 onChange={v => set('notifyOnNewTicket', v)}
                 label="INYECCIÓN DE NUEVO NODO"
                 description="ALERTA A OPERADORES SOBRE NUEVAS SOLICITUDES DE SOPORTE"
+                onToggleSound={audioAlerts}
               />
               <Toggle
                 checked={settings.notifyOnStatusChange}
                 onChange={v => set('notifyOnStatusChange', v)}
                 label="CAMBIO DE ESTADO VITAL"
                 description="NOTIFICA AL ORIGEN CUANDO EL TICKET CAMBIA SU PRIORIDAD O STATUS"
+                onToggleSound={audioAlerts}
               />
               <Toggle
                 checked={settings.notifyOnNewMessage}
                 onChange={v => set('notifyOnNewMessage', v)}
                 label="STREAM DE MENSAJES"
                 description="ALERTA SOBRE NUEVAS ENTRADAS EN EL FLUJO DE DISCUSIÓN"
+                onToggleSound={audioAlerts}
               />
             </SectionCard>
           )}
@@ -358,7 +379,10 @@ export default function SettingsPage() {
                   {PRESET_COLORS.map(c => (
                     <button
                       key={c}
-                      onClick={() => set('primaryColor', c)}
+                      onClick={() => {
+                         set('primaryColor', c);
+                         if (audioAlerts) playBeep();
+                      }}
                       className={`w-12 h-12 rounded-2xl transition-all hover:scale-110 border-4 border-transparent shadow-xl ${settings.primaryColor === c ? 'scale-110' : 'opacity-40'}`}
                       style={{
                         backgroundColor: c,
@@ -367,21 +391,6 @@ export default function SettingsPage() {
                       }}
                     />
                   ))}
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden flex items-center justify-center group/picker">
-                    <input
-                      type="color"
-                      value={settings.primaryColor}
-                      onChange={e => set('primaryColor', e.target.value)}
-                      className="absolute inset-0 opacity-0 cursor-pointer scale-[5]"
-                    />
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={settings.primaryColor} strokeWidth="3"><path d="M12 5v14M5 12h14"/></svg>
-                  </div>
-                  <div className="flex-1 bg-[#13151f] border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between">
-                     <span className="text-[#8888aa] text-[10px] font-black uppercase tracking-[4px]">HEX_CODE</span>
-                     <span className="text-white text-lg font-black font-orbitron tracking-widest">{settings.primaryColor.toUpperCase()}</span>
-                  </div>
                 </div>
               </Field>
 
@@ -398,14 +407,6 @@ export default function SettingsPage() {
                     <div className="text-[10px] font-black uppercase tracking-[4px] mt-1" style={{ color: settings.primaryColor }}>CENTRAL_DATOS_ACTIVA</div>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[4px] text-[#030014] transition-all duration-700 shadow-xl" style={{ backgroundColor: settings.primaryColor }}>
-                    ESTADO_BOTÓN
-                  </button>
-                  <div className="flex-1 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[4px] border transition-all duration-700 flex items-center justify-center" style={{ backgroundColor: settings.primaryColor + '10', color: settings.primaryColor, borderColor: settings.primaryColor + '30' }}>
-                    ELEMENTO_FOCO
-                  </div>
-                </div>
               </div>
             </SectionCard>
           )}
@@ -413,81 +414,39 @@ export default function SettingsPage() {
           {/* ── SUPABASE / DB ── */}
           {activeSection === 'supabase' && (
             <SectionCard
-              title="ESTRUCTURA DE DATOS"
-              description="NIVEL DE ENLACE CON SUPABASE"
+              title="MONITOR DE INFRAESTRUCTURA"
+              description="ESTADO DE ENLACE CON SUPABASE"
               icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>}
             >
-              <div>
-                <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1 mb-4">ESQUEMA_SQL_MASTER</label>
-                <div className="bg-[#0a0015] border border-white/5 rounded-3xl p-8 font-mono text-[11px] text-emerald-400 overflow-auto max-h-96 leading-relaxed custom-scrollbar selection:bg-emerald-500/30">
-                  {`-- HELP_DESK_TZOMP SCHEMA_V4.0
--- PERFILES_CORE
-CREATE TABLE IF NOT EXISTS perfiles (
-  id UUID REFERENCES auth.users PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE,
-  role TEXT DEFAULT 'Cliente',
-  avatar_color TEXT,
-  department_id UUID,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`p-8 rounded-3xl border transition-all ${sbStatus === 'connected' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20 animate-pulse'}`}>
+                   <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-[4px] text-[#8888aa]">ESTADO_ENLACE</span>
+                      <div className={`w-3 h-3 rounded-full ${sbStatus === 'connected' ? 'bg-emerald-500 shadow-[0_0_15px_#10b981]' : 'bg-red-500 shadow-[0_0_15px_#ef4444]'}`} />
+                   </div>
+                   <div className={`text-2xl font-black font-orbitron tracking-widest uppercase ${sbStatus === 'connected' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {sbStatus === 'connected' ? 'ACTIVO_OK' : 'DISCONNECT'}
+                   </div>
+                   <div className="text-[10px] font-bold text-[#8888aa] mt-2 uppercase tracking-widest leading-relaxed">
+                      {sbStatus === 'connected' ? 'Conexión bidireccional estable con el núcleo de datos.' : 'Error de enlace. Verifique configuración de red y credenciales.'}
+                   </div>
+                </div>
 
--- SECTORES_INFRA
-CREATE TABLE IF NOT EXISTS departments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  color TEXT DEFAULT '#00f0ff',
-  jefe TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- MATRIZ_TICKETS
-CREATE TABLE IF NOT EXISTS tickets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  status TEXT DEFAULT 'Abierto',
-  priority TEXT DEFAULT 'Media',
-  category TEXT DEFAULT 'General',
-  department_id UUID REFERENCES departments(id),
-  created_by_id UUID,
-  created_by_name TEXT,
-  assigned_to_id UUID,
-  assigned_to_name TEXT,
-  image_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- STREAM_MENSAJES
-CREATE TABLE IF NOT EXISTS messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  ticket_id UUID REFERENCES tickets(id) ON DELETE CASCADE,
-  author_id UUID,
-  author_name TEXT,
-  author_role TEXT,
-  content TEXT,
-  is_internal BOOLEAN DEFAULT FALSE,
-  image_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- RLS_PROTOCOLS
-ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
-
--- GLOBAL_ACCESS_POLICY_V1
-CREATE POLICY "ALLOW_ALL_SYNC" ON perfiles FOR ALL USING (TRUE);
-CREATE POLICY "ALLOW_ALL_SYNC" ON tickets FOR ALL USING (TRUE);
-CREATE POLICY "ALLOW_ALL_SYNC" ON messages FOR ALL USING (TRUE);
-CREATE POLICY "ALLOW_ALL_SYNC" ON departments FOR ALL USING (TRUE);`}
+                <div className="p-8 rounded-3xl border border-white/5 bg-white/2">
+                   <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-[4px] text-[#8888aa]">ÚLTIMO_PING</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8888aa" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                   </div>
+                   <div className="text-2xl font-black font-orbitron tracking-widest text-white">
+                      {lastPing ? new Date(lastPing).toLocaleTimeString() : '--:--:--'}
+                   </div>
+                   <div className="text-[10px] font-bold text-[#8888aa] mt-2 uppercase tracking-widest">
+                      LATENCIA_OPTIMIZADA <span className="text-[#00f0ff] ml-2">LOW</span>
+                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-6 flex-wrap">
+               <div className="flex gap-6 flex-wrap pt-4">
                 <button
                   onClick={() => {
                     localStorage.removeItem('sb_url');
@@ -499,10 +458,6 @@ CREATE POLICY "ALLOW_ALL_SYNC" ON departments FOR ALL USING (TRUE);`}
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
                   RECONFIGURAR_CORE
                 </button>
-                <div className="flex items-center gap-3 text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[3px]">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  ENLACE_SUPABASE_OK
-                </div>
               </div>
 
               <div className="bg-[#00f0ff]/5 border border-[#00f0ff]/10 rounded-[32px] p-8 space-y-4">
@@ -511,12 +466,8 @@ CREATE POLICY "ALLOW_ALL_SYNC" ON departments FOR ALL USING (TRUE);`}
                   CONSEJO DE SEGURIDAD OPERATIVA
                 </div>
                 <p className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                  PARA UN DESPLIEGUE FINAL DE NIVEL PRODUCCIÓN, ASEGÚRESE DE CONFIGURAR LAS VARIABLES DE ENTORNO EN EL HOST DE VITE:
+                  EL SISTEMA REALIZA UNA VERIFICACIÓN DEL LATIDO CADA 30 SEGUNDOS PARA ASEGURAR LA INTEGRIDAD DE LOS DATOS.
                 </p>
-                <div className="bg-[#030014] p-6 rounded-2xl font-mono text-[11px] text-[#00f0ff]/60 border border-white/5">
-                  <div className="text-white">VITE_SUPABASE_URL=https://{'{PROJECT_ID}'}.supabase.co</div>
-                  <div className="text-white mt-1">VITE_SUPABASE_ANON_KEY=eyJhbG... (KEY_CORE)</div>
-                </div>
               </div>
             </SectionCard>
           )}

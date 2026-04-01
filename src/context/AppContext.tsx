@@ -24,6 +24,8 @@ interface AppContextType {
   selectedTicketId: string | null;
   setSelectedTicketId: (id: string | null) => void;
   supabaseReady: boolean;
+  sbStatus: 'connected' | 'disconnected' | 'checking';
+  lastPing: string | null;
   loginWithSupabase: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   createUser: (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
@@ -148,10 +150,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [page, setPage] = useState<string>('login');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [supabaseReady, setSupabaseReady] = useState(isSupabaseConfigured());
+  const [sbStatus, setSbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [lastPing, setLastPing] = useState<string | null>(null);
 
-  const checkSupabase = useCallback(() => {
-    setSupabaseReady(isSupabaseConfigured());
+  const checkSupabase = useCallback(async () => {
+    const ready = isSupabaseConfigured();
+    setSupabaseReady(ready);
+    if (!ready) {
+      setSbStatus('disconnected');
+      return;
+    }
+    try {
+      const { error } = await getSupabase().from('perfiles').select('id').limit(1);
+      if (error) throw error;
+      setSbStatus('connected');
+      setLastPing(new Date().toISOString());
+    } catch {
+      setSbStatus('disconnected');
+    }
   }, []);
+
+  useEffect(() => {
+    checkSupabase();
+    const interval = setInterval(checkSupabase, 30000);
+    return () => clearInterval(interval);
+  }, [checkSupabase]);
 
   // ── fetch all data ──────────────────────────────────────────────────────
   const refreshData = useCallback(async () => {
@@ -159,67 +182,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sb = getSupabase();
     setLoading(true);
     try {
-      // 1. Load perfiles (usuarios del sistema con auth)
-      const { data: perfilesData } = await sb.from('perfiles').select('*');
-      const usersFromPerfiles: User[] = (perfilesData as Record<string, unknown>[] || []).map(rowToUser);
-
-      // 2. Also load from "usuarios" table if it exists and merge
-      let allUsers = [...usersFromPerfiles];
+      // 1. Usuarios (perfiles & usuarios)
       try {
-        const { data: usuariosData } = await sb.from('usuarios').select('*');
-        if (usuariosData && usuariosData.length > 0) {
-          const usersFromUsuarios: User[] = (usuariosData as Record<string, unknown>[]).map(r => {
-            const name = String(r.nombre || r.name || r.email || 'Usuario');
-            return {
-              id: String(r.id),
-              name,
-              initials: getInitials(name),
-              email: String(r.email || ''),
-              role: normalizeRole(r.rol || r.role),
-              avatarColor: colorFor(String(r.id)),
-              departmentId: undefined,
-            };
-          });
-          // Merge: perfiles takes priority over usuarios (deduplicate by id)
-          const perfilIds = new Set(usersFromPerfiles.map(u => u.id));
-          allUsers = [...usersFromPerfiles, ...usersFromUsuarios.filter(u => !perfilIds.has(u.id))];
-        }
-      } catch (_) { /* usuarios table might not be accessible */ }
+        const { data: perfilesData } = await sb.from('perfiles').select('*');
+        const usersFromPerfiles: User[] = (perfilesData as Record<string, unknown>[] || []).map(rowToUser);
+        let allUsers = [...usersFromPerfiles];
+        try {
+          const { data: usuariosData } = await sb.from('usuarios').select('*');
+          if (usuariosData && usuariosData.length > 0) {
+            const usersFromUsuarios: User[] = (usuariosData as Record<string, unknown>[]).map(r => {
+              const name = String(r.nombre || r.name || r.email || 'Usuario');
+              return {
+                id: String(r.id),
+                name,
+                initials: getInitials(name),
+                email: String(r.email || ''),
+                role: normalizeRole(r.rol || r.role),
+                avatarColor: colorFor(String(r.id)),
+                departmentId: undefined,
+              };
+            });
+            const perfilIds = new Set(usersFromPerfiles.map(u => u.id));
+            allUsers = [...usersFromPerfiles, ...usersFromUsuarios.filter(u => !perfilIds.has(u.id))];
+          }
+        } catch (_) {}
+        setUsers(allUsers);
+      } catch (e) { console.error('refreshData: perfiles error', e); }
 
-      setUsers(allUsers);
-      const usersMap: Record<string, User> = {};
-      allUsers.forEach(u => { usersMap[u.id] = u; });
+      // 2. Departamentos
+      try {
+        const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
+        if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
+      } catch (e) { console.error('refreshData: departamentos error', e); }
 
-      // 3. Load departamentos (Spanish table)
-      const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
-      if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
-
-      // 4. Load ticket_comentarios (messages)
-      const { data: comentariosData } = await sb
-        .from('ticket_comentarios')
-        .select('*')
-        .order('creado_en', { ascending: true });
-
+      // 3. Comentarios
       const msgsByTicket: Record<string, Message[]> = {};
-      if (comentariosData) {
-        (comentariosData as Record<string, unknown>[]).forEach(r => {
-          const m = rowToMessage(r, usersMap);
-          if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
-          msgsByTicket[m.ticketId].push(m);
-        });
-      }
+      try {
+        const { data: comentariosData } = await sb.from('ticket_comentarios').select('*').order('creado_en', { ascending: true });
+        if (comentariosData) {
+          const uMap: Record<string, User> = {};
+          users.forEach(u => uMap[u.id] = u);
+          (comentariosData as Record<string, unknown>[]).forEach(r => {
+            const m = rowToMessage(r, uMap);
+            if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
+            msgsByTicket[m.ticketId].push(m);
+          });
+        }
+      } catch (e) { console.error('refreshData: comentarios error', e); }
 
-      // 5. Load tickets
-      const { data: tktData } = await sb
-        .from('tickets')
-        .select('*')
-        .order('creado_en', { ascending: false });
-
-      if (tktData) {
-        setTickets((tktData as Record<string, unknown>[]).map(r =>
-          rowToTicket(r, msgsByTicket[String(r.id)] || [], usersMap)
-        ));
-      }
+      // 4. Tickets
+      try {
+        const { data: tktData } = await sb.from('tickets').select('*').order('creado_en', { ascending: false });
+        if (tktData) {
+          const uMap: Record<string, User> = {};
+          users.forEach(u => uMap[u.id] = u);
+          setTickets((tktData as Record<string, unknown>[]).map(r =>
+            rowToTicket(r, msgsByTicket[String(r.id)] || [], uMap)
+          ));
+        }
+      } catch (e) { console.error('refreshData: tickets error', e); }
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
@@ -490,7 +511,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: crypto.randomUUID(),
       nombre: userData.name,
       email: userData.email,
-      rol: userData.role,
+      rol: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
       departamento_id: userData.departmentId || null,
       activo: true
     });
@@ -526,6 +547,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       selectedTicketId,
       setSelectedTicketId,
       supabaseReady,
+      sbStatus,
+      lastPing,
       loginWithSupabase,
       logout,
       createUser,
