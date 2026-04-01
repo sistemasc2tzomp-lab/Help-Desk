@@ -153,7 +153,7 @@ export default function Dashboard() {
                     <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">REQUERIMIENTO</th>
                     <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">ESTADO</th>
                     <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">PRIORIDAD</th>
-                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden sm:table-cell">NÚCLEO</th>
+                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden sm:table-cell">CONTACTO / DEPARTAMENTO</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -178,9 +178,12 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-4 py-5 hidden sm:table-cell">
-                        <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-tight">
-                          {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
-                        </span>
+                        <div className="text-white text-[10px] font-black uppercase tracking-tight mb-1 font-orbitron">
+                          USUARIO: <span className="text-[#cccccc]">{ticket.createdByName || 'DESCONOCIDO'}</span>
+                        </div>
+                        <div className="text-[#8888aa] text-[9px] font-bold uppercase tracking-tight bg-white/5 inline-block px-2 py-0.5 rounded border border-white/10">
+                          DEPTO: {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
+                        </div>
                       </td>
                     </tr>
                   ))}

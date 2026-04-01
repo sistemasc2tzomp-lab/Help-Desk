@@ -12,6 +12,13 @@ export default function NewTicket() {
   const [departmentId, setDepartmentId] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  // Inicializa el primer departamento si están disponibles
+  React.useEffect(() => {
+    if (departments.length > 0 && !departmentId) {
+      setDepartmentId(departments[0].id);
+    }
+  }, [departments]);
+
   // Image attachment
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -54,7 +61,7 @@ export default function NewTicket() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !currentUser) return;
+    if (!title.trim() || !description.trim() || !currentUser || !departmentId) return;
 
     setUploadingImage(true);
     let imageUrl: string | undefined;
@@ -179,19 +186,27 @@ export default function NewTicket() {
         </div>
 
         {/* Sector Allocation */}
-        {departments.length > 0 && (
+        {departments.length > 0 ? (
           <div className="space-y-3 relative z-10">
             <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
             <select
               value={departmentId}
               onChange={e => setDepartmentId(e.target.value)}
+              required
               className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="">CANAL_GLOBAL</option>
+              <option value="" disabled>SELECCIONAR EL DEPARTAMENTO</option>
               {departments.map(d => (
                 <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>
               ))}
             </select>
+          </div>
+        ) : (
+          <div className="space-y-3 relative z-10">
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
+            <div className="w-full bg-red-500/10 border border-red-500/30 rounded-2xl px-5 py-4 text-red-500 text-xs font-black uppercase tracking-widest font-mono">
+              ERROR: NO SE ENCONTRARON DEPARTAMENTOS. CONTACTA AL ADMINISTRADOR.
+            </div>
           </div>
         )}
 
