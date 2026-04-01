@@ -381,8 +381,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         departamento_id: ticketData.departmentId || null,
         creado_por_id: ticketData.createdById,
         asignado_a_id: ticketData.assignedToId || null,
-        // If image_url is missing in schema, we use 'imagenes' jsonb or just nullify it
-        image_url: ticketData.imageUrl || null, 
       }).select().single();
 
       if (data && !error) {
