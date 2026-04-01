@@ -378,7 +378,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         descripcion: ticketData.description,
         estado: ticketData.status,
         prioridad: ticketData.priority,
-        categoria: ticketData.category,
         departamento_id: ticketData.departmentId || null,
         creado_por_id: ticketData.createdById,
         creado_por_nombre: ticketData.createdByName,
