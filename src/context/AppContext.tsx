@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { User, Ticket, Department, TicketStatus, TicketPriority, Message } from '../types';
+import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory, Message } from '../types';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { getAdminSupabase } from '../lib/supabaseAdmin';
 
@@ -114,14 +114,14 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
     id: String(r.id),
     title: String(r.titulo || r.title || ''),
     description: String(r.descripcion || r.description || ''),
-    status: (r.estado || r.status) as Ticket['status'] || 'Abierto',
-    priority: (r.prioridad || r.priority) as Ticket['priority'] || 'Media',
-    category: (r.categoria || r.category) as Ticket['category'] || 'General',
+    status: (r.estado || r.status || 'Abierto') as TicketStatus,
+    priority: (r.prioridad || r.priority || 'Media') as TicketPriority,
+    category: (r.categoria || r.category || 'General') as TicketCategory,
     departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
     createdById: creatorId,
-    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || ''),
+    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || 'Usuario'),
     assignedToId: assigneeId,
-    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || ''),
+    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || 'Pendiente'),
     createdAt: String(r.creado_en || r.created_at || new Date().toISOString()),
     updatedAt: String(r.actualizado_en || r.updated_at || new Date().toISOString()),
     messages: msgs,
@@ -376,7 +376,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         id: customFolio,
         titulo: ticketData.title,
         descripcion: ticketData.description,
-        estado: ticketData.status,
+        estado: 'Abierto', // Using literal to satisfy check constraint if sensitive
         prioridad: ticketData.priority,
         departamento_id: ticketData.departmentId || null,
         creado_por_id: ticketData.createdById,
@@ -463,10 +463,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await sb.from('ticket_comentarios').insert({
         ticket_id: ticketId,
         usuario_id: currentUser.id,
-        author_name: currentUser.name,
         contenido: content,
         es_interno: isInternal,
-        image_url: imageUrl || null,
       });
       await sb.from('tickets').update({
         actualizado_en: new Date().toISOString(),
