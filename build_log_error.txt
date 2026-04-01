@@ -4,8 +4,8 @@
 
 [36mvite v7.2.4 [32mbuilding client environment for production...[36m[39m
 transforming...
-[32mÔ£ô[39m 74 modules transformed.
-Ô£ù Build failed in 6.00s
+[32mÔ£ô[39m 87 modules transformed.
+Ô£ù Build failed in 13.11s
 error during build:
 [vite]: Rollup failed to resolve import "core-js/modules/es.promise.js" from "C:/Users/ROMERO/Desktop/HelpDeskTzomp/node_modules/jspdf/node_modules/canvg/lib/index.es.js".
 This is most likely unintended because it can break your application at runtime.

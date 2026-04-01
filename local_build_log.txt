@@ -5,7 +5,7 @@
 [36mvite v7.2.4 [32mbuilding client environment for production...[36m[39m
 transforming...
 [32mÔ£ô[39m 74 modules transformed.
-Ô£ù Build failed in 6.00s
+Ô£ù Build failed in 10.96s
 error during build:
 [vite]: Rollup failed to resolve import "core-js/modules/es.promise.js" from "C:/Users/ROMERO/Desktop/HelpDeskTzomp/node_modules/jspdf/node_modules/canvg/lib/index.es.js".
 This is most likely unintended because it can break your application at runtime.
@@ -21,3 +21,8 @@ If you do want to externalize this module explicitly add it to
     at Object.logger [as onLog] (file:///C:/Users/ROMERO/Desktop/HelpDeskTzomp/node_modules/rollup/dist/es/shared/node-entry.js:23364:9)
     at ModuleLoader.handleInvalidResolvedId (file:///C:/Users/ROMERO/Desktop/HelpDeskTzomp/node_modules/rollup/dist/es/shared/node-entry.js:22108:26)
     at file:///C:/Users/ROMERO/Desktop/HelpDeskTzomp/node_modules/rollup/dist/es/shared/node-entry.js:22066:26
+npm notice
+npm notice New minor version of npm available! 11.6.2 -> 11.12.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
+npm notice To update run: npm install -g npm@11.12.1
+npm notice
