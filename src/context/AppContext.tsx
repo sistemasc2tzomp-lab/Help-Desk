@@ -341,18 +341,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         authUser.email?.split('@')[0] || 'Usuario';
       const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
 
-      // Fallback insertion for perfiles (supports name/nombre and role/rol)
-      const profileData: any = { id: authUser.id, email: authUser.email, activo: true };
-      
-      // Determine if table uses spanish or english
-      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' });
-      const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
-
-      if (columns.includes('nombre')) profileData.nombre = name;
-      else profileData.name = name;
-
-      if (columns.includes('rol')) profileData.rol = roleToSave;
-      else profileData.role = roleToSave;
+      // Fallback insertion for perfiles
+      const profileData: any = { 
+        id: authUser.id, 
+        email: authUser.email, 
+        activo: true,
+        nombre: name,
+        rol: roleToSave
+      };
 
       await sb.from('perfiles').upsert(profileData);
 
@@ -392,28 +388,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const nextFolioNumber = (count || 0) + 1;
       const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
 
-      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'tickets' });
-      const columns = Array.isArray(cols) ? cols : ['id', 'titulo', 'estado', 'departamento_id'];
-
-      const insertData: any = {
+      const insertData = {
         id: customFolio,
         titulo: ticketData.title,
         descripcion: ticketData.description,
         creado_por_id: ticketData.createdById,
+        estado: 'Abierto',
+        prioridad: ticketData.priority,
+        departamento_id: ticketData.departmentId || null,
+        asignado_a_id: ticketData.assignedToId || null,
       };
-
-      // Map conditional columns
-      if (columns.includes('estado')) insertData.estado = 'Abierto';
-      else if (columns.includes('status')) insertData.status = 'Abierto';
-
-      if (columns.includes('prioridad')) insertData.prioridad = ticketData.priority;
-      else if (columns.includes('priority')) insertData.priority = ticketData.priority;
-
-      if (columns.includes('departamento_id')) insertData.departamento_id = ticketData.departmentId || null;
-      else if (columns.includes('department_id')) insertData.department_id = ticketData.departmentId || null;
-
-      if (columns.includes('asignado_a_id')) insertData.asignado_a_id = ticketData.assignedToId || null;
-      else if (columns.includes('assigned_to_id')) insertData.assigned_to_id = ticketData.assignedToId || null;
 
       const { data, error } = await sb.from('tickets').insert(insertData).select().single();
 
@@ -439,16 +423,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
-      const columns = Array.isArray(cols) ? cols : ['id', 'estado'];
-      
-      const updateData: any = { actualizado_en: new Date().toISOString() };
-      
-      if (columns.includes('estado')) updateData.estado = status;
-      else if (columns.includes('status')) updateData.status = status;
-
-      if (columns.includes('actualizado_en')) updateData.actualizado_en = new Date().toISOString();
-      else if (columns.includes('updated_at')) updateData.updated_at = new Date().toISOString();
+      const updateData = { 
+        estado: status,
+        actualizado_en: new Date().toISOString() 
+      };
 
       await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
@@ -458,16 +436,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
-      const columns = Array.isArray(cols) ? cols : ['id', 'prioridad'];
-      
-      const updateData: any = { actualizado_en: new Date().toISOString() };
-      
-      if (columns.includes('prioridad')) updateData.prioridad = priority;
-      else if (columns.includes('priority')) updateData.priority = priority;
-
-      if (columns.includes('actualizado_en')) updateData.actualizado_en = new Date().toISOString();
-      else if (columns.includes('updated_at')) updateData.updated_at = new Date().toISOString();
+      const updateData = { 
+        prioridad: priority,
+        actualizado_en: new Date().toISOString() 
+      };
 
       await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
@@ -482,16 +454,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
-      const columns = Array.isArray(cols) ? cols : ['id', 'asignado_a_id'];
-
-      const updateData: any = { actualizado_en: new Date().toISOString() };
-
-      if (columns.includes('asignado_a_id')) updateData.asignado_a_id = userId;
-      else if (columns.includes('assigned_to_id')) updateData.assigned_to_id = userId;
-
-      if (columns.includes('asignado_a_nombre')) updateData.asignado_a_nombre = user?.name;
-      else if (columns.includes('assigned_to_name')) updateData.assigned_to_name = user?.name;
+      const updateData = { 
+        asignado_a_id: userId,
+        asignado_a_nombre: user?.name,
+        actualizado_en: new Date().toISOString() 
+      };
 
       await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
@@ -595,27 +562,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const sb = getSupabase();
-    const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' });
-    const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
     
-    // Map data based on columns
-    const insertProfile: any = {
-      id: authData.user.id,
-      email: userData.email,
-      activo: true
-    };
-
-    if (columns.includes('nombre')) insertProfile.nombre = userData.name;
-    else insertProfile.name = userData.name;
-
     const roleMap: Record<string, string> = { 'Admin': 'Admin', 'Agente': 'Agente', 'Cliente': 'Cliente' };
     const resolvedRole = roleMap[userData.role] || 'Cliente';
     
-    if (columns.includes('rol')) insertProfile.rol = resolvedRole;
-    else insertProfile.role = resolvedRole;
-
-    if (columns.includes('departamento_id')) insertProfile.departamento_id = userData.departmentId || null;
-    else if (columns.includes('department_id')) insertProfile.department_id = userData.departmentId || null;
+    const insertProfile = {
+      id: authData.user.id,
+      email: userData.email,
+      activo: true,
+      nombre: userData.name,
+      rol: resolvedRole,
+      departamento_id: userData.departmentId || null
+    };
 
     const { error: profileError } = await sb.from('perfiles').insert(insertProfile);
 
