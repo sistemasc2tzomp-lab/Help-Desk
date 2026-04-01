@@ -168,7 +168,7 @@ export default function TicketList() {
                           {ticket.title.toUpperCase()}
                         </div>
                         <div className="text-[#8888aa] text-[10px] mt-2 font-mono flex items-center gap-3">
-                          <span className="text-[#ffffff]/50">ID: {ticket.id.slice(0,8)}</span>
+                          <span className="text-[#ffffff]/50">FOLIO: {ticket.id}</span>
                           <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
                           <span>{ticket.category.toUpperCase()}</span>
                           {ticket.messages.length > 0 && (

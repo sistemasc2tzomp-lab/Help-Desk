@@ -323,7 +323,7 @@ const LandingPage: React.FC = () => {
       {/* LOADER */}
       <div className={`loader-screen ${isLoaderHidden ? 'hidden' : ''}`} id="loader">
         <img 
-          src="img/logo_tzompantepec.png" 
+          src="/favicon_io/android-chrome-512x512.png" 
           alt="Tzomp Logo" 
           className="loader-logo" 
         />
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="img/logo_tzompantepec.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+          <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
           <span className="nav-title">TZOMP LAB</span>
         </a>
 
@@ -408,7 +408,7 @@ const LandingPage: React.FC = () => {
               <div className="hologram-ring ring-2"></div>
               <div className="hologram-ring ring-3"></div>
 
-              <img src="img/logo_tzompantepec.png" alt="Tzomp System" className="hero-center-icon rounded-full" />
+              <img src="/favicon_io/android-chrome-512x512.png" alt="Tzomp System" className="hero-center-icon rounded-full" />
             </div>
           </div>
         </div>
@@ -588,7 +588,7 @@ const LandingPage: React.FC = () => {
           <div className="orbit-ring orbit-ring-1"></div>
           <div className="orbit-ring orbit-ring-2"></div>
           <div className="orbit-ring orbit-ring-3"></div>
-          <img src="favicon_io/android-chrome-192x192.png" alt="Center" className="tech-center" />
+          <img src="/favicon_io/android-chrome-192x192.png" alt="Center" className="tech-center" />
           <div className="tech-planet orbit-c tp-1"><i className="fab fa-html5"></i></div>
           <div className="tech-planet orbit-c tp-2"><i className="fab fa-css3-alt"></i></div>
           <div className="tech-planet orbit-b tp-3"><i className="fab fa-js"></i></div>
@@ -620,7 +620,7 @@ const LandingPage: React.FC = () => {
       <footer className="footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
+            <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
             <p>Help Desk Tzomp Lab — La plataforma de soporte técnico de nueva generación impulsada por inteligencia artificial.</p>
             <div className="footer-social">
               <a href="#"><i className="fab fa-github"></i></a>

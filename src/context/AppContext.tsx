@@ -107,7 +107,7 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
   const imageUrl = (() => {
     const imgs = r.imagenes as unknown;
     if (Array.isArray(imgs) && imgs.length > 0) return String(imgs[0].url || imgs[0] || '');
-    return r.attachment_url ? String(r.attachment_url) : undefined;
+    return (r.image_url || r.attachment_url) ? String(r.image_url || r.attachment_url) : undefined;
   })();
 
   return {
@@ -119,9 +119,9 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
     category: (r.categoria || r.category) as Ticket['category'] || 'General',
     departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
     createdById: creatorId,
-    createdByName: creator?.name || String(r.created_by_name || ''),
+    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || ''),
     assignedToId: assigneeId,
-    assignedToName: assignee?.name || (r.assigned_to_name ? String(r.assigned_to_name) : undefined),
+    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || ''),
     createdAt: String(r.creado_en || r.created_at || new Date().toISOString()),
     updatedAt: String(r.actualizado_en || r.updated_at || new Date().toISOString()),
     messages: msgs,
@@ -212,14 +212,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 2. Departamentos
       try {
-        const { data: deptsData } = await sb.from('departments').select('*').order('created_at', { ascending: true });
+        const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
         if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
 
       // 3. Comentarios
       const msgsByTicket: Record<string, Message[]> = {};
       try {
-        const { data: comentariosData } = await sb.from('messages').select('*').order('created_at', { ascending: true });
+        const { data: comentariosData } = await sb.from('ticket_comentarios').select('*').order('creado_en', { ascending: true });
         if (comentariosData) {
           const uMap: Record<string, User> = {};
           users.forEach(u => uMap[u.id] = u);
@@ -254,7 +254,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sb = getSupabase();
     sb.auth.getSession().then(({ data, error }) => {
       if (error) {
+        console.warn('Sesión expirada o token inválido, cerrando sesión...', error.message);
         sb.auth.signOut().catch(() => {});
+        setCurrentUser(null);
         return;
       }
       const sessionUser = data.session?.user;
@@ -364,17 +366,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
+      
+      // Get the count of existing tickets to generate the next TZH-XXXX folio
+      const { count } = await sb.from('tickets').select('*', { count: 'exact', head: true });
+      const nextFolioNumber = (count || 0) + 1;
+      const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
+
       const { data, error } = await sb.from('tickets').insert({
-        title: ticketData.title,
-        description: ticketData.description,
-        status: ticketData.status,
-        priority: ticketData.priority,
-        category: ticketData.category,
-        department_id: ticketData.departmentId || null,
-        created_by_id: ticketData.createdById,
-        created_by_name: ticketData.createdByName,
-        assigned_to_id: ticketData.assignedToId || null,
-        image_url: ticketData.imageUrl || null,
+        id: customFolio,
+        titulo: ticketData.title,
+        descripcion: ticketData.description,
+        estado: ticketData.status,
+        prioridad: ticketData.priority,
+        categoria: ticketData.category,
+        departamento_id: ticketData.departmentId || null,
+        creado_por_id: ticketData.createdById,
+        creado_por_nombre: ticketData.createdByName,
+        asignado_a_id: ticketData.assignedToId || null,
+        // If image_url is missing in schema, we use 'imagenes' jsonb or just nullify it
+        image_url: ticketData.imageUrl || null, 
       }).select().single();
 
       if (data && !error) {
@@ -399,8 +409,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        status: status,
-        updated_at: new Date().toISOString(),
+        estado: status,
+        actualizado_en: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, []);
@@ -409,8 +419,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        priority: priority,
-        updated_at: new Date().toISOString(),
+        prioridad: priority,
+        actualizado_en: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, []);
@@ -424,9 +434,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        assigned_to_id: userId,
-        assigned_to_name: user?.name,
-        updated_at: new Date().toISOString(),
+        asignado_a_id: userId,
+        asignado_a_nombre: user?.name,
+        actualizado_en: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, [users]);
@@ -454,12 +464,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
       // imagenes stored as jsonb array in ticket_comentarios or just image_url
-      await sb.from('messages').insert({
+      await sb.from('ticket_comentarios').insert({
         ticket_id: ticketId,
-        author_id: currentUser.id,
+        usuario_id: currentUser.id,
         author_name: currentUser.name,
-        content: content,
-        is_internal: isInternal,
+        contenido: content,
+        es_interno: isInternal,
         image_url: imageUrl || null,
       });
       await sb.from('tickets').update({
@@ -473,9 +483,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // ── departments ─────────────────────────────────────────────────────────
   const addDepartment = useCallback(async (dept: Omit<Department, 'id' | 'createdAt'>) => {
     if (isSupabaseConfigured()) {
-      const { data } = await getSupabase().from('departments').insert({
-        name: dept.name,
-        description: dept.description,
+      const { data } = await getSupabase().from('departamentos').insert({
+        nombre: dept.name,
+        descripcion: dept.description,
         color: dept.color,
         jefe: dept.jefe || null,
       }).select().single();
@@ -491,9 +501,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateDepartment = useCallback(async (id: string, dept: Partial<Department>) => {
     setDepartments(prev => prev.map(d => d.id === id ? { ...d, ...dept } : d));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('departments').update({
-        name: dept.name,
-        description: dept.description,
+      await getSupabase().from('departamentos').update({
+        nombre: dept.name,
+        descripcion: dept.description,
         color: dept.color,
         jefe: dept.jefe || null,
       }).eq('id', id);
@@ -503,7 +513,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteDepartment = useCallback(async (id: string) => {
     setDepartments(prev => prev.filter(d => d.id !== id));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('departments').delete().eq('id', id);
+      await getSupabase().from('departamentos').delete().eq('id', id);
     }
   }, []);
 
@@ -533,10 +543,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sb = getSupabase();
     const { error: profileError } = await sb.from('perfiles').insert({
       id: authData.user.id,
-      name: userData.name,
+      nombre: userData.name,
       email: userData.email,
-      role: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
-      department_id: userData.departmentId || null,
+      rol: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
+      departamento_id: userData.departmentId || null,
       activo: true
     });
 

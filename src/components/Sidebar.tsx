@@ -92,7 +92,7 @@ const adminNavItems: NavItem[] = [
 
 const Logo = () => (
   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0 border border-white/20">
-    <img src="img/logo_tzompantepec.png" alt="TZ" className="w-8 h-8 rounded-full object-contain grayscale" />
+    <img src="/favicon_io/android-chrome-192x192.png" alt="TZ" className="w-8 h-8 rounded-full object-contain grayscale" />
   </div>
 );
 

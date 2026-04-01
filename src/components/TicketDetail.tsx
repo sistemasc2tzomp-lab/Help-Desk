@@ -28,7 +28,7 @@ function generateProfessionalTicketReport(doc: jsPDF, ticket: any, dept: any) {
   // Ticket ID (Right aligned)
   doc.setTextColor(150, 150, 150);
   doc.setFontSize(14);
-  doc.text(`TICKET: ${ticket.id.slice(0,10).toUpperCase()}`, pageWidth - 14, 25, { align: 'right' });
+  doc.text(`FOLIO: ${ticket.id.toUpperCase()}`, pageWidth - 14, 25, { align: 'right' });
   
   // Body Space
   let y = 60;
@@ -234,7 +234,7 @@ export default function TicketDetail() {
             
             <div className="relative z-10">
               <div className="flex flex-wrap items-center gap-4 mb-8">
-                <span className="text-[#ffffff] text-xs font-mono font-black tracking-widest bg-[#ffffff]/10 px-4 py-1.5 rounded-full border border-[#ffffff]/20">#{ticket.id.slice(0,12)}</span>
+                <span className="text-[#ffffff] text-xs font-mono font-black tracking-widest bg-[#ffffff]/10 px-4 py-1.5 rounded-full border border-[#ffffff]/20">{ticket.id}</span>
                 <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest ${statusColors[ticket.status]}`}>
                   {ticket.status}
                 </span>
