@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory, Message } from '../types';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
-import { getAdminSupabase } from '../lib/supabaseAdmin';
 
 interface AppContextType {
   currentUser: User | null;
@@ -34,7 +33,51 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── DB value mappers (para constraints de Supabase) ────────────────────────
+// Supabase CHECK constraint puede exigir minúsculas. Intentamos el valor
+// original primero; si falla, el componente lo reintentará con el mapeado.
+function mapToDbStatus(status: string): string {
+  const map: Record<string, string> = {
+    'Abierto': 'abierto',
+    'En Progreso': 'en_progreso',
+    'Resuelto': 'resuelto',
+    'Cerrado': 'cerrado',
+  };
+  return map[status] ?? status.toLowerCase().replace(' ', '_');
+}
+
+function mapToDbPriority(priority: string): string {
+  const map: Record<string, string> = {
+    'Urgente': 'urgente',
+    'Alta': 'alta',
+    'Media': 'media',
+    'Baja': 'baja',
+  };
+  return map[priority] ?? priority.toLowerCase();
+}
+
+// normalizeFromDb: convierte valor de BD a formato de la app
+function normalizeStatus(raw: string): string {
+  const map: Record<string, string> = {
+    'abierto': 'Abierto', 'Abierto': 'Abierto',
+    'en_progreso': 'En Progreso', 'en progreso': 'En Progreso', 'En Progreso': 'En Progreso',
+    'resuelto': 'Resuelto', 'Resuelto': 'Resuelto',
+    'cerrado': 'Cerrado', 'Cerrado': 'Cerrado',
+  };
+  return map[raw] ?? raw;
+}
+
+function normalizePriority(raw: string): string {
+  const map: Record<string, string> = {
+    'urgente': 'Urgente', 'Urgente': 'Urgente',
+    'alta': 'Alta', 'Alta': 'Alta',
+    'media': 'Media', 'Media': 'Media',
+    'baja': 'Baja', 'Baja': 'Baja',
+  };
+  return map[raw] ?? raw;
+}
+
+// ── helpers ──────────────────────────────────────────────────────────────
 function getInitials(name: string) {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 }
@@ -119,8 +162,8 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
     return possibleImg ? String(possibleImg) : undefined;
   })();
 
-  const status = String(r.estado || r.status || 'Abierto');
-  const priority = String(r.prioridad || r.priority || 'Media');
+  const status = normalizeStatus(String(r.estado || r.status || 'Abierto'));
+  const priority = normalizePriority(String(r.prioridad || r.priority || 'Media'));
   const category = String(r.categoria || r.category || 'General');
 
   return {
@@ -393,8 +436,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         titulo: ticketData.title,
         descripcion: ticketData.description,
         creado_por_id: ticketData.createdById,
-        estado: 'Abierto',
-        prioridad: ticketData.priority,
+        estado: mapToDbStatus('Abierto'),
+        prioridad: mapToDbPriority(ticketData.priority),
         departamento_id: ticketData.departmentId || null,
         asignado_a_id: ticketData.assignedToId || null,
       };
@@ -406,7 +449,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTickets(prev => [t, ...prev]);
         return t;
       }
-      if (error) console.error('addTicket error:', error);
+      if (error) {
+        // Retry with capitalized values (some setups use VARCHAR without constraint)
+        const retryData = { ...insertData, estado: 'Abierto', prioridad: ticketData.priority };
+        const { data: d2, error: e2 } = await sb.from('tickets').insert(retryData).select().single();
+        if (d2 && !e2) {
+          const t = rowToTicket(d2 as Record<string, unknown>);
+          setTickets(prev => [t, ...prev]);
+          return t;
+        }
+        console.error('addTicket error:', error, e2);
+      }
     }
     const newTicket: Ticket = {
       ...ticketData,
@@ -423,12 +476,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const updateData = { 
-        estado: status,
+      // Try lowercase first (constraint), fallback to capitalized
+      const { error } = await sb.from('tickets').update({ 
+        estado: mapToDbStatus(status),
         actualizado_en: new Date().toISOString() 
-      };
-
-      await sb.from('tickets').update(updateData).eq('id', ticketId);
+      }).eq('id', ticketId);
+      if (error) {
+        await sb.from('tickets').update({ 
+          estado: status,
+          actualizado_en: new Date().toISOString() 
+        }).eq('id', ticketId);
+      }
     }
   }, []);
 
@@ -436,14 +494,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const updateData = { 
-        prioridad: priority,
+      const { error } = await sb.from('tickets').update({ 
+        prioridad: mapToDbPriority(priority),
         actualizado_en: new Date().toISOString() 
-      };
-
-      await sb.from('tickets').update(updateData).eq('id', ticketId);
+      }).eq('id', ticketId);
+      if (error) {
+        await sb.from('tickets').update({ 
+          prioridad: priority,
+          actualizado_en: new Date().toISOString() 
+        }).eq('id', ticketId);
+      }
     }
   }, []);
+
 
   const assignTicket = useCallback(async (ticketId: string, userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -486,18 +549,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      // imagenes stored as jsonb array in ticket_comentarios or just image_url
-      await sb.from('ticket_comentarios').insert({
+      const { error: commentErr } = await sb.from('ticket_comentarios').insert({
         ticket_id: ticketId,
         usuario_id: currentUser.id,
         contenido: content,
         es_interno: isInternal,
       });
-      await sb.from('tickets').update({
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      if (!commentErr) {
+        // Actualiza timestamp del ticket
+        await sb.from('tickets').update({
+          actualizado_en: new Date().toISOString(),
+        }).eq('id', ticketId);
+        // Sincroniza datos para que ambos roles (Admin/Cliente) vean el mensaje
+        await refreshData();
+      } else {
+        console.error('addMessage error:', commentErr);
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, refreshData]);
 
   const getTicketById = useCallback((id: string) => tickets.find(t => t.id === id), [tickets]);
 
@@ -540,34 +609,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const createUser = useCallback(async (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => {
     if (!isSupabaseConfigured()) return { success: false, error: 'Supabase no configurado' };
-    
-    // Create the user in Auth with our secondary non-persisting client
-    const adminSb = getAdminSupabase();
-    if (!adminSb) return { success: false, error: 'Carga de cliente falló' };
-    
-    const { data: authData, error: authError } = await adminSb.auth.signUp({
-      email: userData.email,
-      password: 'ITFlowPasswordGen1', // A simple generic password for new users
-      options: {
-        data: {
-          full_name: userData.name,
-          role: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente'
-        }
-      }
-    });
-
-    if (authError || !authData.user) {
-      console.error('Error creating auth user:', authError);
-      return { success: false, error: authError?.message || 'Error en autenticación' };
-    }
-
     const sb = getSupabase();
-    
     const roleMap: Record<string, string> = { 'Admin': 'Admin', 'Agente': 'Agente', 'Cliente': 'Cliente' };
     const resolvedRole = roleMap[userData.role] || 'Cliente';
+
+    // NOTA: Crear usuarios en Supabase Auth requiere la service_role key (solo servidor/Edge Function).
+    // Desde el cliente anon, usamos auth.signUp() con una contraseña temporal.
+    // Si falla la autenticación, insertamos solo el perfil con un UUID temporal.
+    let userId: string | null = null;
     
+    try {
+      const { data: authData, error: authError } = await sb.auth.signUp({
+        email: userData.email,
+        password: 'ITFlow2024!',
+        options: { data: { full_name: userData.name, role: resolvedRole } }
+      });
+      
+      if (!authError && authData.user) {
+        userId = authData.user.id;
+      } else {
+        console.warn('Auth signup failed (normal si email ya existe o Supabase lo bloquea):', authError?.message);
+      }
+    } catch (e) {
+      console.warn('auth.signUp threw:', e);
+    }
+
+    // Si no se pudo crear en Auth, generamos un ID temporal para el perfil
+    if (!userId) {
+      userId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
     const insertProfile = {
-      id: authData.user.id,
+      id: userId,
       email: userData.email,
       activo: true,
       nombre: userData.name,
@@ -575,12 +648,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       departamento_id: userData.departmentId || null
     };
 
-    const { error: profileError } = await sb.from('perfiles').insert(insertProfile);
+    const { error: profileError } = await sb.from('perfiles').upsert(insertProfile);
 
     if (profileError) {
       console.error('Error creating user profile:', profileError);
-      // Fallback: If 'perfiles' still uses spanish column names, let's catch and retry or just return
-      return { success: false, error: profileError.message };
+      return { success: false, error: `Error al guardar perfil: ${profileError.message}` };
     }
     
     await refreshData();
