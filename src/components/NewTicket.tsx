@@ -85,9 +85,9 @@ export default function NewTicket() {
 
   if (submitted) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-vh-[70vh] bg-[#030014]">
-        <div className="w-24 h-24 rounded-full bg-emerald-500/10 border-4 border-emerald-500/30 flex items-center justify-center mb-8 animate-pulse shadow-[0_0_50px_rgba(16,185,129,0.2)]">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <div className="p-6 flex flex-col items-center justify-center min-vh-[70vh] bg-[#050505]">
+        <div className="w-24 h-24 rounded-full bg-gray-400/10 border-4 border-gray-400/30 flex items-center justify-center mb-8 animate-pulse shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
@@ -98,12 +98,12 @@ export default function NewTicket() {
   }
 
   return (
-    <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-10 min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-10 min-h-screen bg-[#050505]">
       {/* Header Area */}
       <div className="space-y-4">
         <button
           onClick={() => setPage('tickets')}
-          className="group flex items-center gap-3 text-[#8888aa] hover:text-[#00f0ff] transition-all text-[10px] font-black uppercase tracking-[3px]"
+          className="group flex items-center gap-3 text-[#8888aa] hover:text-[#ffffff] transition-all text-[10px] font-black uppercase tracking-[3px]"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -112,49 +112,49 @@ export default function NewTicket() {
         </button>
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            NUEVA <span className="text-gradient">INCIDENCIA</span>
+            NUEVA <span className="text-white">INCIDENCIA</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">MODULO DE REPORTE Y ASIGNACIÓN DE RECURSOS</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="glass-panel border-white/5 rounded-[40px] p-8 sm:p-12 space-y-8 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#00f0ff]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ffffff]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
         
         {/* Title Node */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Cabezal del Reporte (Asunto)</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Cabezal del Reporte (Asunto)</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="SYNTAX_ERROR_IN_CORE_..."
             required
-            className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#00f0ff]/50 transition-all neon-border"
+            className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]"
           />
         </div>
 
         {/* Description Base */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Bitácora de Detalles</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Bitácora de Detalles</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Introduce los parámetros técnicos del problema. Incluye códigos de error, capturas y contexto operativo..."
             required
             rows={6}
-            className="w-full bg-[#0a0025]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#00f0ff]/50 transition-all resize-none leading-relaxed"
+            className="w-full bg-[#121212]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none leading-relaxed"
           />
         </div>
 
         {/* Configuration Unit */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Clasificación</label>
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Clasificación</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value as TicketCategory)}
-              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="Técnico">TÉCNICO</option>
               <option value="Facturación">FACTURACIÓN</option>
@@ -164,11 +164,11 @@ export default function NewTicket() {
             </select>
           </div>
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Nivel_Prioridad</label>
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Nivel_Prioridad</label>
             <select
               value={priority}
               onChange={e => setPriority(e.target.value as TicketPriority)}
-              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="Baja">BAJA_NODAL</option>
               <option value="Media">MEDIA_ESTÁNDAR</option>
@@ -181,11 +181,11 @@ export default function NewTicket() {
         {/* Sector Allocation */}
         {departments.length > 0 && (
           <div className="space-y-3 relative z-10">
-            <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
             <select
               value={departmentId}
               onChange={e => setDepartmentId(e.target.value)}
-              className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="">CANAL_GLOBAL</option>
               {departments.map(d => (
@@ -197,32 +197,32 @@ export default function NewTicket() {
 
         {/* Visual Documentation Subsystem */}
         <div className="space-y-4 relative z-10">
-          <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Documentación Visual (Adjuntos)</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Documentación Visual (Adjuntos)</label>
           {imagePreview ? (
-            <div className="relative rounded-3xl overflow-hidden border-2 border-[#00f0ff]/30 bg-[#030014] group/prev shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden border-2 border-[#ffffff]/30 bg-[#050505] group/prev shadow-2xl">
               <img src={imagePreview} alt="Preview" className="w-full max-h-80 object-cover" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/prev:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                 <button
                     type="button"
                     onClick={removeImage}
-                    className="bg-[#ff2d95] text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] border border-white/20 hover:scale-105 transition-all shadow-2xl"
+                    className="bg-[#999999] text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] border border-white/20 hover:scale-105 transition-all shadow-2xl"
                 >
                     Purgar Recurso
                 </button>
               </div>
-              <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#030014]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
-                <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-                <span className="text-[#10b981] text-[10px] font-black uppercase tracking-[2px]">{imageFile?.name} cargado</span>
+              <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#050505]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
+                <div className="w-2 h-2 rounded-full bg-[#aaaaaa] animate-pulse" />
+                <span className="text-[#aaaaaa] text-[10px] font-black uppercase tracking-[2px]">{imageFile?.name} cargado</span>
               </div>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-white/10 rounded-[32px] p-12 flex flex-col items-center gap-4 hover:border-[#00f0ff]/40 hover:bg-[#00f0ff]/5 transition-all duration-500 group cursor-pointer"
+              className="w-full border-2 border-dashed border-white/10 rounded-[32px] p-12 flex flex-col items-center gap-4 hover:border-[#ffffff]/40 hover:bg-[#ffffff]/5 transition-all duration-500 group cursor-pointer"
             >
-              <div className="w-20 h-20 rounded-3xl bg-white/5 group-hover:bg-[#00f0ff]/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 border border-white/10">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2.5">
+              <div className="w-20 h-20 rounded-3xl bg-white/5 group-hover:bg-[#ffffff]/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 border border-white/10">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <polyline points="21 15 16 10 5 21"/>
@@ -247,10 +247,10 @@ export default function NewTicket() {
         <div className="glass-panel rounded-3xl p-5 border border-white/5 space-y-3 relative z-10">
           <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 opacity-50">Matriz de Priorización Operativa</p>
           <div className="grid grid-cols-2 gap-4">
-             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-slate-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">BAJA: CONSULTAS Y MEJORAS</div></div>
-             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-yellow-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">MEDIA: FLUJO REDUCIDO</div></div>
-             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-orange-500" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">ALTA: BLOQUEO OPERATIVO</div></div>
-             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-red-500 animate-pulse" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase text-red-400">URGENTE: CRÍTICO / DOWN</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white/5" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">BAJA: CONSULTAS Y MEJORAS</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white/10" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">MEDIA: FLUJO REDUCIDO</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white/30" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">ALTA: BLOQUEO OPERATIVO</div></div>
+             <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white animate-pulse" /><div className="text-[9px] text-[#ffffff] font-black tracking-widest uppercase">URGENTE: CRÍTICO / DOWN</div></div>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ export default function NewTicket() {
           >
             {uploadingImage ? (
               <span className="flex items-center gap-3">
-                <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
                 Dumping_Buff...
               </span>
             ) : (

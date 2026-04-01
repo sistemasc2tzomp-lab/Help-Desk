@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { User, Ticket, Department, TicketStatus, TicketPriority, Message } from '../types';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { getAdminSupabase } from '../lib/supabaseAdmin';
 
 interface AppContextType {
   currentUser: User | null;
@@ -67,7 +68,7 @@ function rowToUser(r: Record<string, unknown>): User {
   };
 }
 
-// Maps tabla "ticket_comentarios": id, ticket_id, usuario_id, contenido, es_interno, imagenes(jsonb), creado_en
+// Maps tabla "messages": id, ticket_id, author_id, content, is_internal, image_url, created_at
 function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User> = {}): Message {
   const userId = String(r.usuario_id || r.author_id || '');
   const author = usersMap[userId];
@@ -162,7 +163,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     try {
       const { error } = await getSupabase().from('perfiles').select('id').limit(1);
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       setSbStatus('connected');
       setLastPing(new Date().toISOString());
     } catch {
@@ -211,14 +212,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 2. Departamentos
       try {
-        const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
+        const { data: deptsData } = await sb.from('departments').select('*').order('created_at', { ascending: true });
         if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
-      } catch (e) { console.error('refreshData: departamentos error', e); }
+      } catch (e) { console.error('refreshData: departments error', e); }
 
       // 3. Comentarios
       const msgsByTicket: Record<string, Message[]> = {};
       try {
-        const { data: comentariosData } = await sb.from('ticket_comentarios').select('*').order('creado_en', { ascending: true });
+        const { data: comentariosData } = await sb.from('messages').select('*').order('created_at', { ascending: true });
         if (comentariosData) {
           const uMap: Record<string, User> = {};
           users.forEach(u => uMap[u.id] = u);
@@ -251,7 +252,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!supabaseReady) return;
     const sb = getSupabase();
-    sb.auth.getSession().then(({ data }) => {
+    sb.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        sb.auth.signOut().catch(() => {});
+        return;
+      }
       const sessionUser = data.session?.user;
       if (sessionUser) {
         sb.from('perfiles')
@@ -359,18 +364,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      // imagenes stored as jsonb array
-      const imagenesArr = ticketData.imageUrl ? [{ url: ticketData.imageUrl }] : null;
       const { data, error } = await sb.from('tickets').insert({
-        titulo: ticketData.title,
-        descripcion: ticketData.description,
-        estado: ticketData.status,
-        prioridad: ticketData.priority,
-        categoria: ticketData.category,
-        departamento_id: ticketData.departmentId || null,
-        creado_por_id: ticketData.createdById,
-        asignado_a_id: ticketData.assignedToId || null,
-        imagenes: imagenesArr,
+        title: ticketData.title,
+        description: ticketData.description,
+        status: ticketData.status,
+        priority: ticketData.priority,
+        category: ticketData.category,
+        department_id: ticketData.departmentId || null,
+        created_by_id: ticketData.createdById,
+        created_by_name: ticketData.createdByName,
+        assigned_to_id: ticketData.assignedToId || null,
+        image_url: ticketData.imageUrl || null,
       }).select().single();
 
       if (data && !error) {
@@ -395,8 +399,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        estado: status,
-        actualizado_en: new Date().toISOString(),
+        status: status,
+        updated_at: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, []);
@@ -405,8 +409,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        prioridad: priority,
-        actualizado_en: new Date().toISOString(),
+        priority: priority,
+        updated_at: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, []);
@@ -420,8 +424,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       await getSupabase().from('tickets').update({
-        asignado_a_id: userId,
-        actualizado_en: new Date().toISOString(),
+        assigned_to_id: userId,
+        assigned_to_name: user?.name,
+        updated_at: new Date().toISOString(),
       }).eq('id', ticketId);
     }
   }, [users]);
@@ -448,14 +453,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      // imagenes stored as jsonb array in ticket_comentarios
-      const imagenesArr = imageUrl ? [{ url: imageUrl }] : null;
-      await sb.from('ticket_comentarios').insert({
+      // imagenes stored as jsonb array in ticket_comentarios or just image_url
+      await sb.from('messages').insert({
         ticket_id: ticketId,
-        usuario_id: currentUser.id,
-        contenido: content,
-        es_interno: isInternal,
-        imagenes: imagenesArr,
+        author_id: currentUser.id,
+        author_name: currentUser.name,
+        content: content,
+        is_internal: isInternal,
+        image_url: imageUrl || null,
       });
       await sb.from('tickets').update({
         actualizado_en: new Date().toISOString(),
@@ -468,9 +473,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // ── departments ─────────────────────────────────────────────────────────
   const addDepartment = useCallback(async (dept: Omit<Department, 'id' | 'createdAt'>) => {
     if (isSupabaseConfigured()) {
-      const { data } = await getSupabase().from('departamentos').insert({
-        nombre: dept.name,
-        descripcion: dept.description,
+      const { data } = await getSupabase().from('departments').insert({
+        name: dept.name,
+        description: dept.description,
         color: dept.color,
         jefe: dept.jefe || null,
       }).select().single();
@@ -486,9 +491,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateDepartment = useCallback(async (id: string, dept: Partial<Department>) => {
     setDepartments(prev => prev.map(d => d.id === id ? { ...d, ...dept } : d));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('departamentos').update({
-        nombre: dept.name,
-        descripcion: dept.description,
+      await getSupabase().from('departments').update({
+        name: dept.name,
+        description: dept.description,
         color: dept.color,
         jefe: dept.jefe || null,
       }).eq('id', id);
@@ -498,26 +503,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteDepartment = useCallback(async (id: string) => {
     setDepartments(prev => prev.filter(d => d.id !== id));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('departamentos').delete().eq('id', id);
+      await getSupabase().from('departments').delete().eq('id', id);
     }
   }, []);
 
   const createUser = useCallback(async (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => {
     if (!isSupabaseConfigured()) return { success: false, error: 'Supabase no configurado' };
-    const sb = getSupabase();
     
-    // Create profile with random UUID. Real Auth requires service role or signup flow.
-    const { error } = await sb.from('perfiles').insert({
-      id: crypto.randomUUID(),
-      nombre: userData.name,
+    // Create the user in Auth with our secondary non-persisting client
+    const adminSb = getAdminSupabase();
+    if (!adminSb) return { success: false, error: 'Carga de cliente falló' };
+    
+    const { data: authData, error: authError } = await adminSb.auth.signUp({
       email: userData.email,
-      rol: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
-      departamento_id: userData.departmentId || null,
+      password: 'ITFlowPasswordGen1', // A simple generic password for new users
+      options: {
+        data: {
+          full_name: userData.name,
+          role: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente'
+        }
+      }
+    });
+
+    if (authError || !authData.user) {
+      console.error('Error creating auth user:', authError);
+      return { success: false, error: authError?.message || 'Error en autenticación' };
+    }
+
+    const sb = getSupabase();
+    const { error: profileError } = await sb.from('perfiles').insert({
+      id: authData.user.id,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
+      department_id: userData.departmentId || null,
       activo: true
     });
-    if (error) {
-      console.error('Error creating user profile:', error);
-      return { success: false, error: error.message };
+
+    if (profileError) {
+      console.error('Error creating user profile:', profileError);
+      // Fallback: If 'perfiles' still uses spanish column names, let's catch and retry or just return
+      return { success: false, error: profileError.message };
     }
     
     await refreshData();

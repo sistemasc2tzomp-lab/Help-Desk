@@ -4,9 +4,9 @@ import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { User } from '../types';
 
 const roleColors: Record<string, string> = {
-  'Admin': 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(124,58,237,0.2)]',
-  'Agente': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
-  'Cliente': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
+  'Admin': 'bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.05)]',
+  'Agente': 'bg-white/5 text-gray-300 border border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.05)]',
+  'Cliente': 'bg-white/2 text-gray-500 border border-white/5 shadow-[0_0_10px_rgba(150,150,150,0.02)]',
 };
 
 const roleIcons: Record<string, string> = {
@@ -103,12 +103,12 @@ export default function UsersPage() {
   });
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            NÚCLEO <span className="text-gradient">USUARIOS</span>
+            NÚCLEO <span className="text-white">USUARIOS</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">
             GESTIÓN DE PERSONAL Y AUTORIZACIONES // {users.length} NODOS DETECTADOS
@@ -118,7 +118,7 @@ export default function UsersPage() {
           <button
             onClick={refreshData}
             disabled={loading}
-            className="flex items-center gap-2 glass-panel border border-white/5 hover:border-[#00f0ff]/30 text-[#8888aa] hover:text-[#00f0ff] px-5 py-3 rounded-2xl text-[10px] font-bold tracking-[2px] transition uppercase"
+            className="flex items-center gap-2 glass-panel border border-white/5 hover:border-[#ffffff]/30 text-[#8888aa] hover:text-[#ffffff] px-5 py-3 rounded-2xl text-[10px] font-bold tracking-[2px] transition uppercase"
           >
             <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -143,9 +143,9 @@ export default function UsersPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         {[
           { label: 'NODOS_TOTAL', val: users.length, color: 'text-white' },
-          { label: 'ADMINS', val: users.filter(u => u.role === 'Admin').length, color: 'text-[#7b2fff]' },
-          { label: 'AGENTES', val: users.filter(u => u.role === 'Agente').length, color: 'text-[#00f0ff]' },
-          { label: 'CLIENTES', val: users.filter(u => u.role === 'Cliente').length, color: 'text-[#10b981]' },
+          { label: 'ADMINS', val: users.filter(u => u.role === 'Admin').length, color: 'text-[#cccccc]' },
+          { label: 'AGENTES', val: users.filter(u => u.role === 'Agente').length, color: 'text-[#ffffff]' },
+          { label: 'CLIENTES', val: users.filter(u => u.role === 'Cliente').length, color: 'text-[#aaaaaa]' },
         ].map((kpi, idx) => (
           <div key={idx} className="glass-panel rounded-3xl p-6 border border-white/5 relative overflow-hidden group">
             <div className={`absolute top-0 left-0 w-1 h-full bg-current ${kpi.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
@@ -159,19 +159,19 @@ export default function UsersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 group">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00f0ff]/40 group-focus-within:text-[#00f0ff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff]/40 group-focus-within:text-[#ffffff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               type="text"
               placeholder="SCAN_NAME_OR_EMAIL..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#0a0025]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono tracking-tighter"
+              className="w-full bg-[#121212]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono tracking-tighter"
             />
           </div>
           <select
             value={filterRole}
             onChange={e => setFilterRole(e.target.value)}
-            className="bg-[#0a0025]/50 border border-white/5 rounded-2xl px-6 py-4 text-white text-xs font-bold font-rajdhani tracking-widest uppercase focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer"
+            className="bg-[#121212]/50 border border-white/5 rounded-2xl px-6 py-4 text-white text-xs font-bold font-rajdhani tracking-widest uppercase focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer"
           >
             <option value="">FILTRAR_POR_RANGO</option>
             <option value="Admin">ADMIN</option>
@@ -183,8 +183,8 @@ export default function UsersPage() {
         {/* Users Loop */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4">
-            <div className="w-12 h-12 border-4 border-[#00f0ff]/20 border-t-[#00f0ff] rounded-full animate-spin shadow-[0_0_20px_rgba(0,240,255,0.2)]" />
-            <p className="text-[#00f0ff] font-mono text-[10px] animate-pulse">CARGANDO_RECURSOS_USUARIOS...</p>
+            <div className="w-12 h-12 border-4 border-[#ffffff]/20 border-t-[#ffffff] rounded-full animate-spin shadow-[0_0_20px_rgba(255,255,255,0.1)]" />
+            <p className="text-[#ffffff] font-mono text-[10px] animate-pulse">CARGANDO_RECURSOS_USUARIOS...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 glass-panel rounded-3xl border-dashed border-2 border-white/5">
@@ -198,9 +198,9 @@ export default function UsersPage() {
               const isCurrentUser = user.id === currentUser?.id;
 
               return (
-                <div key={user.id} className="glass-panel rounded-3xl p-6 border border-white/5 group hover:border-[#00f0ff]/20 transition-all duration-500 shadow-2xl relative overflow-hidden">
+                <div key={user.id} className="glass-panel rounded-3xl p-6 border border-white/5 group hover:border-[#ffffff]/20 transition-all duration-500 shadow-2xl relative overflow-hidden">
                   {/* Background Accents */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#00f0ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ffffff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
 
                   <div className="flex items-center gap-4 mb-6 relative z-10">
                     <div
@@ -216,7 +216,7 @@ export default function UsersPage() {
                       <div className="flex items-center gap-2">
                         <p className="text-white font-bold text-base font-orbitron tracking-tighter truncate">{user.name}</p>
                         {isCurrentUser && (
-                          <span className="text-[9px] bg-[#00f0ff]/20 text-[#00f0ff] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Self</span>
+                          <span className="text-[9px] bg-[#ffffff]/20 text-[#ffffff] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Self</span>
                         )}
                       </div>
                       <p className="text-[#8888aa] text-xs font-mono truncate lowercase">{user.email}</p>
@@ -231,7 +231,7 @@ export default function UsersPage() {
                     {isAdmin && !isCurrentUser && (
                       <button
                         onClick={() => openEdit(user)}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-[#8888aa] hover:text-[#00f0ff] hover:bg-[#00f0ff]/10 transition-all border border-white/5"
+                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-[#8888aa] hover:text-[#ffffff] hover:bg-[#ffffff]/10 transition-all border border-white/5"
                         title="Modificar Permisos"
                       >
                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -252,8 +252,8 @@ export default function UsersPage() {
                   <div className="grid grid-cols-3 gap-3 border-t border-white/5 pt-6">
                     {[
                       { l: 'INICIO', v: stats.created, c: 'text-white' },
-                      { l: 'ASIG', v: stats.assigned, c: 'text-blue-400' },
-                      { l: 'SOLV', v: stats.resolved, c: 'text-[#10b981]' },
+                      { l: 'ASIG', v: stats.assigned, c: 'text-gray-300' },
+                      { l: 'SOLV', v: stats.resolved, c: 'text-[#aaaaaa]' },
                     ].map((s, i) => (
                       <div key={i} className="text-center group/stat">
                         <div className={`text-base font-black font-orbitron tracking-tighter ${s.c} group-hover/stat:scale-110 transition-transform`}>{s.v}</div>
@@ -271,10 +271,10 @@ export default function UsersPage() {
       {/* CREATE MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="glass-panel border-white/10 rounded-3xl w-full max-w-md p-8 shadow-[0_0_60px_rgba(0,240,255,0.1)] relative overflow-hidden">
+          <div className="glass-panel border-white/10 rounded-3xl w-full max-w-md p-8 shadow-[0_0_60px_rgba(255,255,255,0.05)] relative overflow-hidden">
             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
               <div>
-                <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-xl">NUEVO <span className="text-gradient">OPERADOR</span></h3>
+                <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-xl">NUEVO <span className="text-white">OPERADOR</span></h3>
                 <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase mt-1">Sincronización Supabase V4</p>
               </div>
               <button 
@@ -287,36 +287,36 @@ export default function UsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-[3px] ml-1">Nombre Completo</label>
+                <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Nombre Completo</label>
                 <input 
                   type="text" 
                   required
                   placeholder="AGENT_NAME"
                   value={createData.name}
                   onChange={e => setCreateData({...createData, name: e.target.value})}
-                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono neon-border"
+                  className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
                 />
               </div>
               
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-[3px] ml-1">Canal de Acceso (Email)</label>
+                <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Canal de Acceso (Email)</label>
                 <input 
                   type="email" 
                   required
                   placeholder="ID@TZOMP.LAB"
                   value={createData.email}
                   onChange={e => setCreateData({...createData, email: e.target.value})}
-                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono neon-border"
+                  className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-[3px] ml-1">Rango Operativo</label>
+                  <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Rango Operativo</label>
                   <select 
                     value={createData.role}
                     onChange={e => setCreateData({...createData, role: e.target.value as User['role']})}
-                    className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
+                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
                   >
                     <option value="Cliente">CLIENTE</option>
                     <option value="Agente">AGENTE</option>
@@ -324,11 +324,11 @@ export default function UsersPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-[3px] ml-1">Sector (Opcional)</label>
+                   <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Sector (Opcional)</label>
                    <select 
                     value={createData.departmentId}
                     onChange={e => setCreateData({...createData, departmentId: e.target.value})}
-                    className="w-full bg-[#0a0025]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#00f0ff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
+                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
                   >
                     <option value="">Global</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>)}
@@ -337,7 +337,7 @@ export default function UsersPage() {
               </div>
 
               {saveMsg && (
-                <div className={`p-4 rounded-xl text-xs font-bold text-center tracking-widest uppercase ${saveMsg.includes('❌') ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                <div className={`p-4 rounded-xl text-xs font-bold text-center tracking-widest uppercase ${saveMsg.includes('❌') ? 'bg-gray-600/10 text-gray-400 border border-gray-600/20' : 'bg-gray-400/10 text-gray-300 border border-gray-400/20'}`}>
                   {saveMsg}
                 </div>
               )}
@@ -349,7 +349,7 @@ export default function UsersPage() {
               >
                 {saving ? (
                   <span className="flex items-center justify-center gap-3">
-                    <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
                     INJECTING_PROFILE...
                   </span>
                 ) : (
@@ -371,7 +371,7 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="glass-panel border-white/10 rounded-3xl w-full max-w-sm p-8 shadow-2xl relative overflow-hidden">
             <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-xl mb-8 flex items-center gap-3">
-              <span className="w-2 h-8 bg-gradient-to-b from-[#7b2fff] to-[#00f0ff]" />
+              <span className="w-2 h-8 bg-gradient-to-b from-[#cccccc] to-[#ffffff]" />
               PERMISOS_SISTEMA
             </h3>
 
@@ -393,13 +393,13 @@ export default function UsersPage() {
                   onClick={() => setNewRole(role)}
                   className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left group ${
                     newRole === role
-                      ? 'border-[#00f0ff] bg-[#00f0ff]/5 shadow-[0_0_20px_rgba(0,240,255,0.1)]'
+                      ? 'border-[#ffffff] bg-[#ffffff]/5 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
                       : 'border-white/5 bg-white/2 hover:border-white/10'
                   }`}
                 >
                   <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">{roleIcons[role]}</span>
                   <div>
-                    <p className={`text-sm font-black font-rajdhani tracking-[2px] uppercase ${newRole === role ? 'text-[#00f0ff]' : 'text-white'}`}>{role}</p>
+                    <p className={`text-sm font-black font-rajdhani tracking-[2px] uppercase ${newRole === role ? 'text-[#ffffff]' : 'text-white'}`}>{role}</p>
                     <p className="text-[#8888aa] text-[9px] font-bold uppercase tracking-wider mt-0.5">
                       {role === 'Admin' && 'NIVEL_ACCESO_MAX'}
                       {role === 'Agente' && 'SOPORTE_OPERATIVO'}
@@ -411,7 +411,7 @@ export default function UsersPage() {
             </div>
 
             {saveMsg && (
-              <div className={`mb-6 p-4 rounded-xl text-[10px] font-black uppercase text-center tracking-widest ${saveMsg.includes('❌') ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
+              <div className={`mb-6 p-4 rounded-xl text-[10px] font-black uppercase text-center tracking-widest ${saveMsg.includes('❌') ? 'bg-gray-600/10 text-red-500 border border-gray-600/20' : 'bg-gray-400/10 text-gray-400 border border-gray-400/20'}`}>
                 {saveMsg}
               </div>
             )}

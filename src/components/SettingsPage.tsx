@@ -7,7 +7,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   companyEmail: 'soporte@tzompantepec.gob.mx',
   companyPhone: '+52 (000) 000-0000',
   companyAddress: 'Tzompantepec, Tlaxcala, México',
-  primaryColor: '#00f0ff',
+  primaryColor: '#ffffff',
   ticketPrefix: 'TZH',
   allowClientRegistration: true,
   notifyOnNewTicket: true,
@@ -66,7 +66,7 @@ function SectionCard({ title, description, icon, children }: {
     <div className="glass-panel border border-white/5 rounded-[40px] overflow-hidden group shadow-2xl relative">
        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/2 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="flex items-center gap-6 px-8 py-6 border-b border-white/5 bg-white/2">
-        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#00f0ff] shadow-xl group-hover:scale-110 transition-transform">
+        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#ffffff] shadow-xl group-hover:scale-110 transition-transform">
           {icon}
         </div>
         <div>
@@ -82,7 +82,7 @@ function SectionCard({ title, description, icon, children }: {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">{label}</label>
+      <label className="block text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">{label}</label>
       {children}
       {hint && <p className="text-[#8888aa] text-[10px] font-bold uppercase tracking-[2px] ml-1 opacity-60 italic">{hint}</p>}
     </div>
@@ -98,7 +98,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all neon-border"
+      className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all"
     />
   );
 }
@@ -114,21 +114,21 @@ function Toggle({ checked, onChange, label, description, onToggleSound }: {
   return (
     <div className="flex items-center justify-between py-6 border-b border-white/5 last:border-0 group/toggle">
       <div>
-        <div className="text-white text-sm font-black font-orbitron tracking-tight uppercase group-hover/toggle:text-[#00f0ff] transition-colors">{label}</div>
+        <div className="text-white text-sm font-black font-orbitron tracking-tight uppercase group-hover/toggle:text-[#ffffff] transition-colors">{label}</div>
         {description && <div className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest mt-1">{description}</div>}
       </div>
       <button
         onClick={handleToggle}
-        className={`relative w-14 h-8 rounded-full transition-all shrink-0 ml-4 border-2 ${checked ? 'bg-[#00f0ff] border-[#00f0ff]' : 'bg-white/5 border-white/10'}`}
+        className={`relative w-14 h-8 rounded-full transition-all shrink-0 ml-4 border-2 ${checked ? 'bg-[#ffffff] border-[#ffffff]' : 'bg-white/5 border-white/10'}`}
       >
-        <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all shadow-xl ${checked ? 'translate-x-6 bg-[#030014]' : 'bg-[#8888aa]'}`} />
+        <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all shadow-xl ${checked ? 'translate-x-6 bg-[#050505]' : 'bg-[#8888aa]'}`} />
       </button>
     </div>
   );
 }
 
 const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
-const PRESET_COLORS = ['#00f0ff', '#7b2fff', '#10b981', '#ff2d95', '#eab308', '#0ea5e9', '#f43f5e', '#84cc16'];
+const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
   const { currentUser, sbStatus, lastPing } = useApp();
@@ -139,8 +139,8 @@ export default function SettingsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
-        <div className="w-24 h-24 rounded-[32px] bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center animate-pulse">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+        <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
         <div>
@@ -179,12 +179,12 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            SISTEMA <span className="text-gradient">AJUSTES</span>
+            SISTEMA <span className="text-white">AJUSTES</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">CONFIGURACIÓN DE NÚCLEO Y PROTOCOLOS</p>
         </div>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={handleSave}
-            className={`btn-futuristic flex items-center gap-3 px-8 py-4 text-[10px] font-black uppercase tracking-[3px] transition-all shadow-2xl ${saved ? 'bg-emerald-600 shadow-emerald-500/30' : ''}`}
+            className={`btn-futuristic flex items-center gap-3 px-8 py-4 text-[10px] font-black uppercase tracking-[3px] transition-all shadow-2xl ${saved ? 'bg-white text-black shadow-white/30' : ''}`}
           >
             {saved ? (
               <>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Navigation Deck */}
         <aside className="w-full lg:w-72 shrink-0">
-          <nav className="flex flex-row lg:flex-col gap-3 p-2 bg-[#0a0025]/30 rounded-[32px] border border-white/5 backdrop-blur-xl overflow-x-auto lg:overflow-visible no-scrollbar sticky top-10">
+          <nav className="flex flex-row lg:flex-col gap-3 p-2 bg-[#121212]/30 rounded-[32px] border border-white/5 backdrop-blur-xl overflow-x-auto lg:overflow-visible no-scrollbar sticky top-10">
             {sections.map(s => (
               <button
                 key={s.id}
@@ -228,7 +228,7 @@ export default function SettingsPage() {
                 }}
                 className={`flex-1 lg:w-full flex items-center gap-4 px-6 py-5 rounded-[24px] text-[10px] font-black tracking-[3px] transition-all duration-500 uppercase whitespace-nowrap ${
                   activeSection === s.id
-                    ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#030014] scale-[1.02]'
+                    ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#050505] scale-[1.02]'
                     : 'text-[#8888aa] hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -286,7 +286,7 @@ export default function SettingsPage() {
                       }}
                       className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[2px] transition-all border ${
                         settings.defaultPriority === p
-                          ? 'bg-[#00f0ff] text-[#030014] border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.3)]'
+                          ? 'bg-[#ffffff] text-[#050505] border-[#ffffff] shadow-[0_0_20px_rgba(255,255,255,0.2)]'
                           : 'bg-white/5 text-[#8888aa] border-white/5 hover:border-white/20'
                       }`}
                     >
@@ -297,17 +297,17 @@ export default function SettingsPage() {
               </Field>
 
               <Field label="PURGA AUTOMÁTICA (DÍAS)" hint="Protocolo de cierre automático para unidades resueltas">
-                <div className="flex items-center gap-6 bg-[#0a0025]/50 p-6 rounded-3xl border border-white/5">
+                <div className="flex items-center gap-6 bg-[#121212]/50 p-6 rounded-3xl border border-white/5">
                   <input
                     type="range"
                     min={0}
                     max={30}
                     value={settings.autoCloseResolvedDays}
                     onChange={e => set('autoCloseResolvedDays', Number(e.target.value))}
-                    className="flex-1 accent-[#00f0ff]"
+                    className="flex-1 accent-[#ffffff]"
                   />
-                  <div className="w-20 h-14 flex flex-col items-center justify-center bg-[#030014] border border-[#00f0ff]/30 rounded-2xl shadow-inner">
-                    <span className="text-[12px] font-black font-orbitron text-[#00f0ff]">
+                  <div className="w-20 h-14 flex flex-col items-center justify-center bg-[#050505] border border-[#ffffff]/30 rounded-2xl shadow-inner">
+                    <span className="text-[12px] font-black font-orbitron text-[#ffffff]">
                       {settings.autoCloseResolvedDays === 0 ? 'OFF' : `${settings.autoCloseResolvedDays}D`}
                     </span>
                     <span className="text-[7px] font-black text-[#8888aa] uppercase tracking-widest mt-0.5">CYCLE</span>
@@ -395,7 +395,7 @@ export default function SettingsPage() {
               </Field>
 
               {/* Preview Deck */}
-              <div className="bg-[#030014] border-2 border-dashed border-white/5 rounded-[40px] p-10 relative overflow-hidden group">
+              <div className="bg-[#050505] border-2 border-dashed border-white/5 rounded-[40px] p-10 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 blur-3xl opacity-10 rounded-full" style={{ backgroundColor: settings.primaryColor }} />
                 <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-[3px] mb-8 border-b border-white/5 pb-4">SIMULACIÓN_DE_ENTORNO</p>
                 <div className="flex items-center gap-6 mb-10">
@@ -419,12 +419,12 @@ export default function SettingsPage() {
               icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-8 rounded-3xl border transition-all ${sbStatus === 'connected' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20 animate-pulse'}`}>
+                <div className={`p-8 rounded-3xl border transition-all ${sbStatus === 'connected' ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/2 border-white/5 animate-pulse'}`}>
                    <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-black uppercase tracking-[4px] text-[#8888aa]">ESTADO_ENLACE</span>
-                      <div className={`w-3 h-3 rounded-full ${sbStatus === 'connected' ? 'bg-emerald-500 shadow-[0_0_15px_#10b981]' : 'bg-red-500 shadow-[0_0_15px_#ef4444]'}`} />
+                      <div className={`w-3 h-3 rounded-full ${sbStatus === 'connected' ? 'bg-white shadow-[0_0_15px_white]' : 'bg-gray-600 shadow-[0_0_15px_#666666]'}`} />
                    </div>
-                   <div className={`text-2xl font-black font-orbitron tracking-widest uppercase ${sbStatus === 'connected' ? 'text-emerald-400' : 'text-red-400'}`}>
+                   <div className={`text-2xl font-black font-orbitron tracking-widest uppercase ${sbStatus === 'connected' ? 'text-white' : 'text-gray-400'}`}>
                       {sbStatus === 'connected' ? 'ACTIVO_OK' : 'DISCONNECT'}
                    </div>
                    <div className="text-[10px] font-bold text-[#8888aa] mt-2 uppercase tracking-widest leading-relaxed">
@@ -441,7 +441,7 @@ export default function SettingsPage() {
                       {lastPing ? new Date(lastPing).toLocaleTimeString() : '--:--:--'}
                    </div>
                    <div className="text-[10px] font-bold text-[#8888aa] mt-2 uppercase tracking-widest">
-                      LATENCIA_OPTIMIZADA <span className="text-[#00f0ff] ml-2">LOW</span>
+                      LATENCIA_OPTIMIZADA <span className="text-[#ffffff] ml-2">LOW</span>
                    </div>
                 </div>
               </div>
@@ -453,15 +453,15 @@ export default function SettingsPage() {
                     localStorage.removeItem('sb_key');
                     window.location.reload();
                   }}
-                  className="flex items-center gap-3 bg-amber-600/10 hover:bg-amber-600/20 text-amber-500 border border-amber-500/20 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all"
+                  className="flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
                   RECONFIGURAR_CORE
                 </button>
               </div>
 
-              <div className="bg-[#00f0ff]/5 border border-[#00f0ff]/10 rounded-[32px] p-8 space-y-4">
-                <div className="flex items-center gap-3 text-[#00f0ff] text-[10px] font-black uppercase tracking-[4px]">
+              <div className="bg-[#ffffff]/5 border border-[#ffffff]/10 rounded-[32px] p-8 space-y-4">
+                <div className="flex items-center gap-3 text-[#ffffff] text-[10px] font-black uppercase tracking-[4px]">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 16V12"/><path d="M12 8h.01"/></svg>
                   CONSEJO DE SEGURIDAD OPERATIVA
                 </div>

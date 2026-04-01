@@ -91,8 +91,8 @@ const adminNavItems: NavItem[] = [
 ];
 
 const Logo = () => (
-  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.3)] shrink-0">
-    <img src="img/logo_tzompantepec.png" alt="TZ" className="w-8 h-8 rounded-full object-contain" />
+  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0 border border-white/20">
+    <img src="img/logo_tzompantepec.png" alt="TZ" className="w-8 h-8 rounded-full object-contain grayscale" />
   </div>
 );
 
@@ -117,19 +117,19 @@ export default function Sidebar() {
       onClick={() => handleNav(item.id)}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold tracking-wide transition-all duration-300 relative group overflow-hidden ${
         isActive(item.id)
-          ? 'text-[#00f0ff] shadow-[inset_0_0_20px_rgba(0,240,255,0.05)] border border-[#00f0ff]/20'
+          ? 'text-[#ffffff] shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] border border-[#ffffff]/20'
           : 'text-[#8888aa] hover:text-white hover:bg-white/5 border border-transparent'
       }`}
     >
       {isActive(item.id) && (
-        <div className="absolute left-0 top-0 w-1 h-full bg-[#00f0ff] shadow-[0_0_15px_#00f0ff]" />
+        <div className="absolute left-0 top-0 w-1 h-full bg-[#ffffff] shadow-[0_0_15px_#ffffff]" />
       )}
-      <span className={`${isActive(item.id) ? 'text-[#00f0ff]' : 'group-hover:text-[#00f0ff]'} transition-colors`}>
+      <span className={`${isActive(item.id) ? 'text-[#ffffff]' : 'group-hover:text-[#ffffff]'} transition-colors`}>
         {item.icon}
       </span>
       <span className="flex-1 text-left uppercase font-rajdhani">{item.label}</span>
       {item.id === 'tickets' && openCount > 0 && (
-        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center animate-pulse">
+        <span className="bg-white text-[#050505] text-[10px] font-black px-2 py-0.5 rounded-full min-w-[22px] text-center border border-white/20">
           {openCount}
         </span>
       )}
@@ -137,16 +137,16 @@ export default function Sidebar() {
   );
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#030014]/80 backdrop-blur-xl border-r border-white/5">
+    <div className="flex flex-col h-full bg-[#050505]/80 backdrop-blur-xl border-r border-white/5">
       {/* Brand */}
       <div className="flex items-center gap-4 px-6 py-8 border-b border-white/5 relative overflow-hidden group">
-        <div className="absolute -left-10 -top-10 w-20 h-20 bg-[#00f0ff]/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute -left-10 -top-10 w-20 h-20 bg-[#ffffff]/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
         <Logo />
         <div className="min-w-0">
           <span className="text-white font-black text-lg font-orbitron leading-none block tracking-tighter">TZOMP</span>
           <div className="flex items-center gap-2 mt-1">
-            <div className="text-[#00f0ff] text-[9px] font-bold tracking-[3px] uppercase">HELP DESK</div>
-            <div className="bg-[#00f0ff]/10 text-[#00f0ff] text-[7px] font-black px-1.5 py-0.5 rounded border border-[#00f0ff]/20 uppercase">v2.0</div>
+            <div className="text-white/60 text-[9px] font-bold tracking-[3px] uppercase">HELP DESK</div>
+            <div className="bg-white/10 text-white text-[7px] font-black px-1.5 py-0.5 rounded border border-white/20 uppercase">v2.0</div>
           </div>
         </div>
       </div>
@@ -174,8 +174,8 @@ export default function Sidebar() {
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-lg transform group-hover:scale-105 transition-transform"
             style={{ 
-              background: `linear-gradient(135deg, ${currentUser?.avatarColor || '#7b2fff'}, #000000)`,
-              border: `1px solid ${currentUser?.avatarColor || '#7b2fff'}44`
+              background: `linear-gradient(135deg, ${currentUser?.avatarColor || '#cccccc'}, #000000)`,
+              border: `1px solid ${currentUser?.avatarColor || '#cccccc'}44`
             }}
           >
             {currentUser?.initials}
@@ -184,15 +184,15 @@ export default function Sidebar() {
             <div className="text-white text-xs font-bold truncate uppercase tracking-tighter">{currentUser?.name}</div>
             <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
               <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor] ${
-                currentUser?.role === 'Admin' ? 'text-purple-400 bg-purple-400' :
-                currentUser?.role === 'Agente' ? 'text-blue-400 bg-blue-400' : 'text-[#00f0ff] bg-[#00f0ff]'
+                currentUser?.role === 'Admin' ? 'text-white bg-white' :
+                currentUser?.role === 'Agente' ? 'text-gray-300 bg-gray-400' : 'text-[#8888aa] bg-gray-600'
               }`} />
               <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">{currentUser?.role}</span>
             </div>
           </div>
           <button
             onClick={logout}
-            className="text-[#8888aa] hover:text-red-400 transition-all hover:scale-110 p-2"
+            className="text-[#8888aa] hover:text-gray-400 transition-all hover:scale-110 p-2"
             title="Cerrar sesión"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -209,12 +209,12 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#030014]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 py-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
           <Logo />
           <div>
             <span className="text-white font-black text-sm font-orbitron tracking-tighter">TZOMP</span>
-            <div className="text-[#00f0ff] text-[8px] font-bold tracking-[2px]">HELP DESK</div>
+            <div className="text-[#ffffff] text-[8px] font-bold tracking-[2px]">HELP DESK</div>
           </div>
         </div>
         <button
@@ -236,7 +236,7 @@ export default function Sidebar() {
       {/* Backdrop */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-[60] bg-[#030014]/60 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-[60] bg-[#050505]/60 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}

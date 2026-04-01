@@ -18,16 +18,16 @@ const CATEGORIES = [
 ];
 
 const statusColor: Record<TicketStatus, string> = {
-  'Abierto': '#00f0ff',
-  'En Progreso': '#7b2fff',
-  'Resuelto': '#10b981',
-  'Cerrado': '#8888aa',
+  'Abierto': '#ffffff',
+  'En Progreso': '#cccccc',
+  'Resuelto': '#999999',
+  'Cerrado': '#666666',
 };
 const priorityColor: Record<string, string> = {
-  'Urgente': '#ff2d95',
-  'Alta': '#f97316',
-  'Media': '#eab308',
-  'Baja': '#8888aa',
+  'Urgente': '#ffffff',
+  'Alta': '#aaaaaa',
+  'Media': '#777777',
+  'Baja': '#444444',
 };
 
 function count<T extends string>(arr: T[], val: T) {
@@ -73,7 +73,7 @@ function SectionHeader({ title, subtitle, icon, children }: { title: string; sub
   return (
     <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 mt-12 border-b border-white/5 pb-8">
       <div className="flex items-center gap-6">
-        <div className="w-16 h-16 rounded-3xl bg-white/2 border border-white/10 flex items-center justify-center text-[#00f0ff] shadow-2xl">
+        <div className="w-16 h-16 rounded-3xl bg-white/2 border border-white/10 flex items-center justify-center text-[#ffffff] shadow-2xl">
           {icon}
         </div>
         <div>
@@ -91,15 +91,15 @@ function addPdfHeader(doc: jsPDF, title: string) {
   const pw = doc.internal.pageSize.getWidth();
 
   // Dark background fill
-  doc.setFillColor(3, 0, 20);
+  doc.setFillColor(10, 10, 10);
   doc.rect(0, 0, pw, 38, 'F');
-
-  // Cyan top border
-  doc.setFillColor(0, 240, 255);
+  
+  // White top border
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pw, 2.5, 'F');
-
+  
   // Bottom separator line
-  doc.setDrawColor(0, 240, 255);
+  doc.setDrawColor(50, 50, 50);
   doc.setLineWidth(0.5);
   doc.line(0, 38, pw, 38);
 
@@ -116,7 +116,7 @@ function addPdfHeader(doc: jsPDF, title: string) {
 
   // Report title (right)
   doc.setFontSize(11);
-  doc.setTextColor(0, 240, 255);
+  doc.setTextColor(200, 200, 200);
   doc.text(title.toUpperCase(), pw - 14, 17, { align: 'right' });
 
   // Metadata (right)
@@ -144,8 +144,8 @@ export default function ReportsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
-        <div className="w-24 h-24 rounded-[32px] bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center animate-pulse">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+        <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
         <div>
@@ -190,12 +190,12 @@ export default function ReportsPage() {
     
     // Custom Table Theme
     const tableStyles: any = {
-      fillColor: [3, 0, 20],
+      fillColor: [10, 10, 10],
       textColor: [255, 255, 255],
       font: 'helvetica',
       fontSize: 10,
       cellPadding: 4,
-      lineColor: [255, 255, 255, 0.05],
+      lineColor: [40, 40, 40],
       lineWidth: 0.1,
     };
 
@@ -210,11 +210,11 @@ export default function ReportsPage() {
         ['Saturación del Sistema', `${pct(byStatus[0].n + byStatus[1].n, total)}%`],
       ],
       styles: tableStyles,
-      headStyles: { fillColor: [0, 240, 255], textColor: [3, 0, 20], fontStyle: 'bold' },
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
     });
 
     const y = (doc as any).lastAutoTable.finalY + 15;
-    doc.setTextColor(0, 240, 255);
+    doc.setTextColor(150, 150, 150);
     doc.setFontSize(12);
     doc.text('DISTRIBUCIÓN POR ESTADO', 14, y);
 
@@ -223,7 +223,7 @@ export default function ReportsPage() {
       head: [['Estado', 'Cantidad', 'Impacto %']],
       body: byStatus.map(({ s, n }) => [s, n, `${pct(n, total)}%`]),
       styles: tableStyles,
-      headStyles: { fillColor: [123, 47, 255], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [60, 60, 60], textColor: [255, 255, 255] },
     });
 
     doc.save(`reporte-cyber-${new Date().getTime()}.pdf`);
@@ -249,9 +249,9 @@ export default function ReportsPage() {
         formatDate(t.createdAt),
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [0, 240, 255], textColor: [3, 0, 20], fontStyle: 'bold', fontSize: 8 },
-      styles: { fontSize: 7, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [8, 4, 30] },
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      styles: { fontSize: 7, cellPadding: 3, textColor: [200, 200, 200] },
+      alternateRowStyles: { fillColor: [15, 15, 15] },
       columnStyles: { 1: { cellWidth: 70 } },
       didDrawPage: (d) => {
         doc.setFontSize(7);
@@ -278,8 +278,8 @@ export default function ReportsPage() {
         msgs,
       ]),
       theme: 'grid',
-      headStyles: { fillColor: [123, 47, 255], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 4, textColor: [200, 200, 200] },
     });
     doc.save(`REPORTE-AGENTES-${new Date().getTime()}.pdf`);
     setExportLoading(null);
@@ -300,9 +300,9 @@ export default function ReportsPage() {
         return [d.name, n, open, ip, res, `${pct(n, total)}%`];
       }),
       theme: 'striped',
-      headStyles: { fillColor: [16, 185, 129], textColor: [3, 0, 20], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 4 },
-      alternateRowStyles: { fillColor: [8, 4, 30] },
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 4, textColor: [200, 200, 200] },
+      alternateRowStyles: { fillColor: [15, 15, 15] },
     });
     doc.save(`REPORTE-DEPT-${new Date().getTime()}.pdf`);
     setExportLoading(null);
@@ -325,14 +325,14 @@ export default function ReportsPage() {
         <button
           onClick={onPDF}
           disabled={exportLoading === `${id}-pdf`}
-          className="flex items-center gap-2 bg-[#ff2d95]/5 hover:bg-[#ff2d95]/20 text-[#ff2d95] border border-[#ff2d95]/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all disabled:opacity-50"
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all disabled:opacity-50"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           GÉN_PDF
         </button>
         <button
           onClick={onExcel}
-          className="flex items-center gap-2 bg-[#10b981]/5 hover:bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all"
+          className="flex items-center gap-2 bg-white/2 hover:bg-white/5 text-gray-400 border border-white/10 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
           GÉN_XLSX
@@ -349,12 +349,12 @@ export default function ReportsPage() {
   ] as const;
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            CENTRAL <span className="text-gradient">ANALÍTICA</span>
+            CENTRAL <span className="text-white">ANALÍTICA</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">INTELIGENCIA DE DATOS Y RENDIMIENTO OPERATIVO</p>
         </div>
@@ -362,10 +362,10 @@ export default function ReportsPage() {
 
       {/* Control Deck (Filters) */}
       <div className="glass-panel border border-white/5 rounded-[32px] p-8 flex flex-wrap items-center gap-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#00f0ff]/5 blur-3xl rounded-full" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ffffff]/5 blur-3xl rounded-full" />
         
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-2xl bg-[#00f0ff]/10 flex items-center justify-center text-[#00f0ff] border border-[#00f0ff]/20">
+          <div className="w-10 h-10 rounded-2xl bg-[#ffffff]/10 flex items-center justify-center text-[#ffffff] border border-[#ffffff]/20">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
           <span className="text-xs font-black font-orbitron text-white uppercase tracking-[2px]">PERÍODO_CRONOS:</span>
@@ -378,7 +378,7 @@ export default function ReportsPage() {
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className="bg-[#0a0025]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#00f0ff]/50 transition-all uppercase"
+              className="bg-[#121212]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -387,13 +387,13 @@ export default function ReportsPage() {
               type="date"
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              className="bg-[#0a0025]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#00f0ff]/50 transition-all uppercase"
+              className="bg-[#121212]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
             />
           </div>
           {(dateFrom || dateTo) && (
             <button
               onClick={() => { setDateFrom(''); setDateTo(''); }}
-              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-[#ff2d95] text-[9px] font-black uppercase tracking-[2px] rounded-xl border border-white/5 transition-all"
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-[#999999] text-[9px] font-black uppercase tracking-[2px] rounded-xl border border-white/5 transition-all"
             >
               LIMPIAR_FILTROS
             </button>
@@ -401,7 +401,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="ml-auto flex items-center gap-3">
-           <div className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_10px_#00f0ff] animate-pulse" />
+           <div className="w-2 h-2 rounded-full bg-[#ffffff] shadow-[0_0_10px_#ffffff] animate-pulse" />
            <span className="text-[#8888aa] text-[10px] font-black uppercase tracking-[3px]">
              {total} NODOS_SERIALIZADOS
            </span>
@@ -409,14 +409,14 @@ export default function ReportsPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-3 bg-[#0a0025]/30 p-2 rounded-[32px] border border-white/5 backdrop-blur-xl">
+      <div className="flex flex-wrap gap-3 bg-[#121212]/30 p-2 rounded-[32px] border border-white/5 backdrop-blur-xl">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-4 py-5 px-8 rounded-[24px] text-[10px] font-black tracking-[4px] transition-all duration-500 uppercase ${
               activeTab === tab.id
-                ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#030014] scale-[1.02]'
+                ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#050505] scale-[1.02]'
                 : 'text-[#8888aa] hover:text-white hover:bg-white/5'
             }`}
           >
@@ -438,16 +438,16 @@ export default function ReportsPage() {
           </SectionHeader>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <KpiCard label="TICKETS_TOTALES" value={total} color="#00f0ff" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
-            <KpiCard label="EFICIENCIA_SOLUCIÓN" value={`${resolutionRate}%`} sub={`${resolved} de ${total} resueltos`} color="#10b981" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
-            <KpiCard label="ACTIVOS_PENDIENTES" value={byStatus[0].n} sub="Sincronización requerida" color="#ff2d95" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
-            <KpiCard label="CARGA_ACTUAL" value={byStatus[1].n} sub="Operaciones en curso" color="#7b2fff" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>} />
+            <KpiCard label="TICKETS_TOTALES" value={total} color="#ffffff" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
+            <KpiCard label="EFICIENCIA_SOLUCIÓN" value={`${resolutionRate}%`} sub={`${resolved} de ${total} resueltos`} color="#aaaaaa" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
+            <KpiCard label="ACTIVOS_PENDIENTES" value={byStatus[0].n} sub="Sincronización requerida" color="#999999" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
+            <KpiCard label="CARGA_ACTUAL" value={byStatus[1].n} sub="Operaciones en curso" color="#cccccc" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="glass-panel border border-white/5 rounded-[40px] p-10 space-y-10 shadow-2xl relative overflow-hidden group">
-               <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#00f0ff]/5 blur-3xl rounded-full group-hover:bg-[#00f0ff]/10 transition-colors" />
-               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#00f0ff] pl-4">STATUS_DISTRIBUTION</h3>
+               <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#ffffff]/5 blur-3xl rounded-full group-hover:bg-[#ffffff]/10 transition-colors" />
+               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#ffffff] pl-4">STATUS_DISTRIBUTION</h3>
                <div className="space-y-8">
                  {byStatus.map(({ s, n }) => (
                    <BarRow key={s} label={s} value={n} max={total} color={statusColor[s]} />
@@ -455,8 +455,8 @@ export default function ReportsPage() {
                </div>
             </div>
             <div className="glass-panel border border-white/5 rounded-[40px] p-10 space-y-10 shadow-2xl relative overflow-hidden group">
-               <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#7b2fff]/5 blur-3xl rounded-full group-hover:bg-[#7b2fff]/10 transition-colors" />
-               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#7b2fff] pl-4">PRIORITY_MATRIX</h3>
+               <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#cccccc]/5 blur-3xl rounded-full group-hover:bg-[#cccccc]/10 transition-colors" />
+               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#cccccc] pl-4">PRIORITY_MATRIX</h3>
                <div className="space-y-8">
                  {byPriority.map(({ p, n }) => (
                    <BarRow key={p} label={p} value={n} max={total} color={priorityColor[p]} />
@@ -466,10 +466,10 @@ export default function ReportsPage() {
           </div>
 
           <div className="glass-panel border border-white/5 rounded-[40px] p-10 shadow-2xl">
-            <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#10b981] pl-4 mb-10">CATEGORIES_LOAD_BALANCING</h3>
+            <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#aaaaaa] pl-4 mb-10">CATEGORIES_LOAD_BALANCING</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-8">
                {byCategory.map(({ c, n }) => (
-                 <BarRow key={c} label={c} value={n} max={total} color="#00f0ff" />
+                 <BarRow key={c} label={c} value={n} max={total} color="#ffffff" />
                ))}
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function ReportsPage() {
                     filtered.map(t => (
                       <tr key={t.id} className="hover:bg-white/2 transition-colors group">
                         <td className="px-8 py-6">
-                          <div className="text-white font-black font-orbitron tracking-tighter text-sm uppercase group-hover:text-[#00f0ff] transition-colors">{t.title}</div>
+                          <div className="text-white font-black font-orbitron tracking-tighter text-sm uppercase group-hover:text-[#ffffff] transition-colors">{t.title}</div>
                           <div className="text-[#8888aa] text-[9px] font-bold uppercase tracking-widest mt-1">REF_{t.id.slice(0,8).toUpperCase()}</div>
                         </td>
                         <td className="px-8 py-6">
@@ -532,7 +532,7 @@ export default function ReportsPage() {
                         </td>
                         <td className="px-8 py-6">
                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.avatarColor : '#0a0025' }}>
+                              <div className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.avatarColor : '#121212' }}>
                                  {t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.initials : '??'}
                               </div>
                               <span className="text-white text-[11px] font-bold font-rajdhani uppercase tracking-tight">{t.assignedToName || 'PENDIENTE_ASIGNACIÓN'}</span>
@@ -564,14 +564,14 @@ export default function ReportsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {agentStats.map(({ agent, total: tot, resolved: res, rate, msgs }) => (
-              <div key={agent.id} className="glass-panel border border-white/5 rounded-[40px] p-8 group relative overflow-hidden transition-all duration-500 hover:border-[#00f0ff]/20">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#00f0ff]/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div key={agent.id} className="glass-panel border border-white/5 rounded-[40px] p-8 group relative overflow-hidden transition-all duration-500 hover:border-[#ffffff]/20">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffffff]/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex items-center gap-6 mb-8">
-                  <div className="w-16 h-16 rounded-[24px] border-2 border-[#030014] flex items-center justify-center text-white font-black font-orbitron text-xl shadow-2xl" style={{ backgroundColor: agent.avatarColor, boxShadow: `0 0 20px ${agent.avatarColor}44` }}>
+                  <div className="w-16 h-16 rounded-[24px] border-2 border-[#050505] flex items-center justify-center text-white font-black font-orbitron text-xl shadow-2xl" style={{ backgroundColor: agent.avatarColor, boxShadow: `0 0 20px ${agent.avatarColor}44` }}>
                     {agent.initials}
                   </div>
                   <div>
-                    <h4 className="text-white font-black font-orbitron tracking-tighter uppercase text-lg group-hover:text-[#00f0ff] transition-colors">{agent.name}</h4>
+                    <h4 className="text-white font-black font-orbitron tracking-tighter uppercase text-lg group-hover:text-[#ffffff] transition-colors">{agent.name}</h4>
                     <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-[3px] mt-1">{agent.role} // NIVEL_PRO</p>
                   </div>
                 </div>
@@ -581,12 +581,12 @@ export default function ReportsPage() {
                       <div className="text-white font-black font-orbitron text-lg tracking-tight">{tot}</div>
                       <div className="text-[#8888aa] text-[7px] font-black uppercase tracking-[2px]">CARGA</div>
                    </div>
-                   <div className="bg-[#10b981]/5 rounded-2xl p-4 border border-[#10b981]/10 text-center">
-                      <div className="text-[#10b981] font-black font-orbitron text-lg tracking-tight">{res}</div>
+                   <div className="bg-[#aaaaaa]/5 rounded-2xl p-4 border border-[#aaaaaa]/10 text-center">
+                      <div className="text-[#aaaaaa] font-black font-orbitron text-lg tracking-tight">{res}</div>
                       <div className="text-[#8888aa] text-[7px] font-black uppercase tracking-[2px]">OK</div>
                    </div>
-                   <div className="bg-[#7b2fff]/5 rounded-2xl p-4 border border-[#7b2fff]/10 text-center">
-                      <div className="text-[#7b2fff] font-black font-orbitron text-lg tracking-tight">{msgs}</div>
+                   <div className="bg-[#cccccc]/5 rounded-2xl p-4 border border-[#cccccc]/10 text-center">
+                      <div className="text-[#cccccc] font-black font-orbitron text-lg tracking-tight">{msgs}</div>
                       <div className="text-[#8888aa] text-[7px] font-black uppercase tracking-[2px]">STRM</div>
                    </div>
                 </div>
@@ -594,10 +594,10 @@ export default function ReportsPage() {
                 <div className="space-y-3">
                    <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[3px]">
                       <span className="text-[#8888aa]">SCORE_EFICIENCIA</span>
-                      <span className="text-[#10b981] font-orbitron">{rate}%</span>
+                      <span className="text-[#aaaaaa] font-orbitron">{rate}%</span>
                    </div>
                    <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                      <div className="h-full bg-[#10b981] transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${rate}%` }} />
+                      <div className="h-full bg-[#aaaaaa] transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${rate}%` }} />
                    </div>
                 </div>
               </div>
@@ -632,16 +632,16 @@ export default function ReportsPage() {
                            {d.name[0]}
                         </div>
                         <div>
-                           <h4 className="text-white font-black font-orbitron tracking-tight text-lg uppercase group-hover:text-[#00f0ff] transition-colors">{d.name}</h4>
+                           <h4 className="text-white font-black font-orbitron tracking-tight text-lg uppercase group-hover:text-[#ffffff] transition-colors">{d.name}</h4>
                            <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-[4px] mt-1">{n} OPERACIONES_DEDICADAS</p>
                         </div>
                      </div>
 
                      <div className="grid grid-cols-3 gap-3 mb-10">
                         {[ 
-                          {v: open, l: 'PND', c: 'text-[#00f0ff]', b: 'bg-[#00f0ff]/5 border-[#00f0ff]/10'},
-                          {v: ip, l: 'RUN', c: 'text-[#7b2fff]', b: 'bg-[#7b2fff]/5 border-[#7b2fff]/10'},
-                          {v: res, l: 'STB', c: 'text-[#10b981]', b: 'bg-[#10b981]/5 border-[#10b981]/10'}
+                          {v: open, l: 'PND', c: 'text-[#ffffff]', b: 'bg-[#ffffff]/5 border-[#ffffff]/10'},
+                          {v: ip, l: 'RUN', c: 'text-[#cccccc]', b: 'bg-[#cccccc]/5 border-[#cccccc]/10'},
+                          {v: res, l: 'STB', c: 'text-[#aaaaaa]', b: 'bg-[#aaaaaa]/5 border-[#aaaaaa]/10'}
                         ].map((s,i) => (
                           <div key={i} className={`p-4 rounded-2xl border ${s.b} text-center`}>
                              <div className={`text-xl font-black font-orbitron tracking-tighter ${s.c}`}>{s.v}</div>
@@ -657,9 +657,9 @@ export default function ReportsPage() {
                              <span>{pct(n, total)}% RED</span>
                           </div>
                           <div className="h-2 bg-white/5 rounded-full overflow-hidden flex border border-white/5 shadow-inner">
-                            <div className="bg-[#00f0ff] h-full shadow-[0_0_10px_#00f0ff]" style={{ width: `${pct(open, n)}%` }} />
-                            <div className="bg-[#7b2fff] h-full shadow-[0_0_10px_#7b2fff]" style={{ width: `${pct(ip, n)}%` }} />
-                            <div className="bg-[#10b981] h-full shadow-[0_0_10px_#10b981]" style={{ width: `${pct(res, n)}%` }} />
+                            <div className="bg-[#ffffff] h-full shadow-[0_0_10px_#ffffff]" style={{ width: `${pct(open, n)}%` }} />
+                            <div className="bg-[#cccccc] h-full shadow-[0_0_10px_#cccccc]" style={{ width: `${pct(ip, n)}%` }} />
+                            <div className="bg-[#aaaaaa] h-full shadow-[0_0_10px_#aaaaaa]" style={{ width: `${pct(res, n)}%` }} />
                           </div>
                        </div>
                      )}

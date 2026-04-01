@@ -4,17 +4,17 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
-  'En Progreso': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.2)]',
-  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
-  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20 shadow-[0_0_10px_rgba(100,116,139,0.2)]',
+  'Abierto': 'bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)]',
+  'En Progreso': 'bg-white/5 text-gray-300 border border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.05)]',
+  'Resuelto': 'bg-white/20 text-white border border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.15)]',
+  'Cerrado': 'bg-white/2 text-gray-500 border border-white/5',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-red-400 font-black',
-  'Alta': 'text-orange-400 font-bold',
-  'Media': 'text-yellow-400 font-semibold',
-  'Baja': 'text-slate-400',
+  'Urgente': 'text-white font-black',
+  'Alta': 'text-gray-200 font-bold',
+  'Media': 'text-gray-400 font-semibold',
+  'Baja': 'text-gray-600',
 };
 
 const StatCard = ({ label, value, icon, gradient, sub }: {
@@ -28,7 +28,7 @@ const StatCard = ({ label, value, icon, gradient, sub }: {
     <div className="relative z-10">
       <div className="text-2xl sm:text-3xl font-black text-white font-orbitron tracking-tighter">{value}</div>
       <div className="text-[#8888aa] text-[10px] sm:text-xs font-bold uppercase tracking-[2px] font-rajdhani">{label}</div>
-      {sub && <div className="text-[#00f0ff]/40 text-[9px] font-mono mt-1">{sub}</div>}
+      {sub && <div className="text-[#ffffff]/40 text-[9px] font-mono mt-1">{sub}</div>}
     </div>
   </div>
 );
@@ -57,9 +57,9 @@ export default function Dashboard() {
   };
 
   const byStatus = [
-    { label: 'Abiertos', count: stats.open, color: '#00f0ff' },
-    { label: 'En Progreso', count: stats.inProgress, color: '#eab308' },
-    { label: 'Resueltos', count: stats.resolved, color: '#10b981' },
+    { label: 'Abiertos', count: stats.open, color: '#ffffff' },
+    { label: 'En Progreso', count: stats.inProgress, color: '#bbbbbb' },
+    { label: 'Resueltos', count: stats.resolved, color: '#aaaaaa' },
   ];
   const maxCount = Math.max(...byStatus.map(s => s.count), 1);
 
@@ -67,7 +67,7 @@ export default function Dashboard() {
   departments.forEach(d => { deptMap[d.id] = d.name; });
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -75,7 +75,7 @@ export default function Dashboard() {
             MÓDULO <span className="text-gradient">OPERATIVO</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
-            CONEXIÓN ESTABLECIDA // <span className="text-[#00f0ff] animate-pulse">AGENTE: {currentUser?.name?.toUpperCase()}</span>
+            CONEXIÓN ESTABLECIDA // <span className="text-[#ffffff] animate-pulse">AGENTE: {currentUser?.name?.toUpperCase()}</span>
           </p>
         </div>
         <button
@@ -94,28 +94,28 @@ export default function Dashboard() {
         <StatCard 
           label="Total Unidades" 
           value={stats.total} 
-          gradient="from-[#7b2fff] to-[#00f0ff]"
+          gradient="from-white/10 to-white/20"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
           sub="DATA_SYNC: 100%"
         />
         <StatCard 
           label="Soporte Activo" 
           value={stats.open} 
-          gradient="from-[#00f0ff] to-[#00a8b5]"
+          gradient="from-white/5 to-white/15"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
           sub="URGENCY: HIGH"
         />
         <StatCard 
           label="En Ejecución" 
           value={stats.inProgress} 
-          gradient="from-[#eab308] to-[#ffaa00]"
+          gradient="from-white/10 to-white/5"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
           sub="PROCESS_THROTTLE: 0%"
         />
         <StatCard 
           label="Finalizados" 
           value={stats.resolved} 
-          gradient="from-[#10b981] to-[#34d399]"
+          gradient="from-white/20 to-white/5"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
           sub="STATUS: OPTIMAL"
         />
@@ -131,7 +131,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => setPage('tickets')}
-              className="text-[#00f0ff] hover:text-[#7b2fff] text-[10px] font-bold tracking-[2px] transition uppercase group"
+              className="text-[#ffffff] hover:text-[#cccccc] text-[10px] font-bold tracking-[2px] transition uppercase group"
             >
               ACCEDER AL ARCHIVO <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
             </button>
@@ -142,7 +142,7 @@ export default function Dashboard() {
               <div className="py-20 text-center">
                 <div className="text-5xl mb-6 grayscale opacity-20">🎫</div>
                 <p className="text-[#8888aa] text-xs font-bold tracking-[3px] uppercase">No se detectan transmisiones activas</p>
-                <button onClick={() => setPage('new-ticket')} className="mt-4 text-[#00f0ff] text-[10px] font-bold hover:underline uppercase tracking-[2px]">
+                <button onClick={() => setPage('new-ticket')} className="mt-4 text-[#ffffff] text-[10px] font-bold hover:underline uppercase tracking-[2px]">
                   + INICIAR NUEVA SECUENCIA
                 </button>
               </div>
@@ -161,7 +161,7 @@ export default function Dashboard() {
                     <tr
                       key={ticket.id}
                       onClick={() => handleTicketClick(ticket)}
-                      className="hover:bg-[#00f0ff]/5 cursor-pointer transition-colors group"
+                      className="hover:bg-[#ffffff]/5 cursor-pointer transition-colors group"
                     >
                       <td className="px-4 py-5">
                         <div className="text-white text-sm font-bold truncate max-w-[200px] font-rajdhani">{ticket.title}</div>
@@ -215,12 +215,12 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-[#7b2fff] to-[#00f0ff] relative overflow-hidden group">
+          <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden group">
             <div className="relative z-10">
-              <div className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-1">IA_PREDICTION</div>
+              <div className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">IA_PREDICTION</div>
               <div className="text-white font-bold text-sm leading-tight">Optimización de carga sugerida para el turno B.</div>
             </div>
-            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/20 blur-2xl rounded-full" />
+            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/5 blur-2xl rounded-full" />
           </div>
         </div>
       </div>

@@ -4,17 +4,17 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]',
-  'En Progreso': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]',
-  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
-  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20 shadow-[0_0_10px_rgba(100,116,139,0.1)]',
+  'Abierto': 'bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.05)]',
+  'En Progreso': 'bg-white/5 text-gray-300 border border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.05)]',
+  'Resuelto': 'bg-white/20 text-white border border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.1)]',
+  'Cerrado': 'bg-white/2 text-gray-500 border border-white/5',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-red-400 border-red-500/20 bg-red-500/5',
-  'Alta': 'text-orange-400 border-orange-500/20 bg-orange-500/5',
-  'Media': 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5',
-  'Baja': 'text-slate-400 border-slate-500/20 bg-slate-500/5',
+  'Urgente': 'text-white border-white/40 bg-white/10',
+  'Alta': 'text-gray-200 border-white/20 bg-white/5',
+  'Media': 'text-gray-400 border-white/10 bg-white/2',
+  'Baja': 'text-gray-600 border-white/5 bg-white/1',
 };
 
 export default function TicketList() {
@@ -54,12 +54,12 @@ export default function TicketList() {
   const hasFilters = search || statusFilter !== 'all' || priorityFilter !== 'all';
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ARCHIVOS <span className="text-gradient">TICKETS</span>
+            ARCHIVOS <span className="text-white">TICKETS</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
             REGISTRO DE INCIDENCIAS // {sorted.length} ENTRADAS LOCALIZADAS
@@ -69,7 +69,7 @@ export default function TicketList() {
           <button
             onClick={refreshData}
             disabled={loading}
-            className="flex items-center gap-2 glass-panel border border-white/5 hover:border-[#00f0ff]/30 text-[#8888aa] hover:text-[#00f0ff] px-5 py-3 rounded-2xl text-[10px] font-bold tracking-[2px] transition uppercase"
+            className="flex items-center gap-2 glass-panel border border-white/5 hover:border-[#ffffff]/30 text-[#8888aa] hover:text-[#ffffff] px-5 py-3 rounded-2xl text-[10px] font-bold tracking-[2px] transition uppercase"
           >
             <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -92,20 +92,20 @@ export default function TicketList() {
       <div className="glass-panel rounded-3xl p-6 border border-white/5">
         <div className="flex flex-col lg:flex-row gap-4 items-center">
           <div className="relative flex-1 w-full group">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00f0ff]/40 group-focus-within:text-[#00f0ff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff]/40 group-focus-within:text-[#ffffff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               type="text"
               placeholder="ESCANEAR_BASES_DE_DATOS..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#0a0025]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#00f0ff]/50 transition-all font-mono"
+              className="w-full bg-[#121212]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
             />
           </div>
           <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto">
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="flex-1 lg:min-w-[180px] bg-[#0a0025]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#00f0ff]/50 cursor-pointer transition-all"
+              className="flex-1 lg:min-w-[180px] bg-[#121212]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#ffffff]/50 cursor-pointer transition-all"
             >
               <option value="all">TODOS LOS ESTADOS</option>
               <option value="Abierto">ABIERTO</option>
@@ -116,7 +116,7 @@ export default function TicketList() {
             <select
               value={priorityFilter}
               onChange={e => setPriorityFilter(e.target.value)}
-              className="flex-1 lg:min-w-[180px] bg-[#0a0025]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#00f0ff]/50 cursor-pointer transition-all"
+              className="flex-1 lg:min-w-[180px] bg-[#121212]/50 border border-white/5 rounded-2xl px-5 py-4 text-white text-[10px] font-bold font-rajdhani tracking-[2px] uppercase focus:outline-none focus:border-[#ffffff]/50 cursor-pointer transition-all"
             >
               <option value="all">TODAS LAS PRIORIDADES</option>
               <option value="Urgente">URGENTE</option>
@@ -125,7 +125,7 @@ export default function TicketList() {
               <option value="Baja">BAJA</option>
             </select>
             {hasFilters && (
-              <button onClick={clearFilters} className="px-4 py-4 text-[#ff2d95] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[2px] underline underline-offset-4 decoration-[#ff2d95]/40 shrink-0">
+              <button onClick={clearFilters} className="px-4 py-4 text-[#999999] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[2px] underline underline-offset-4 decoration-[#999999]/40 shrink-0">
                 PURGAR_FILTROS
               </button>
             )}
@@ -160,21 +160,21 @@ export default function TicketList() {
                   <tr
                     key={ticket.id}
                     onClick={() => handleTicketClick(ticket)}
-                    className="hover:bg-[#00f0ff]/5 cursor-pointer transition-all group relative duration-300"
+                    className="hover:bg-[#ffffff]/5 cursor-pointer transition-all group relative duration-300"
                   >
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
-                        <div className="text-white text-sm font-bold font-orbitron tracking-tighter group-hover:text-[#00f0ff] transition-colors truncate max-w-[300px]">
+                        <div className="text-white text-sm font-bold font-orbitron tracking-tighter group-hover:text-[#ffffff] transition-colors truncate max-w-[300px]">
                           {ticket.title.toUpperCase()}
                         </div>
                         <div className="text-[#8888aa] text-[10px] mt-2 font-mono flex items-center gap-3">
-                          <span className="text-[#00f0ff]/50">ID: {ticket.id.slice(0,8)}</span>
+                          <span className="text-[#ffffff]/50">ID: {ticket.id.slice(0,8)}</span>
                           <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
                           <span>{ticket.category.toUpperCase()}</span>
                           {ticket.messages.length > 0 && (
                             <>
                               <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                              <span className="text-[#7b2fff] font-bold">{ticket.messages.length} COMENTARIOS</span>
+                              <span className="text-[#cccccc] font-bold">{ticket.messages.length} COMENTARIOS</span>
                             </>
                           )}
                         </div>
@@ -204,7 +204,7 @@ export default function TicketList() {
                         {ticket.assignedToName && (
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[9px] text-[#8888aa] font-bold tracking-widest">OP:</span>
-                            <span className="text-[#00f0ff] text-[9px] font-bold uppercase tracking-tighter">{ticket.assignedToName}</span>
+                            <span className="text-[#ffffff] text-[9px] font-bold uppercase tracking-tighter">{ticket.assignedToName}</span>
                           </div>
                         )}
                       </div>

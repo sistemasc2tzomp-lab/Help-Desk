@@ -3,9 +3,9 @@ import { useApp } from '../context/AppContext';
 import { Department } from '../types';
 
 const PRESET_COLORS = [
-  '#00f0ff', '#7b2fff', '#10b981', '#ff2d95',
-  '#eab308', '#0ea5e9', '#f43f5e', '#84cc16',
-  '#a855f7', '#f97316', '#3b82f6', '#22c55e',
+  '#ffffff', '#eeeeee', '#cccccc', '#bbbbbb',
+  '#aaaaaa', '#999999', '#777777', '#555555',
+  '#444444', '#333333', '#222222', '#111111',
 ];
 
 interface DeptFormData {
@@ -15,7 +15,7 @@ interface DeptFormData {
   jefe: string;
 }
 
-const defaultForm: DeptFormData = { name: '', description: '', color: '#00f0ff', jefe: '' };
+const defaultForm: DeptFormData = { name: '', description: '', color: '#ffffff', jefe: '' };
 
 function StatCard({ label, value, color, icon }: { label: string; value: number; color: string; icon?: React.ReactNode }) {
   return (
@@ -41,8 +41,8 @@ export default function DepartmentsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
-        <div className="w-24 h-24 rounded-[32px] bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center animate-pulse">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+        <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
         <div>
@@ -101,18 +101,18 @@ export default function DepartmentsPage() {
   const unassigned = totalTickets - assigned;
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ESTACIÓN <span className="text-gradient">SECTORES</span>
+            ESTACIÓN <span className="text-white">SECTORES</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">GESTIÓN DE DEPARTAMENTOS Y RECURSOS</p>
         </div>
         <button
           onClick={openCreate}
-          className="btn-futuristic flex items-center gap-3 px-8 py-4 text-[10px] tracking-[3px] group shadow-[0_0_30px_rgba(0,240,255,0.1)] hover:shadow-[0_0_50px_rgba(0,240,255,0.3)] transition-all"
+          className="btn-futuristic flex items-center gap-3 px-8 py-4 text-[10px] tracking-[3px] group shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all"
         >
           <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           INSTALAR SECTOR
@@ -121,22 +121,22 @@ export default function DepartmentsPage() {
 
       {/* Analytics Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <StatCard label="SECTORES_ACTIVOS" value={departments.length} color="#00f0ff" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
-        <StatCard label="FLUJO_TOTAL" value={totalTickets} color="#7b2fff" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
-        <StatCard label="RECORRIDOS_OK" value={assigned} color="#10b981" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
-        <StatCard label="SIN_ALOCACIÓN" value={unassigned} color="#ff2d95" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
+        <StatCard label="SECTORES_ACTIVOS" value={departments.length} color="#ffffff" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
+        <StatCard label="FLUJO_TOTAL" value={totalTickets} color="#cccccc" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
+        <StatCard label="RECORRIDOS_OK" value={assigned} color="#aaaaaa" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
+        <StatCard label="SIN_ALOCACIÓN" value={unassigned} color="#999999" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
       </div>
 
       {/* Control Unit */}
       <div className="flex flex-col sm:flex-row gap-6 items-center">
         <div className="relative flex-1 w-full group">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00f0ff]/40 group-focus-within:text-[#00f0ff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff]/40 group-focus-within:text-[#ffffff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
             type="text"
             placeholder="SCAN_DEPARTMENTS..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[#0a0025]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm font-mono focus:outline-none focus:border-[#00f0ff]/50 transition-all"
+            className="w-full bg-[#121212]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm font-mono focus:outline-none focus:border-[#ffffff]/50 transition-all"
           />
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function DepartmentsPage() {
             const total = deptTickets.length;
 
             return (
-              <div key={dept.id} className="glass-panel border border-white/5 rounded-[40px] overflow-hidden group hover:border-[#00f0ff]/20 transition-all duration-500 shadow-2xl relative">
+              <div key={dept.id} className="glass-panel border border-white/5 rounded-[40px] overflow-hidden group hover:border-[#ffffff]/20 transition-all duration-500 shadow-2xl relative">
                 {/* Glow Background */}
                 <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: dept.color }} />
                 
@@ -173,18 +173,18 @@ export default function DepartmentsPage() {
                         {dept.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-white font-black font-orbitron tracking-tight text-xl uppercase group-hover:text-[#00f0ff] transition-colors">{dept.name}</h3>
+                        <h3 className="text-white font-black font-orbitron tracking-tight text-xl uppercase group-hover:text-[#ffffff] transition-colors">{dept.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                            <span className="text-[#8888aa] text-[9px] font-black uppercase tracking-[2px]">Encargado:</span>
-                           <span className="text-[#00f0ff] text-[10px] font-bold font-rajdhani uppercase tracking-tighter truncate max-w-[120px]">{dept.jefe || 'POR_ASIGNAR'}</span>
+                           <span className="text-[#ffffff] text-[10px] font-bold font-rajdhani uppercase tracking-tighter truncate max-w-[120px]">{dept.jefe || 'POR_ASIGNAR'}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                       <button onClick={() => openEdit(dept)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#00f0ff] transition-all border border-white/5 group/btn">
+                       <button onClick={() => openEdit(dept)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#ffffff] transition-all border border-white/5 group/btn">
                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover/btn:rotate-12 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                        </button>
-                       <button onClick={() => setConfirmDelete(dept.id)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#ff2d95] transition-all border border-white/5 group/btn">
+                       <button onClick={() => setConfirmDelete(dept.id)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#999999] transition-all border border-white/5 group/btn">
                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover/btn:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                        </button>
                     </div>
@@ -196,11 +196,11 @@ export default function DepartmentsPage() {
 
                   <div className="grid grid-cols-3 gap-4 mb-8">
                     {[
-                      { l: 'Abiertos', v: open, c: 'text-yellow-400', b: 'bg-yellow-400/10 border-yellow-400/20' },
-                      { l: 'En_Curso', v: inProgress, c: 'text-blue-400', b: 'bg-blue-400/10 border-blue-400/20' },
-                      { l: 'Auditados', v: resolved, c: 'text-[#10b981]', b: 'bg-[#10b981]/10 border-[#10b981]/20' },
+                      { l: 'Abiertos', v: open, c: 'text-white', b: 'bg-white/10 border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.05)]' },
+                      { l: 'En_Curso', v: inProgress, c: 'text-gray-300', b: 'bg-white/5 border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.02)]' },
+                      { l: 'Auditados', v: resolved, c: 'text-gray-500', b: 'bg-white/2 border-white/5' },
                     ].map((s, idx) => (
-                      <div key={idx} className={`p-3 rounded-2xl border ${s.b} text-center flex flex-col items-center justify-center`}>
+                      <div key={idx} className={`p-3 rounded-2xl border ${s.b} text-center flex flex-col items-center justify-center transition-all hover:scale-105`}>
                         <div className={`text-xl font-black font-orbitron tracking-tighter ${s.c}`}>{s.v}</div>
                         <div className="text-[#8888aa] text-[8px] font-black uppercase tracking-[2px]">{s.l}</div>
                       </div>
@@ -211,12 +211,12 @@ export default function DepartmentsPage() {
                     <div className="mb-8 space-y-2">
                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[3px]">
                         <span className="text-[#8888aa]">{total} NODOS TOTAL</span>
-                        <span className="text-[#00f0ff]">{Math.round((resolved / total) * 100)}% COMPLETADO</span>
+                        <span className="text-[#ffffff]">{Math.round((resolved / total) * 100)}% COMPLETADO</span>
                       </div>
                       <div className="h-2 bg-white/5 rounded-full overflow-hidden flex shadow-inner">
-                        <div className="bg-yellow-400 h-full transition-all duration-700" style={{ width: `${(open / total) * 100}%` }} />
-                        <div className="bg-blue-400 h-full transition-all duration-700" style={{ width: `${(inProgress / total) * 100}%` }} />
-                        <div className="bg-[#10b981] h-full transition-all duration-700" style={{ width: `${(resolved / total) * 100}%` }} />
+                        <div className="bg-gray-400 h-full transition-all duration-700" style={{ width: `${(open / total) * 100}%` }} />
+                        <div className="bg-gray-500 h-full transition-all duration-700" style={{ width: `${(inProgress / total) * 100}%` }} />
+                        <div className="bg-gray-600 h-full transition-all duration-700" style={{ width: `${(resolved / total) * 100}%` }} />
                       </div>
                     </div>
                   )}
@@ -225,9 +225,9 @@ export default function DepartmentsPage() {
                     <div className="flex items-center gap-3">
                        <div className="flex -space-x-2">
                          {deptUsers.slice(0, 3).map((u, i) => (
-                           <div key={i} className="w-7 h-7 rounded-lg border-2 border-[#030014] flex items-center justify-center text-white text-[8px] font-black" style={{ backgroundColor: u.avatarColor }}>{u.initials}</div>
+                           <div key={i} className="w-7 h-7 rounded-lg border-2 border-[#050505] flex items-center justify-center text-white text-[8px] font-black" style={{ backgroundColor: u.avatarColor }}>{u.initials}</div>
                          ))}
-                         {deptUsers.length > 3 && <div className="w-7 h-7 rounded-lg border-2 border-[#030014] bg-white/5 flex items-center justify-center text-[#8888aa] text-[8px] font-black">+{deptUsers.length - 3}</div>}
+                         {deptUsers.length > 3 && <div className="w-7 h-7 rounded-lg border-2 border-[#050505] bg-white/5 flex items-center justify-center text-[#8888aa] text-[8px] font-black">+{deptUsers.length - 3}</div>}
                        </div>
                        <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">{deptUsers.length} OPERADORES</span>
                     </div>
@@ -243,56 +243,56 @@ export default function DepartmentsPage() {
       {/* FORM MODAL */}
       {showForm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="glass-panel border-white/10 rounded-[40px] w-full max-w-lg p-10 shadow-[0_0_60px_rgba(0,240,255,0.1)] relative overflow-hidden animate-fade-in">
+          <div className="glass-panel border-white/10 rounded-[40px] w-full max-w-lg p-10 shadow-[0_0_60px_rgba(255,255,255,0.05)] relative overflow-hidden animate-fade-in">
             <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
               <div>
                 <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-2xl">
-                  {editingId ? 'ACTUALIZAR' : 'REGISTRAR'} <span className="text-gradient">SECTOR</span>
+                  {editingId ? 'ACTUALIZAR' : 'REGISTRAR'} <span className="text-white">SECTOR</span>
                 </h3>
                 <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase mt-2">Protocolo de Configuración v4.2</p>
               </div>
-              <button onClick={() => setShowForm(false)} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#ff2d95] transition-all border border-white/5 group">
+              <button onClick={() => setShowForm(false)} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl text-[#8888aa] hover:text-[#999999] transition-all border border-white/5 group">
                 <svg className="w-6 h-6 group-hover:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
 
             <form onSubmit={handleSave} className="space-y-8">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Identificador de Sector</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Identificador de Sector</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="ID_DEPT_NAME"
                   required
-                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-orbitron tracking-tight focus:outline-none focus:border-[#00f0ff]/50 transition-all neon-border"
+                  className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Bitácora Operativa (Descripción)</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Bitácora Operativa (Descripción)</label>
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Detalla las responsabilidades y el alcance de este sector..."
                   rows={3}
-                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] font-rajdhani font-semibold focus:outline-none focus:border-[#00f0ff]/50 transition-all resize-none"
+                  className="w-full bg-[#121212]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Responsable del Protocolo</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Responsable del Protocolo</label>
                 <input
                   type="text"
                   value={form.jefe}
                   onChange={e => setForm(f => ({ ...f, jefe: e.target.value }))}
                   placeholder="COMMAND_HEAD_ID"
-                  className="w-full bg-[#0a0025]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold focus:outline-none focus:border-[#00f0ff]/50 transition-all"
+                  className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all"
                 />
               </div>
 
               <div className="space-y-5">
-                <label className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1">Código de Color de Red</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Código de Color de Red</label>
                 <div className="flex flex-wrap gap-3">
                   {PRESET_COLORS.map(c => (
                     <button
@@ -341,8 +341,8 @@ export default function DepartmentsPage() {
       {/* DELETE MODAL */}
       {confirmDelete && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-          <div className="glass-panel border-red-500/20 rounded-[40px] w-full max-w-sm p-10 shadow-[0_0_100px_rgba(255,45,149,0.1)] relative overflow-hidden text-center">
-            <div className="w-20 h-20 bg-red-500/10 border-2 border-red-500/30 rounded-[28px] flex items-center justify-center mx-auto mb-8 animate-pulse text-red-500">
+          <div className="glass-panel border-gray-600/20 rounded-[40px] w-full max-w-sm p-10 shadow-[0_0_100px_rgba(255,45,149,0.1)] relative overflow-hidden text-center">
+            <div className="w-20 h-20 bg-gray-600/10 border-2 border-gray-600/30 rounded-[28px] flex items-center justify-center mx-auto mb-8 animate-pulse text-red-500">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
             </div>
             <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-xl mb-4">¿PURGAR SECTOR?</h3>
@@ -352,7 +352,7 @@ export default function DepartmentsPage() {
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => handleDelete(confirmDelete)}
-                className="w-full py-5 bg-red-600 hover:bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[4px] transition-all"
+                className="w-full py-5 bg-red-600 hover:bg-gray-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[4px] transition-all"
               >
                 CONFIRMAR PURGA
               </button>

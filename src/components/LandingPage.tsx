@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
         this.speedX = (Math.random() - 0.5) * 0.5;
         this.speedY = (Math.random() - 0.5) * 0.5;
         this.opacity = Math.random() * 0.5 + 0.1;
-        this.color = ['0, 240, 255', '123, 47, 255', '255, 45, 149'][Math.floor(Math.random() * 3)];
+        this.color = ['255, 255, 255', '200, 200, 200', '150, 150, 150'][Math.floor(Math.random() * 3)];
       }
 
       update() {
@@ -124,7 +124,7 @@ const LandingPage: React.FC = () => {
 
           if (dist < 150) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 240, 255, ${0.05 * (1 - dist / 150)})`;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 * (1 - dist / 150)})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -215,23 +215,23 @@ const LandingPage: React.FC = () => {
   const runTerminal = () => {
     const terminalLines = [
       { prompt: '$ ', command: 'helpdesk --init --mode=production', delay: 300 },
-      { output: '⚡ Initializing Help Desk Tzomp v3.0...', delay: 800 },
-      { output: '📦 Loading AI modules...', delay: 600, class: 'warning' },
-      { output: '   ✓ NLP Engine loaded', delay: 400, class: 'success' },
-      { output: '   ✓ Sentiment Analysis ready', delay: 400, class: 'success' },
-      { output: '   ✓ Auto-classification active', delay: 400, class: 'success' },
-      { output: '   ✓ Knowledge Base synced', delay: 400, class: 'success' },
-      { output: '🔐 Security protocols enabled (Zero Trust)', delay: 600, class: 'warning' },
-      { output: '📊 Dashboard connected — real-time metrics active', delay: 500, class: 'success' },
-      { output: '🌐 API Gateway: https://api.tzomp.lab/v3', delay: 500 },
+      { output: '[-] Initializing Help Desk Tzomp v3.0...', delay: 800 },
+      { output: '[!] Loading Core modules...', delay: 600, class: 'output' },
+      { output: '   + System Engine loaded', delay: 400, class: 'output' },
+      { output: '   + Analysis ready', delay: 400, class: 'output' },
+      { output: '   + Auto-classification active', delay: 400, class: 'output' },
+      { output: '   + Knowledge Base synced', delay: 400, class: 'output' },
+      { output: '[!] Security protocols enabled (Zero Trust)', delay: 600, class: 'output' },
+      { output: '[+] Dashboard connected — real-time metrics active', delay: 500, class: 'output' },
+      { output: '[-] API Gateway: https://api.tzomp.lab/v3', delay: 500 },
       { prompt: '$ ', command: 'status --all', delay: 800 },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'success' },
-      { output: '  AI ENGINE:     ██████████████ ACTIVE', delay: 400, class: 'success' },
-      { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'success' },
-      { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'success' },
+      { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'output' },
+      { output: '  SYSTEM ENGINE: ██████████████ ACTIVE', delay: 400, class: 'output' },
+      { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'output' },
+      { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'output' },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '✅ All systems operational. Ready for requests.', delay: 600, class: 'success' },
+      { output: '[OK] All systems operational. Ready for requests.', delay: 600, class: 'output' },
     ];
 
     const body = terminalBodyRef.current;
@@ -268,7 +268,7 @@ const LandingPage: React.FC = () => {
   };
 
   const initTypeEffect = () => {
-    const heroWords = ['Inteligencia Artificial', 'Machine Learning', 'Automatización', 'Innovación'];
+    const heroWords = ['Gestión Inteligente', 'Operación Eficiente', 'Automatización', 'Innovación'];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="img/logo_tzompantepec.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]" />
+          <img src="img/logo_tzompantepec.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
           <span className="nav-title">TZOMP LAB</span>
         </a>
 
