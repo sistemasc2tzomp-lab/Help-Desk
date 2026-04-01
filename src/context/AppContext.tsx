@@ -57,40 +57,48 @@ function normalizeRole(raw: unknown): User['role'] {
 // Maps tabla "perfiles": id, nombre, email, avatar, rol, departamento_id, activo, creado_en
 function rowToUser(r: Record<string, unknown>): User {
   const name = String(r.nombre || r.name || r.full_name || r.email || 'Usuario');
+  const roleRaw = r.rol || r.role || r.rango || 'Cliente';
   return {
     id: String(r.id),
     name,
     initials: getInitials(name),
     email: String(r.email || ''),
-    role: normalizeRole(r.rol || r.role),
+    role: normalizeRole(roleRaw),
     avatarColor: colorFor(String(r.id)),
-    departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
+    departmentId: r.departamento_id ? String(r.departamento_id) : (r.department_id ? String(r.department_id) : undefined),
   };
 }
 
 // Maps tabla "messages": id, ticket_id, author_id, content, is_internal, image_url, created_at
 function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User> = {}): Message {
-  const userId = String(r.usuario_id || r.author_id || '');
+  const userId = String(r.usuario_id || r.author_id || r.user_id || '');
   const author = usersMap[userId];
-  const authorName = author?.name || String(r.author_name || 'Usuario');
+  const authorName = author?.name || String(r.author_name || r.nombre_autor || 'Usuario');
+  
+  // content/contenido
+  const content = String(r.contenido || r.content || r.mensaje || '');
+  
+  // timestamp/fecha
+  const timestamp = String(r.creado_en || r.created_at || r.fecha || new Date().toISOString());
+
   return {
     id: String(r.id),
-    ticketId: String(r.ticket_id || ''),
+    ticketId: String(r.ticket_id || r.id_ticket || ''),
     authorId: userId,
     authorName,
     authorInitials: getInitials(authorName),
     authorColor: author?.avatarColor || colorFor(userId),
     authorRole: author?.role || 'Cliente',
-    content: String(r.contenido || r.content || ''),
-    timestamp: String(r.creado_en || r.created_at || new Date().toISOString()),
-    isInternal: Boolean(r.es_interno || r.is_internal),
+    content,
+    timestamp,
+    isInternal: Boolean(r.es_interno || r.is_internal || r.interno),
     // imagenes is jsonb array, take first element's url if present
     imageUrl: (() => {
       const imgs = r.imagenes as unknown;
       if (Array.isArray(imgs) && imgs.length > 0) {
         return String(imgs[0].url || imgs[0] || '');
       }
-      return r.image_url ? String(r.image_url) : undefined;
+      return (r.image_url || r.imagen || r.url_foto) ? String(r.image_url || r.imagen || r.url_foto) : undefined;
     })(),
   };
 }
@@ -99,7 +107,7 @@ function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User>
 //   creado_por_id, asignado_a_id, etiquetas, imagenes(jsonb), creado_en, actualizado_en
 function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap: Record<string, User> = {}): Ticket {
   const creatorId = String(r.creado_por_id || r.created_by_id || '');
-  const assigneeId = r.asignado_a_id || r.assigned_to_id ? String(r.asignado_a_id || r.assigned_to_id) : undefined;
+  const assigneeId = (r.asignado_a_id || r.assigned_to_id) ? String(r.asignado_a_id || r.assigned_to_id) : undefined;
   const creator = usersMap[creatorId];
   const assignee = assigneeId ? usersMap[assigneeId] : undefined;
 
@@ -107,17 +115,22 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
   const imageUrl = (() => {
     const imgs = r.imagenes as unknown;
     if (Array.isArray(imgs) && imgs.length > 0) return String(imgs[0].url || imgs[0] || '');
-    return (r.image_url || r.attachment_url) ? String(r.image_url || r.attachment_url) : undefined;
+    const possibleImg = r.image_url || r.attachment_url || r.imagen || r.url_foto;
+    return possibleImg ? String(possibleImg) : undefined;
   })();
+
+  const status = String(r.estado || r.status || 'Abierto');
+  const priority = String(r.prioridad || r.priority || 'Media');
+  const category = String(r.categoria || r.category || 'General');
 
   return {
     id: String(r.id),
-    title: String(r.titulo || r.title || ''),
-    description: String(r.descripcion || r.description || ''),
-    status: (r.estado || r.status || 'Abierto') as TicketStatus,
-    priority: (r.prioridad || r.priority || 'Media') as TicketPriority,
-    category: (r.categoria || r.category || 'General') as TicketCategory,
-    departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
+    title: String(r.titulo || r.title || r.asunto || ''),
+    description: String(r.descripcion || r.description || r.detalles || ''),
+    status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,
+    priority: (priority.charAt(0).toUpperCase() + priority.slice(1)) as TicketPriority,
+    category: (category.charAt(0).toUpperCase() + category.slice(1)) as TicketCategory,
+    departmentId: r.departamento_id ? String(r.departamento_id) : (r.department_id ? String(r.department_id) : undefined),
     createdById: creatorId,
     createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || 'Usuario'),
     assignedToId: assigneeId,
@@ -326,15 +339,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const name = authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
         authUser.email?.split('@')[0] || 'Usuario';
-      const roleToSave: User['role'] = metaRole !== 'Cliente' ? metaRole : 'Cliente';
+      const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
 
-      await sb.from('perfiles').upsert({
-        id: authUser.id,
-        nombre: name,
-        email: authUser.email,
-        rol: roleToSave,
-        activo: true,
-      });
+      // Fallback insertion for perfiles (supports name/nombre and role/rol)
+      const profileData: any = { id: authUser.id, email: authUser.email, activo: true };
+      
+      // Determine if table uses spanish or english
+      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' }).catch(() => ({ data: null }));
+      const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
+
+      if (columns.includes('nombre')) profileData.nombre = name;
+      else profileData.name = name;
+
+      if (columns.includes('rol')) profileData.rol = roleToSave;
+      else profileData.role = roleToSave;
+
+      await sb.from('perfiles').upsert(profileData);
 
       const user: User = {
         id: authUser.id,
@@ -372,16 +392,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const nextFolioNumber = (count || 0) + 1;
       const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
 
-      const { data, error } = await sb.from('tickets').insert({
+      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'tickets' }).catch(() => ({ data: null }));
+      const columns = Array.isArray(cols) ? cols : ['id', 'titulo', 'estado', 'departamento_id'];
+
+      const insertData: any = {
         id: customFolio,
         titulo: ticketData.title,
         descripcion: ticketData.description,
-        estado: 'Abierto', // Using literal to satisfy check constraint if sensitive
-        prioridad: ticketData.priority,
-        departamento_id: ticketData.departmentId || null,
         creado_por_id: ticketData.createdById,
-        asignado_a_id: ticketData.assignedToId || null,
-      }).select().single();
+      };
+
+      // Map conditional columns
+      if (columns.includes('estado')) insertData.estado = 'Abierto';
+      else if (columns.includes('status')) insertData.status = 'Abierto';
+
+      if (columns.includes('prioridad')) insertData.prioridad = ticketData.priority;
+      else if (columns.includes('priority')) insertData.priority = ticketData.priority;
+
+      if (columns.includes('departamento_id')) insertData.departamento_id = ticketData.departmentId || null;
+      else if (columns.includes('department_id')) insertData.department_id = ticketData.departmentId || null;
+
+      if (columns.includes('asignado_a_id')) insertData.asignado_a_id = ticketData.assignedToId || null;
+      else if (columns.includes('assigned_to_id')) insertData.assigned_to_id = ticketData.assignedToId || null;
+
+      const { data, error } = await sb.from('tickets').insert(insertData).select().single();
 
       if (data && !error) {
         const t = rowToTicket(data as Record<string, unknown>);
@@ -404,20 +438,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('tickets').update({
-        estado: status,
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      const sb = getSupabase();
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const columns = Array.isArray(cols) ? cols : ['id', 'estado'];
+      
+      const updateData: any = { actualizado_en: new Date().toISOString() };
+      
+      if (columns.includes('estado')) updateData.estado = status;
+      else if (columns.includes('status')) updateData.status = status;
+
+      if (columns.includes('actualizado_en')) updateData.actualizado_en = new Date().toISOString();
+      else if (columns.includes('updated_at')) updateData.updated_at = new Date().toISOString();
+
+      await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
   }, []);
 
   const updateTicketPriority = useCallback(async (ticketId: string, priority: TicketPriority) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('tickets').update({
-        prioridad: priority,
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      const sb = getSupabase();
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const columns = Array.isArray(cols) ? cols : ['id', 'prioridad'];
+      
+      const updateData: any = { actualizado_en: new Date().toISOString() };
+      
+      if (columns.includes('prioridad')) updateData.prioridad = priority;
+      else if (columns.includes('priority')) updateData.priority = priority;
+
+      if (columns.includes('actualizado_en')) updateData.actualizado_en = new Date().toISOString();
+      else if (columns.includes('updated_at')) updateData.updated_at = new Date().toISOString();
+
+      await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
   }, []);
 
@@ -429,11 +481,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         : t
     ));
     if (isSupabaseConfigured()) {
-      await getSupabase().from('tickets').update({
-        asignado_a_id: userId,
-        asignado_a_nombre: user?.name,
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      const sb = getSupabase();
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const columns = Array.isArray(cols) ? cols : ['id', 'asignado_a_id'];
+
+      const updateData: any = { actualizado_en: new Date().toISOString() };
+
+      if (columns.includes('asignado_a_id')) updateData.asignado_a_id = userId;
+      else if (columns.includes('assigned_to_id')) updateData.assigned_to_id = userId;
+
+      if (columns.includes('asignado_a_nombre')) updateData.asignado_a_nombre = user?.name;
+      else if (columns.includes('assigned_to_name')) updateData.assigned_to_name = user?.name;
+
+      await sb.from('tickets').update(updateData).eq('id', ticketId);
     }
   }, [users]);
 
@@ -535,14 +595,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const sb = getSupabase();
-    const { error: profileError } = await sb.from('perfiles').insert({
+    const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' }).catch(() => ({ data: null }));
+    const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
+    
+    // Map data based on columns
+    const insertProfile: any = {
       id: authData.user.id,
-      nombre: userData.name,
       email: userData.email,
-      rol: userData.role === 'Admin' ? 'Admin' : userData.role === 'Agente' ? 'Agente' : 'Cliente',
-      departamento_id: userData.departmentId || null,
       activo: true
-    });
+    };
+
+    if (columns.includes('nombre')) insertProfile.nombre = userData.name;
+    else insertProfile.name = userData.name;
+
+    const roleMap: Record<string, string> = { 'Admin': 'Admin', 'Agente': 'Agente', 'Cliente': 'Cliente' };
+    const resolvedRole = roleMap[userData.role] || 'Cliente';
+    
+    if (columns.includes('rol')) insertProfile.rol = resolvedRole;
+    else insertProfile.role = resolvedRole;
+
+    if (columns.includes('departamento_id')) insertProfile.departamento_id = userData.departmentId || null;
+    else if (columns.includes('department_id')) insertProfile.department_id = userData.departmentId || null;
+
+    const { error: profileError } = await sb.from('perfiles').insert(insertProfile);
 
     if (profileError) {
       console.error('Error creating user profile:', profileError);
