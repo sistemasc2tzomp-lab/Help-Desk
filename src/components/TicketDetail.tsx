@@ -123,12 +123,21 @@ export default function TicketDetail() {
   useEffect(() => {
     if (!selectedTicketId || !isSupabaseConfigured()) return;
     const sb = getSupabase();
+    // THE REALTIME CHANNEL MUST TARGET THE REAL TABLE 'ticket_comentarios'
     const channel = sb
       .channel(`ticket-messages-${selectedTicketId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `ticket_id=eq.${selectedTicketId}` },
-        () => { refreshData(); }
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'ticket_comentarios', 
+          filter: `ticket_id=eq.${selectedTicketId}` 
+        },
+        () => { 
+          console.log('Realtime update: New comment detected');
+          refreshData(); 
+        }
       )
       .subscribe();
     return () => { sb.removeChannel(channel); };

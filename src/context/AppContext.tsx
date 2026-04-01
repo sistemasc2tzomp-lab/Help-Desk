@@ -345,7 +345,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const profileData: any = { id: authUser.id, email: authUser.email, activo: true };
       
       // Determine if table uses spanish or english
-      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' }).catch(() => ({ data: null }));
+      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' });
       const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
 
       if (columns.includes('nombre')) profileData.nombre = name;
@@ -392,7 +392,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const nextFolioNumber = (count || 0) + 1;
       const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
 
-      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'tickets' }).catch(() => ({ data: null }));
+      const { data: cols } = await sb.rpc('get_column_names', { t_name: 'tickets' });
       const columns = Array.isArray(cols) ? cols : ['id', 'titulo', 'estado', 'departamento_id'];
 
       const insertData: any = {
@@ -439,7 +439,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
       const columns = Array.isArray(cols) ? cols : ['id', 'estado'];
       
       const updateData: any = { actualizado_en: new Date().toISOString() };
@@ -458,7 +458,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
       const columns = Array.isArray(cols) ? cols : ['id', 'prioridad'];
       
       const updateData: any = { actualizado_en: new Date().toISOString() };
@@ -482,7 +482,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any).catch(() => ({ data: null }));
+      const { data: cols } = await (sb.rpc('get_column_names', { t_name: 'tickets' }) as any);
       const columns = Array.isArray(cols) ? cols : ['id', 'asignado_a_id'];
 
       const updateData: any = { actualizado_en: new Date().toISOString() };
@@ -595,7 +595,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const sb = getSupabase();
-    const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' }).catch(() => ({ data: null }));
+    const { data: cols } = await sb.rpc('get_column_names', { t_name: 'perfiles' });
     const columns = Array.isArray(cols) ? cols : ['id', 'nombre', 'rol'];
     
     // Map data based on columns
