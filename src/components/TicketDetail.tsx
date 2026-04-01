@@ -96,7 +96,7 @@ const priorityColors: Record<string, string> = {
 export default function TicketDetail() {
   const {
     selectedTicketId, getTicketById, currentUser,
-    updateTicketStatus, updateTicketPriority, assignTicket,
+    updateTicketStatus, updateTicketPriority, assignTicket, autoAssignAdminOnOpen,
     addMessage, users, departments, setPage, refreshData,
   } = useApp();
 
@@ -118,6 +118,14 @@ export default function TicketDetail() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [ticket?.messages?.length]);
+
+  // ── Auto-asignación al admin que abre el ticket ────────────────────────────
+  useEffect(() => {
+    if (selectedTicketId && currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Agente')) {
+      autoAssignAdminOnOpen(selectedTicketId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTicketId, currentUser?.id]);
 
   // ── Supabase Realtime subscription for live chat ──────────────────────────
   useEffect(() => {
@@ -338,7 +346,15 @@ export default function TicketDetail() {
                           <div className="flex items-center justify-between gap-4 mb-4">
                             <div>
                               <span className="text-white font-bold text-sm tracking-tight">{msg.authorName.toUpperCase()}</span>
-                              <span className="text-[#8888aa] text-[10px] font-black uppercase tracking-[3px] ml-3 opacity-60">[{msg.authorRole}]</span>
+                              <span
+                                className={`text-[10px] font-black uppercase tracking-[3px] ml-3 opacity-80 px-2 py-0.5 rounded-full ${
+                                  msg.authorRole === 'Admin'
+                                    ? 'text-white bg-white/20 border border-white/30'
+                                    : msg.authorRole === 'Agente'
+                                    ? 'text-gray-300 bg-white/10 border border-white/20'
+                                    : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
+                                }`}
+                              >[{msg.authorRole === 'Admin' ? 'ADMINISTRADOR' : msg.authorRole === 'Agente' ? 'AGENTE' : 'CLIENTE'}]</span>
                             </div>
                             <span className="text-[#8888aa] font-mono text-[10px] font-bold">{formatDate(msg.timestamp).toUpperCase()}</span>
                           </div>

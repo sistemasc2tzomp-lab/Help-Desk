@@ -13,6 +13,7 @@ interface AppContextType {
   updateTicketStatus: (ticketId: string, status: TicketStatus) => Promise<void>;
   updateTicketPriority: (ticketId: string, priority: TicketPriority) => Promise<void>;
   assignTicket: (ticketId: string, userId: string) => Promise<void>;
+  autoAssignAdminOnOpen: (ticketId: string) => Promise<void>;
   addMessage: (ticketId: string, content: string, isInternal?: boolean, imageUrl?: string) => Promise<void>;
   getTicketById: (id: string) => Ticket | undefined;
   addDepartment: (dept: Omit<Department, 'id' | 'createdAt'>) => Promise<void>;
@@ -239,11 +240,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sb = getSupabase();
     setLoading(true);
     try {
-      // 1. Usuarios (perfiles & usuarios)
+      // 1. Usuarios: cargamos frescos de la BD y construimos el mapa localmente
+      let freshUsers: User[] = [];
       try {
         const { data: perfilesData } = await sb.from('perfiles').select('*');
         const usersFromPerfiles: User[] = (perfilesData as Record<string, unknown>[] || []).map(rowToUser);
-        let allUsers = [...usersFromPerfiles];
+        freshUsers = [...usersFromPerfiles];
         try {
           const { data: usuariosData } = await sb.from('usuarios').select('*');
           if (usuariosData && usuariosData.length > 0) {
@@ -260,11 +262,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               };
             });
             const perfilIds = new Set(usersFromPerfiles.map(u => u.id));
-            allUsers = [...usersFromPerfiles, ...usersFromUsuarios.filter(u => !perfilIds.has(u.id))];
+            freshUsers = [...usersFromPerfiles, ...usersFromUsuarios.filter(u => !perfilIds.has(u.id))];
           }
-        } catch (_) {}
-        setUsers(allUsers);
+        } catch { /* tabla usuarios opcional */ }
+        setUsers(freshUsers);
       } catch (e) { console.error('refreshData: perfiles error', e); }
+
+      // Mapa de usuarios para resolver nombres/roles en mensajes y tickets
+      const freshUMap: Record<string, User> = {};
+      freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
       // 2. Departamentos
       try {
@@ -272,29 +278,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
 
-      // 3. Comentarios
+      // 3. Comentarios — ahora usa el mapa fresco
       const msgsByTicket: Record<string, Message[]> = {};
       try {
-        const { data: comentariosData } = await sb.from('ticket_comentarios').select('*').order('creado_en', { ascending: true });
+        const { data: comentariosData } = await sb
+          .from('ticket_comentarios')
+          .select('*')
+          .order('creado_en', { ascending: true });
         if (comentariosData) {
-          const uMap: Record<string, User> = {};
-          users.forEach(u => uMap[u.id] = u);
           (comentariosData as Record<string, unknown>[]).forEach(r => {
-            const m = rowToMessage(r, uMap);
+            const m = rowToMessage(r, freshUMap);
             if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
             msgsByTicket[m.ticketId].push(m);
           });
         }
       } catch (e) { console.error('refreshData: comentarios error', e); }
 
-      // 4. Tickets
+      // 4. Tickets — ahora usa el mapa fresco
       try {
-        const { data: tktData } = await sb.from('tickets').select('*').order('creado_en', { ascending: false });
+        const { data: tktData } = await sb
+          .from('tickets')
+          .select('*')
+          .order('creado_en', { ascending: false });
         if (tktData) {
-          const uMap: Record<string, User> = {};
-          users.forEach(u => uMap[u.id] = u);
           setTickets((tktData as Record<string, unknown>[]).map(r =>
-            rowToTicket(r, msgsByTicket[String(r.id)] || [], uMap)
+            rowToTicket(r, msgsByTicket[String(r.id)] || [], freshUMap)
           ));
         }
       } catch (e) { console.error('refreshData: tickets error', e); }
@@ -425,13 +433,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      
-      // Get the count of existing tickets to generate the next TZH-XXXX folio
+
+      // Auto-asignar al primer admin disponible (busca frescos en BD)
+      let autoAdminId: string | null = null;
+      let autoAdminName: string | undefined;
+      try {
+        const { data: admins } = await sb
+          .from('perfiles')
+          .select('id, nombre, rol')
+          .or('rol.eq.Admin,rol.eq.admin,rol.eq.Administrador')
+          .limit(1);
+        if (admins && admins.length > 0) {
+          autoAdminId = String(admins[0].id);
+          autoAdminName = String(admins[0].nombre || 'Admin');
+        }
+      } catch { /* si falla, continúa sin asignar */ }
+
+      // Generate next TZH-XXXX folio
       const { count } = await sb.from('tickets').select('*', { count: 'exact', head: true });
       const nextFolioNumber = (count || 0) + 1;
       const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
 
-      const insertData = {
+      const insertData: Record<string, unknown> = {
         id: customFolio,
         titulo: ticketData.title,
         descripcion: ticketData.description,
@@ -439,22 +462,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         estado: mapToDbStatus('Abierto'),
         prioridad: mapToDbPriority(ticketData.priority),
         departamento_id: ticketData.departmentId || null,
-        asignado_a_id: ticketData.assignedToId || null,
+        // Asignación automática al admin
+        asignado_a_id: autoAdminId || ticketData.assignedToId || null,
+        asignado_a_nombre: autoAdminName || null,
+        // Imagen de evidencia del ticket (jsonb array)
+        ...(ticketData.imageUrl ? { imagenes: [{ url: ticketData.imageUrl }] } : {}),
       };
 
       const { data, error } = await sb.from('tickets').insert(insertData).select().single();
 
       if (data && !error) {
-        const t = rowToTicket(data as Record<string, unknown>);
+        const uMap: Record<string, User> = {};
+        users.forEach(u => { uMap[u.id] = u; });
+        const t = rowToTicket(data as Record<string, unknown>, [], uMap);
         setTickets(prev => [t, ...prev]);
         return t;
       }
       if (error) {
-        // Retry with capitalized values (some setups use VARCHAR without constraint)
+        // Retry with capitalized values
         const retryData = { ...insertData, estado: 'Abierto', prioridad: ticketData.priority };
         const { data: d2, error: e2 } = await sb.from('tickets').insert(retryData).select().single();
         if (d2 && !e2) {
-          const t = rowToTicket(d2 as Record<string, unknown>);
+          const uMap: Record<string, User> = {};
+          users.forEach(u => { uMap[u.id] = u; });
+          const t = rowToTicket(d2 as Record<string, unknown>, [], uMap);
           setTickets(prev => [t, ...prev]);
           return t;
         }
@@ -464,13 +495,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newTicket: Ticket = {
       ...ticketData,
       id: `TKT-${Date.now()}`,
+      status: 'Abierto',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       messages: [],
     };
     setTickets(prev => [newTicket, ...prev]);
     return newTicket;
-  }, []);
+  }, [users]);
 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
@@ -517,18 +549,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const updateData = { 
-        asignado_a_id: userId,
-        asignado_a_nombre: user?.name,
-        actualizado_en: new Date().toISOString() 
-      };
-
-      await sb.from('tickets').update(updateData).eq('id', ticketId);
+      await sb.from('tickets').update({
+        asignado_a_id: userId || null,
+        asignado_a_nombre: user?.name || null,
+        actualizado_en: new Date().toISOString(),
+      }).eq('id', ticketId);
     }
   }, [users]);
 
+  // Auto-asigna al admin que está visualizando el ticket, si aún no tiene asignado
+  const autoAssignAdminOnOpen = useCallback(async (ticketId: string) => {
+    if (!currentUser) return;
+    if (currentUser.role !== 'Admin' && currentUser.role !== 'Agente') return;
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    // Solo asignar si el ticket no tiene operador asignado
+    if (ticket.assignedToId) return;
+    // Actualizar en BD y en estado
+    setTickets(prev => prev.map(t =>
+      t.id === ticketId
+        ? { ...t, assignedToId: currentUser.id, assignedToName: currentUser.name, updatedAt: new Date().toISOString() }
+        : t
+    ));
+    if (isSupabaseConfigured()) {
+      const sb = getSupabase();
+      await sb.from('tickets').update({
+        asignado_a_id: currentUser.id,
+        asignado_a_nombre: currentUser.name,
+        actualizado_en: new Date().toISOString(),
+      }).eq('id', ticketId);
+    }
+  }, [currentUser, tickets]);
+
   const addMessage = useCallback(async (ticketId: string, content: string, isInternal = false, imageUrl?: string) => {
     if (!currentUser) return;
+    const now = new Date().toISOString();
     const message: Message = {
       id: `msg-${Date.now()}`,
       ticketId,
@@ -538,29 +593,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       authorColor: currentUser.avatarColor,
       authorRole: currentUser.role,
       content,
-      timestamp: new Date().toISOString(),
+      timestamp: now,
       isInternal,
       imageUrl,
     };
+    // Optimistic update inmediato
     setTickets(prev => prev.map(t =>
       t.id === ticketId
-        ? { ...t, messages: [...t.messages, message], updatedAt: new Date().toISOString() }
+        ? { ...t, messages: [...t.messages, message], updatedAt: now }
         : t
     ));
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
-      const { error: commentErr } = await sb.from('ticket_comentarios').insert({
+      // Guardamos imagen en campo imagenes (jsonb array) para que ambos lados la vean
+      const commentPayload: Record<string, unknown> = {
         ticket_id: ticketId,
         usuario_id: currentUser.id,
         contenido: content,
         es_interno: isInternal,
-      });
+      };
+      if (imageUrl) {
+        commentPayload.imagenes = [{ url: imageUrl }];
+      }
+      const { error: commentErr } = await sb.from('ticket_comentarios').insert(commentPayload);
       if (!commentErr) {
-        // Actualiza timestamp del ticket
-        await sb.from('tickets').update({
-          actualizado_en: new Date().toISOString(),
-        }).eq('id', ticketId);
-        // Sincroniza datos para que ambos roles (Admin/Cliente) vean el mensaje
+        await sb.from('tickets').update({ actualizado_en: now }).eq('id', ticketId);
+        // Refrescar para sincronizar nombres/roles reales desde la BD
         await refreshData();
       } else {
         console.error('addMessage error:', commentErr);
@@ -671,6 +729,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateTicketStatus,
       updateTicketPriority,
       assignTicket,
+      autoAssignAdminOnOpen,
       addMessage,
       getTicketById,
       addDepartment,
