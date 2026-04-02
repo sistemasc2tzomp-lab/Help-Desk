@@ -216,18 +216,18 @@ const LandingPage: React.FC = () => {
     const terminalLines = [
       { prompt: '$ ', command: 'helpdesk --init --mode=production', delay: 300 },
       { output: '⚡ Initializing Help Desk Tzomp v3.0...', delay: 800 },
-      { output: '📦 Loading AI modules...', delay: 600, class: 'warning' },
-      { output: '   ✓ NLP Engine loaded', delay: 400, class: 'success' },
-      { output: '   ✓ Sentiment Analysis ready', delay: 400, class: 'success' },
-      { output: '   ✓ Auto-classification active', delay: 400, class: 'success' },
-      { output: '   ✓ Knowledge Base synced', delay: 400, class: 'success' },
+      { output: '📦 Loading system modules...', delay: 600, class: 'warning' },
+      { output: '   ✓ UI Engine loaded', delay: 400, class: 'success' },
+      { output: '   ✓ Metrics Analysis ready', delay: 400, class: 'success' },
+      { output: '   ✓ Auto-routing active', delay: 400, class: 'success' },
+      { output: '   ✓ Central Base synced', delay: 400, class: 'success' },
       { output: '🔐 Security protocols enabled (Zero Trust)', delay: 600, class: 'warning' },
       { output: '📊 Dashboard connected — real-time metrics active', delay: 500, class: 'success' },
       { output: '🌐 API Gateway: https://api.tzomp.lab/v3', delay: 500 },
       { prompt: '$ ', command: 'status --all', delay: 800 },
       { output: '──────────────────────────────────────', delay: 300 },
       { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'success' },
-      { output: '  AI ENGINE:     ██████████████ ACTIVE', delay: 400, class: 'success' },
+      { output: '  CORE ENGINE:   ██████████████ ACTIVE', delay: 400, class: 'success' },
       { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'success' },
       { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'success' },
       { output: '──────────────────────────────────────', delay: 300 },
@@ -268,7 +268,7 @@ const LandingPage: React.FC = () => {
   };
 
   const initTypeEffect = () => {
-    const heroWords = ['Inteligencia Artificial', 'Machine Learning', 'Automatización', 'Innovación'];
+    const heroWords = ['Soporte Técnico', 'Gestión de Redes', 'Atención Rápida', 'Innovación C2'];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]" />
+          <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="nav-logo" />
           <span className="nav-title uppercase tracking-tighter">Dto. Sistemas C2</span>
         </a>
 
@@ -413,8 +413,8 @@ const LandingPage: React.FC = () => {
             <div className="stat-label">Tickets Resueltos</div>
           </div>
           <div className="stat-item">
-            <div className="stat-number" data-count="50">0</div>
-            <div className="stat-label">Módulos IA</div>
+            <div className="stat-number" data-count="15">0</div>
+            <div className="stat-label">Módulos de Red</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="24">0</div>
@@ -433,9 +433,9 @@ const LandingPage: React.FC = () => {
 
         <div className="features-grid stagger-children">
           <div className="feature-card">
-            <div className="feature-icon-wrap fi-1"><i className="fas fa-robot"></i></div>
-            <h3>Chatbot IA Avanzado</h3>
-            <p>Asistente virtual con procesamiento de lenguaje natural que resuelve consultas de forma autónoma e inteligente.</p>
+            <div className="feature-icon-wrap fi-1"><i className="fas fa-headset"></i></div>
+            <h3>Soporte Institucional</h3>
+            <p>Plataforma principal para la atención unificada rápida y eficiente de reportes técnicos de mantenimiento informático e incidencias de red.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-2"><i className="fas fa-ticket"></i></div>
@@ -489,15 +489,15 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="showcase-info reveal-right">
-            <div className="section-tag"><i className="fas fa-microchip"></i> Motor IA</div>
-            <h2>Inteligencia Artificial de <span className="gradient-text">Nueva Generación</span></h2>
-            <p>Nuestro motor de IA utiliza modelos de aprendizaje profundo entrenados específicamente para soporte técnico, capaces de entender contexto, emociones y resolver problemas complejos.</p>
+            <div className="section-tag"><i className="fas fa-server"></i> Infraestructura Tecnológica</div>
+            <h2>Ecosistema de <span className="gradient-text">Soporte Institucional</span></h2>
+            <p>Nuestra plataforma está diseñada específicamente para agilizar el tiempo de diagnóstico, optimizando la gestión de mantenimiento preventivo y correctivo municipal a nivel departamental.</p>
             <ul className="ai-features-list">
-              <li><i className="fas fa-check-circle"></i><span>Procesamiento de Lenguaje Natural (NLP)</span></li>
-              <li><i className="fas fa-check-circle"></i><span>Clasificación automática de incidencias</span></li>
-              <li><i className="fas fa-check-circle"></i><span>Predicción de problemas recurrentes</span></li>
-              <li><i className="fas fa-check-circle"></i><span>Base de conocimiento auto-evolutiva</span></li>
-              <li><i className="fas fa-check-circle"></i><span>Análisis de sentimiento en tiempo real</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Registro centralizado de incidentes</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Seguimiento de equipo en tiempo real</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Asignación inteligente por departamento</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Base de conocimiento institucional</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Dashboard interactivo directivo</span></li>
             </ul>
           </div>
         </div>
@@ -540,9 +540,9 @@ const LandingPage: React.FC = () => {
           <div className="service-card">
             <div className="service-number">02</div>
             <div className="service-info">
-              <h3>Motor de Resolución IA</h3>
-              <p>Algoritmos de machine learning que aprenden de cada interacción para ofrecer soluciones más precisas.</p>
-              <div className="service-tags"><span>ML</span><span>Deep Learning</span><span>NLP</span></div>
+              <h3>Soluciones Técnicas</h3>
+              <p>Clasificación de fallas comunes para estructurar y ofrecer grandes alternativas correctivas eficientes.</p>
+              <div className="service-tags"><span>Mantenimiento</span><span>Soporte</span><span>Redes</span></div>
             </div>
           </div>
           <div className="service-card">
@@ -593,12 +593,9 @@ const LandingPage: React.FC = () => {
         <div className="cta-content reveal">
           <div className="section-tag"><i className="fas fa-rocket"></i> Comenzar Ahora</div>
           <h2>¿Listo para <span className="gradient-text">Transformar</span> tu Soporte?</h2>
-          <p>Únete a la revolución del soporte técnico inteligente. Accede ahora al Help Desk más avanzado impulsado por IA.</p>
+          <p>Únete a la nueva era del soporte técnico institucional. Accede ahora al Help Desk modernizado especializado en infraestructura.</p>
           <div className="cta-buttons">
             <Link to="/app" className="btn btn-primary"><i className="fas fa-arrow-right"></i> Acceder al Sistema</Link>
-            <a href="https://github.com/sistemasc2tzomp-lab/Help-Desk" className="btn btn-outline" target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-github"></i> Ver en GitHub
-            </a>
           </div>
         </div>
       </section>
@@ -607,20 +604,17 @@ const LandingPage: React.FC = () => {
       <footer className="footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
-            <p>Help Desk Tzomp Lab — La plataforma de soporte técnico de nueva generación impulsada por inteligencia artificial.</p>
+            <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="nav-logo" />
+            <p>Help Desk Dto. Sistemas C2 — La plataforma institucional de soporte técnico y mantenimiento de infraestructura para el H. Ayuntamiento de Tzompantepec.</p>
             <div className="footer-social">
-              <a href="#"><i className="fab fa-github"></i></a>
-              <a href="#"><i className="fab fa-linkedin-in"></i></a>
-              <a href="#"><i className="fab fa-twitter"></i></a>
-              <a href="#"><i className="fab fa-discord"></i></a>
+              {/* Github y redes sociales removidas por motivos de institucionales */}
             </div>
           </div>
           <div className="footer-col">
             <h4>Sistema</h4>
             <ul>
               <li><a href="#features" onClick={(e) => scrollToSection(e, '#features')}>Características</a></li>
-              <li><a href="#ia" onClick={(e) => scrollToSection(e, '#ia')}>Motor IA</a></li>
+              <li><a href="#ia" onClick={(e) => scrollToSection(e, '#ia')}>Infraestructura</a></li>
               <li><a href="#modulos" onClick={(e) => scrollToSection(e, '#modulos')}>Módulos</a></li>
               <li><a href="#tech" onClick={(e) => scrollToSection(e, '#tech')}>Tecnología</a></li>
             </ul>
@@ -645,8 +639,8 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2025 <a href="#">Tzomp Lab</a>. Todos los derechos reservados.</p>
-          <p>Hecho con <i className="fas fa-heart" style={{color: 'var(--accent)'}}></i> & IA</p>
+          <p>&copy; 2026 Tzomp Sistemas. Todos los derechos reservados.</p>
+          <p>Hecho por Dto. Sistemas C2</p>
         </div>
       </footer>
 
