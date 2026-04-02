@@ -467,10 +467,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch { /* si falla, continúa sin asignar */ }
 
-      // Generate next TZH-XXXX folio
-      const { count } = await sb.from('tickets').select('*', { count: 'exact', head: true });
-      const nextFolioNumber = (count || 0) + 1;
-      const customFolio = `TZH-${String(nextFolioNumber).padStart(4, '0')}`;
+      // Generate highly robust unique TZH folio
+      const timestamp = Date.now().toString();
+      const customFolio = `TZH-${timestamp.slice(-6)}-${Math.floor(Math.random() * 100)}`;
 
       const insertData: Record<string, unknown> = {
         id: customFolio,
@@ -501,8 +500,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return t;
       }
       if (error) {
-        // Retry with capitalized values
-        const retryData = { ...insertData, estado: 'Abierto', prioridad: ticketData.priority };
+        // Retry logic ensuring we keep lowercase values for Postgres CHECK constraints
+        const retryData = { ...insertData, estado: 'abierto', prioridad: mapToDbPriority(ticketData.priority) };
         const { data: d2, error: e2 } = await sb.from('tickets').insert(retryData).select().single();
         if (d2 && !e2) {
           const uMap: Record<string, User> = {};
