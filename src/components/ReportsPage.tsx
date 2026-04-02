@@ -86,43 +86,150 @@ function SectionHeader({ title, subtitle, icon, children }: { title: string; sub
   );
 }
 
-/* ─── PDF generators ───────────────────────────────────────────────────────── */
-function addPdfHeader(doc: jsPDF, title: string) {
+/* ─── PDF Design System ────────────────────────────────────────────────────── */
+const PDF_COLORS = {
+  primary:    [15,  23,  42] as [number, number, number],   // Azul marino institucional
+  secondary:  [30,  41,  59] as [number, number, number],   // Azul oscuro filas
+  accent:     [59, 130, 246] as [number, number, number],   // Azul brillante
+  accentDark: [29,  78, 216] as [number, number, number],   // Azul encabezado
+  white:      [255, 255, 255] as [number, number, number],
+  light:      [248, 250, 252] as [number, number, number],  // Fondo filas pares
+  muted:      [100, 116, 139] as [number, number, number],  // Texto secundario
+  border:     [203, 213, 225] as [number, number, number],  // Bordes tabla
+  headerTxt:  [226, 232, 240] as [number, number, number],  // Texto headerRows
+  bodyTxt:    [30,  41,  59] as [number, number, number],   // Texto celdas
+  altRow:     [241, 245, 249] as [number, number, number],  // Fila alternada clara
+  success:    [16, 185, 129] as [number, number, number],   // Verde resuelto
+  warning:    [245, 158,  11] as [number, number, number],  // Naranja en progreso
+  danger:     [239,  68,  68] as [number, number, number],  // Rojo urgente
+};
+
+const PDF_TABLE_STYLES: Parameters<typeof autoTable>[1] = {
+  styles: {
+    fontSize: 9,
+    cellPadding: { top: 5, right: 8, bottom: 5, left: 8 },
+    textColor: PDF_COLORS.bodyTxt,
+    lineColor: PDF_COLORS.border,
+    lineWidth: 0.3,
+    font: 'helvetica',
+  },
+  headStyles: {
+    fillColor: PDF_COLORS.accentDark,
+    textColor: PDF_COLORS.white,
+    fontStyle: 'bold',
+    fontSize: 9,
+    cellPadding: { top: 6, right: 8, bottom: 6, left: 8 },
+  },
+  alternateRowStyles: {
+    fillColor: PDF_COLORS.altRow,
+  },
+  bodyStyles: {
+    fillColor: PDF_COLORS.white,
+  },
+  tableLineColor: PDF_COLORS.border,
+  tableLineWidth: 0.3,
+};
+
+function addPdfHeader(doc: jsPDF, title: string, subtitle?: string) {
   const pw = doc.internal.pageSize.getWidth();
 
-  // Dark background fill
-  doc.setFillColor(10, 10, 10);
-  doc.rect(0, 0, pw, 38, 'F');
-  
-  // White top border
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, pw, 2.5, 'F');
-  
-  // Bottom separator line
-  doc.setDrawColor(50, 50, 50);
-  doc.setLineWidth(0.5);
-  doc.line(0, 38, pw, 38);
+  // === BANDA SUPERIOR (fondo azul marino) ===
+  doc.setFillColor(...PDF_COLORS.primary);
+  doc.rect(0, 0, pw, 44, 'F');
 
-  // Main title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
+  // Franja de acento izquierda
+  doc.setFillColor(...PDF_COLORS.accent);
+  doc.rect(0, 0, 6, 44, 'F');
+
+  // === LOGO / NOMBRE INSTITUCIONAL ===
   doc.setFont('helvetica', 'bold');
-  doc.text('HELP DESK TZOMP', 14, 17);
+  doc.setFontSize(16);
+  doc.setTextColor(...PDF_COLORS.white);
+  doc.text('HELP DESK TZOMP', 14, 16);
 
-  // Sub-title / institution
-  doc.setFontSize(8);
-  doc.setTextColor(136, 136, 170);
-  doc.text('SISTEMAS & INTELIGENCIA ARTIFICIAL | MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 25);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_COLORS.headerTxt);
+  doc.text('DIRECCIÓN DE SISTEMAS E INTELIGENCIA ARTIFICIAL', 14, 23);
+  doc.text('MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 29);
 
-  // Report title (right)
-  doc.setFontSize(11);
-  doc.setTextColor(200, 200, 200);
-  doc.text(title.toUpperCase(), pw - 14, 17, { align: 'right' });
+  // === TÍTULO DEL REPORTE (derecha) ===
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...PDF_COLORS.white);
+  doc.text(title.toUpperCase(), pw - 14, 16, { align: 'right' });
 
-  // Metadata (right)
+  // Subtítulo / folio
+  const folio = `FOLIO: ${new Date().getTime().toString(36).toUpperCase()}`;
+  const emitido = `EMITIDO: ${new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}`;
   doc.setFontSize(7);
-  doc.setTextColor(100, 100, 130);
-  doc.text(`FOLIO: ${new Date().getTime().toString(36).toUpperCase()}  |  EMITIDO: ${new Date().toLocaleString()}`, pw - 14, 25, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_COLORS.headerTxt);
+  doc.text(folio, pw - 14, 24, { align: 'right' });
+  doc.text(emitido, pw - 14, 30, { align: 'right' });
+
+  // === LÍNEA SEPARADORA ===
+  doc.setDrawColor(...PDF_COLORS.accent);
+  doc.setLineWidth(0.8);
+  doc.line(0, 44, pw, 44);
+
+  // === SUBTÍTULO DE SECCIÓN (si existe) ===
+  if (subtitle) {
+    doc.setFillColor(...PDF_COLORS.light);
+    doc.rect(0, 44, pw, 12, 'F');
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_COLORS.muted);
+    doc.text(subtitle.toUpperCase(), 14, 52);
+  }
+}
+
+function addPdfFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  // Línea separadora pie
+  doc.setDrawColor(...PDF_COLORS.border);
+  doc.setLineWidth(0.3);
+  doc.line(14, ph - 14, pw - 14, ph - 14);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...PDF_COLORS.muted);
+  doc.text('SISTEMA HELP DESK TZOMP — DOCUMENTO OFICIAL GENERADO AUTOMÁTICAMENTE', 14, ph - 8);
+  const pageLabel = totalPages ? `${pageNum} / ${totalPages}` : String(pageNum);
+  doc.text(`PÁG ${pageLabel}`, pw - 14, ph - 8, { align: 'right' });
+}
+
+function addSectionLabel(doc: jsPDF, label: string, y: number): number {
+  const pw = doc.internal.pageSize.getWidth();
+  doc.setFillColor(...PDF_COLORS.secondary);
+  doc.rect(14, y, pw - 28, 9, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...PDF_COLORS.white);
+  doc.text(label.toUpperCase(), 20, y + 6.2);
+  return y + 14;
+}
+
+function addMetricBox(doc: jsPDF, x: number, y: number, w: number, label: string, value: string, color: [number, number, number]) {
+  doc.setFillColor(...PDF_COLORS.light);
+  doc.roundedRect(x, y, w, 22, 2, 2, 'F');
+  doc.setDrawColor(...color);
+  doc.setLineWidth(1.5);
+  doc.line(x, y, x, y + 22);
+  doc.setLineWidth(0.3);
+  doc.setDrawColor(...PDF_COLORS.border);
+  doc.roundedRect(x, y, w, 22, 2, 2, 'S');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(...color);
+  doc.text(value, x + w / 2, y + 13, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PDF_COLORS.muted);
+  doc.text(label.toUpperCase(), x + w / 2, y + 19.5, { align: 'center' });
 }
 
 /* ─── Excel helper ─────────────────────────────────────────────────────────── */
@@ -185,127 +292,203 @@ export default function ReportsPage() {
 
   const exportGeneralPDF = () => {
     setExportLoading('general-pdf');
-    const doc = new jsPDF();
-    addPdfHeader(doc, 'Protocolo de Resumen General');
-    
-    // Custom Table Theme
-    const tableStyles: any = {
-      fillColor: [10, 10, 10],
-      textColor: [255, 255, 255],
-      font: 'helvetica',
-      fontSize: 10,
-      cellPadding: 4,
-      lineColor: [40, 40, 40],
-      lineWidth: 0.1,
-    };
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = doc.internal.pageSize.getWidth();
+      const startY = 58;
 
-    autoTable(doc, {
-      startY: 40,
-      head: [['Métrica Operativa', 'Valor']],
-      body: [
-        ['Tickets Totales', total],
-        ['Tasa de Resolución', `${resolutionRate}%`],
-        ['Tickets Abiertos', byStatus[0].n],
-        ['En Progreso', byStatus[1].n],
-        ['Saturación del Sistema', `${pct(byStatus[0].n + byStatus[1].n, total)}%`],
-      ],
-      styles: tableStyles,
-      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-    });
+      addPdfHeader(doc, 'Reporte General del Sistema', 'Cuadro de Mando — Métricas Clave de Infraestructura');
 
-    const y = (doc as any).lastAutoTable.finalY + 15;
-    doc.setTextColor(150, 150, 150);
-    doc.setFontSize(12);
-    doc.text('DISTRIBUCIÓN POR ESTADO', 14, y);
+      // ── BLOQUE DE MÉTRICAS KPI ──
+      let y = startY;
+      const boxW = (pw - 28 - 9) / 4;
+      const kpis = [
+        { label: 'Total Tickets',      value: String(total),           color: PDF_COLORS.accentDark },
+        { label: 'Tasa Resolución',    value: `${resolutionRate}%`,    color: PDF_COLORS.success },
+        { label: 'Abiertos',           value: String(byStatus[0].n),   color: PDF_COLORS.warning },
+        { label: 'En Progreso',        value: String(byStatus[1].n),   color: PDF_COLORS.danger },
+      ];
+      kpis.forEach((k, i) => addMetricBox(doc, 14 + i * (boxW + 3), y, boxW, k.label, k.value, k.color));
+      y += 30;
 
-    autoTable(doc, {
-      startY: y + 5,
-      head: [['Estado', 'Cantidad', 'Impacto %']],
-      body: byStatus.map(({ s, n }) => [s, n, `${pct(n, total)}%`]),
-      styles: tableStyles,
-      headStyles: { fillColor: [60, 60, 60], textColor: [255, 255, 255] },
-    });
+      // ── SECCIÓN: DISTRIBUCIÓN POR ESTADO ──
+      y = addSectionLabel(doc, 'Distribución por Estado del Sistema', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['ESTADO', 'CANTIDAD', 'PORCENTAJE', 'TENDENCIA']],
+        body: byStatus.map(({ s, n }) => [
+          s,
+          n,
+          `${pct(n, total)}%`,
+          n === 0 ? 'Sin actividad' : n > total * 0.5 ? '▲ Alta carga' : 'Normal ◆',
+        ]),
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          1: { halign: 'center' },
+          2: { halign: 'center', fontStyle: 'bold' },
+          3: { halign: 'center', textColor: PDF_COLORS.muted },
+        },
+      });
 
-    doc.save(`reporte-cyber-${new Date().getTime()}.pdf`);
-    setExportLoading(null);
+      y = (doc as any).lastAutoTable.finalY + 10;
+
+      // ── SECCIÓN: DISTRIBUCIÓN POR PRIORIDAD ──
+      y = addSectionLabel(doc, 'Distribución por Nivel de Prioridad', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['PRIORIDAD', 'CANTIDAD', 'PORCENTAJE']],
+        body: byPriority.map(({ p, n }) => [p, n, `${pct(n, total)}%`]),
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          1: { halign: 'center' },
+          2: { halign: 'center', fontStyle: 'bold' },
+        },
+      });
+
+      // Pie de página
+      addPdfFooter(doc, 1, 1);
+      doc.save(`REPORTE-GENERAL-${new Date().getTime()}.pdf`);
+    } finally {
+      setExportLoading(null);
+    }
   };
 
   const exportTicketsPDF = () => {
     setExportLoading('tickets-pdf');
-    const doc = new jsPDF('l', 'mm', 'a4');
-    const pw = doc.internal.pageSize.getWidth();
-    addPdfHeader(doc, 'Bitácora de Incidencias');
-    autoTable(doc, {
-      startY: 48,
-      head: [['FOLIO', 'TÍTULO', 'SOLICITANTE', 'DEPTO', 'PRIORIDAD', 'ESTADO', 'ASIGNADO', 'FECHA']],
-      body: filtered.map(t => [
-        t.id.slice(0, 8).toUpperCase(),
-        t.title.substring(0, 50),
-        t.createdByName,
-        departments.find(d => d.id === t.departmentId)?.name ?? '—',
-        t.priority,
-        t.status,
-        users.find(u => u.id === t.assignedToId)?.name ?? 'PENDIENTE',
-        formatDate(t.createdAt),
-      ]),
-      theme: 'striped',
-      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-      styles: { fontSize: 7, cellPadding: 3, textColor: [200, 200, 200] },
-      alternateRowStyles: { fillColor: [15, 15, 15] },
-      columnStyles: { 1: { cellWidth: 70 } },
-      didDrawPage: (d) => {
-        doc.setFontSize(7);
-        doc.setTextColor(100);
-        doc.text(`Página ${d.pageNumber}`, pw / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
-      }
-    });
-    doc.save(`BITACORA-TICKETS-${new Date().getTime()}.pdf`);
-    setExportLoading(null);
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      addPdfHeader(doc, 'Bitácora de Incidencias', `Total de registros: ${filtered.length} tickets`);
+
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: 58,
+        head: [['FOLIO', 'TÍTULO / ASUNTO', 'SOLICITANTE', 'DEPARTAMENTO', 'PRIORIDAD', 'ESTADO', 'ASIGNADO A', 'FECHA CREACIÓN']],
+        body: filtered.map(t => [
+          t.id,
+          t.title.substring(0, 55),
+          t.createdByName,
+          departments.find(d => d.id === t.departmentId)?.name ?? '—',
+          t.priority,
+          t.status,
+          users.find(u => u.id === t.assignedToId)?.name ?? 'Pendiente',
+          formatDate(t.createdAt),
+        ]),
+        columnStyles: {
+          0: { cellWidth: 22, fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
+          1: { cellWidth: 60 },
+          4: { halign: 'center' },
+          5: { halign: 'center', fontStyle: 'bold' },
+          7: { cellWidth: 35 },
+        },
+        didDrawPage: (d) => {
+          addPdfFooter(doc, d.pageNumber);
+        },
+      });
+      // Actualizar total en todos los pies de página es complejo en jsPDF;
+      // en su lugar se usa el número de página solo
+      doc.save(`BITACORA-TICKETS-${new Date().getTime()}.pdf`);
+    } finally {
+      setExportLoading(null);
+    }
   };
 
   const exportAgentsPDF = () => {
     setExportLoading('agents-pdf');
-    const doc = new jsPDF();
-    addPdfHeader(doc, 'Rendimiento por Agente');
-    autoTable(doc, {
-      startY: 48,
-      head: [['AGENTE', 'ASIGNADOS', 'RESUELTOS', 'EFICIENCIA', 'MENSAJES']],
-      body: agentStats.map(({ agent, total: tot, resolved: res, rate, msgs }) => [
-        agent.name,
-        tot,
-        res,
-        `${rate}%`,
-        msgs,
-      ]),
-      theme: 'grid',
-      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 4, textColor: [200, 200, 200] },
-    });
-    doc.save(`REPORTE-AGENTES-${new Date().getTime()}.pdf`);
-    setExportLoading(null);
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = doc.internal.pageSize.getWidth();
+      addPdfHeader(doc, 'Rendimiento por Agente', 'Métricas de productividad y eficiencia operativa del equipo');
+
+      // Métricas globales del equipo
+      let y = 58;
+      const totalAssigned = agentStats.reduce((s, a) => s + a.total, 0);
+      const totalResolved  = agentStats.reduce((s, a) => s + a.resolved, 0);
+      const avgRate = agentStats.length ? Math.round(agentStats.reduce((s, a) => s + a.rate, 0) / agentStats.length) : 0;
+      const boxW = (pw - 28 - 6) / 3;
+      [
+        { label: 'Total Asignados',  value: String(totalAssigned), color: PDF_COLORS.accentDark },
+        { label: 'Total Resueltos',  value: String(totalResolved),  color: PDF_COLORS.success },
+        { label: 'Eficiencia Media', value: `${avgRate}%`,          color: PDF_COLORS.warning },
+      ].forEach((k, i) => addMetricBox(doc, 14 + i * (boxW + 3), y, boxW, k.label, k.value, k.color));
+      y += 30;
+
+      y = addSectionLabel(doc, 'Tabla de Rendimiento Individual', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['AGENTE', 'ROL', 'TICKETS ASIGNADOS', 'RESUELTOS', 'EFICIENCIA', 'MENSAJES ENVIADOS']],
+        body: agentStats.map(({ agent, total: tot, resolved: res, rate, msgs }) => [
+          agent.name,
+          agent.role,
+          tot,
+          res,
+          `${rate}%`,
+          msgs,
+        ]),
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          1: { halign: 'center', textColor: PDF_COLORS.muted },
+          2: { halign: 'center' },
+          3: { halign: 'center' },
+          4: { halign: 'center', fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
+          5: { halign: 'center' },
+        },
+        didDrawPage: (d) => addPdfFooter(doc, d.pageNumber),
+      });
+
+      addPdfFooter(doc, 1, 1);
+      doc.save(`REPORTE-AGENTES-${new Date().getTime()}.pdf`);
+    } finally {
+      setExportLoading(null);
+    }
   };
 
   const exportDeptPDF = () => {
     setExportLoading('dept-pdf');
-    const doc = new jsPDF();
-    addPdfHeader(doc, 'Diagrama Departamental');
-    autoTable(doc, {
-      startY: 48,
-      head: [['DEPARTAMENTO', 'TOTAL', 'ABIERTOS', 'EN PROGRESO', 'RESUELTOS', 'CARGA %']],
-      body: byDept.map(({ d, n }) => {
-        const dt = filtered.filter(t => t.departmentId === d.id);
-        const open = dt.filter(t => t.status === 'Abierto').length;
-        const ip   = dt.filter(t => t.status === 'En Progreso').length;
-        const res  = dt.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
-        return [d.name, n, open, ip, res, `${pct(n, total)}%`];
-      }),
-      theme: 'striped',
-      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 4, textColor: [200, 200, 200] },
-      alternateRowStyles: { fillColor: [15, 15, 15] },
-    });
-    doc.save(`REPORTE-DEPT-${new Date().getTime()}.pdf`);
-    setExportLoading(null);
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = doc.internal.pageSize.getWidth();
+      addPdfHeader(doc, 'Diagrama Departamental', 'Distribución de carga de trabajo por sector');
+
+      let y = 58;
+      const boxW2 = (pw - 28 - 6) / 3;
+      [
+        { label: 'Departamentos', value: String(departments.length), color: PDF_COLORS.accentDark },
+        { label: 'Total Tickets',  value: String(total),              color: PDF_COLORS.accent },
+        { label: 'Tasa Resolución',value: `${resolutionRate}%`,       color: PDF_COLORS.success },
+      ].forEach((k, i) => addMetricBox(doc, 14 + i * (boxW2 + 3), y, boxW2, k.label, k.value, k.color));
+      y += 30;
+
+      y = addSectionLabel(doc, 'Carga Operativa por Departamento', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['DEPARTAMENTO', 'TOTAL', 'ABIERTOS', 'EN PROGRESO', 'RESUELTOS', 'CARGA DEL SISTEMA %']],
+        body: byDept.map(({ d, n }) => {
+          const dt = filtered.filter(t => t.departmentId === d.id);
+          const open = dt.filter(t => t.status === 'Abierto').length;
+          const ip   = dt.filter(t => t.status === 'En Progreso').length;
+          const res  = dt.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
+          return [d.name, n, open, ip, res, `${pct(n, total)}%`];
+        }),
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 55 },
+          1: { halign: 'center', fontStyle: 'bold' },
+          2: { halign: 'center' },
+          3: { halign: 'center' },
+          4: { halign: 'center' },
+          5: { halign: 'center', fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
+        },
+        didDrawPage: (d) => addPdfFooter(doc, d.pageNumber),
+      });
+
+      addPdfFooter(doc, 1, 1);
+      doc.save(`REPORTE-DEPT-${new Date().getTime()}.pdf`);
+    } finally {
+      setExportLoading(null);
+    }
   };
 
   const exportGeneralExcel = () => {

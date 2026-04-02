@@ -185,14 +185,64 @@ export default function TicketDetail() {
 
   const uploadReplyImage = async (file: File): Promise<string | undefined> => {
     if (!isSupabaseConfigured()) return undefined;
-    const ext = file.name.split('.').pop();
-    const path = `messages/${Date.now()}.${ext}`;
-    const sb = getSupabase();
-    const { error } = await sb.storage.from('attachments').upload(path, file, { upsert: true });
-    if (error) return undefined;
-    const { data } = sb.storage.from('attachments').getPublicUrl(path);
-    return data.publicUrl;
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `messages/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const sb = getSupabase();
+
+      // Intento 1: upload normal
+      let { error } = await sb.storage
+        .from('attachments')
+        .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
+
+      if (error) {
+        // Intento 2: convertir a Blob con tipo explícito y reintentar
+        const arrayBuffer = await file.arrayBuffer();
+        const blob = new Blob([arrayBuffer], { type: file.type || 'image/jpeg' });
+        const retry = await sb.storage
+          .from('attachments')
+          .upload(path, blob, { upsert: true, contentType: file.type || 'image/jpeg' });
+        error = retry.error;
+      }
+
+      if (!error) {
+        const { data } = sb.storage.from('attachments').getPublicUrl(path);
+        // Verificar que la URL sea accesible (evita retornar una URL rota)
+        if (data?.publicUrl) return data.publicUrl;
+      }
+    } catch (err) {
+      console.warn('Storage upload failed, will use base64 fallback:', err);
+    }
+    return undefined;
   };
+
+  // Convierte un File a data URL base64 (fallback cuando Storage falla)
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      // Comprimir si es demasiado grande antes de convertir a base64
+      if (file.size > 1_000_000) {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const canvas = document.createElement('canvas');
+          const MAX = 1200;
+          const ratio = Math.min(MAX / img.width, MAX / img.height, 1);
+          canvas.width = Math.round(img.width * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.onerror = reject;
+        img.src = objectUrl;
+      } else {
+        const reader = new FileReader();
+        reader.onload = ev => resolve(ev.target?.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }
+    });
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,8 +251,18 @@ export default function TicketDetail() {
     try {
       let imageUrl: string | undefined;
       if (replyImage) {
+        // Primero intentar subir a Storage (URL pública — accesible desde cualquier dispositivo)
         imageUrl = await uploadReplyImage(replyImage);
-        if (!imageUrl && replyPreview) imageUrl = replyPreview;
+        if (!imageUrl) {
+          // Fallback: convertir a base64 y guardar en la BD directamente
+          // Esto garantiza que la imagen sea visible en CUALQUIER dispositivo/plataforma
+          try {
+            imageUrl = await fileToBase64(replyImage);
+          } catch {
+            // Si todo falla, no enviar imagen rota
+            imageUrl = undefined;
+          }
+        }
       }
       await addMessage(ticket.id, message.trim(), isInternal, imageUrl);
       setMessage('');
