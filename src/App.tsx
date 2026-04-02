@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
-import LandingPage from './components/LandingPage';
-import LoginPage from './components/LoginPage';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
 import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
+import Dashboard from './pages/Dashboard';
 import TicketList from './components/TicketList';
 import TicketDetail from './components/TicketDetail';
 import NewTicket from './components/NewTicket';
-import UsersPage from './components/UsersPage';
-import ReportsPage from './components/ReportsPage';
-import DepartmentsPage from './components/DepartmentsPage';
-import SettingsPage from './components/SettingsPage';
-import SetupPage from './components/SetupPage';
+import UsersPage from './pages/UsersPage';
+import ReportsPage from './pages/ReportsPage';
+import DepartmentsPage from './pages/DepartmentsPage';
+import SettingsPage from './pages/SettingsPage';
+import SetupPage from './pages/SetupPage';
 import { isSupabaseConfigured } from './lib/supabase';
 
 function AppContent() {
@@ -50,20 +50,20 @@ function AppContent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#050505]">
+    <div className="flex min-h-screen bg-[#030014]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto relative pt-14 lg:pt-0">
+      <main className="flex-1 overflow-y-auto relative pt-16 lg:pt-0">
         {loading && (
           <div className="fixed top-20 lg:top-6 right-6 z-[100] animate-fade-in">
-            <div className="flex items-center gap-3 bg-[#121212]/80 backdrop-blur-md border border-[#ffffff]/30 rounded-2xl px-5 py-2.5 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+            <div className="flex items-center gap-3 bg-[#00f0ff]/10 backdrop-blur-md border border-[#00f0ff]/30 rounded-2xl px-5 py-2.5 shadow-[0_0_30px_rgba(0,240,255,0.05)]">
               <div className="relative w-4 h-4">
-                <svg className="animate-spin w-4 h-4 text-[#ffffff]" viewBox="0 0 24 24" fill="none">
+                <svg className="animate-spin w-4 h-4 text-[#00f0ff]" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                <div className="absolute inset-0 bg-[#ffffff] blur-lg opacity-10 animate-pulse" />
+                <div className="absolute inset-0 bg-[#00f0ff] blur-lg opacity-10 animate-pulse" />
               </div>
-              <span className="text-[#ffffff] text-[10px] font-black uppercase tracking-[3px]">Sincronizando_Nexo...</span>
+              <span className="text-[#00f0ff] text-[10px] font-black uppercase tracking-[3px]">Sincronizando_Nexo...</span>
             </div>
           </div>
         )}

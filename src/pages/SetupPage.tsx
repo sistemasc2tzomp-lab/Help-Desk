@@ -46,7 +46,7 @@ export default function SetupPage({ onConfigured }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] px-4 py-8 relative overflow-hidden">
       {/* Background Grid & Glows */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#ffffff]/10 blur-[120px] rounded-full pointer-events-none" />
@@ -113,7 +113,7 @@ export default function SetupPage({ onConfigured }: Props) {
                 onChange={e => { setUrl(e.target.value); setError(''); }}
                 placeholder="https://su-proyecto.supabase.co"
                 autoComplete="off"
-                className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all"
+                className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all"
               />
               <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
                  <div className="w-2 h-2 rounded-full bg-[#ffffff] animate-ping" />
@@ -133,7 +133,7 @@ export default function SetupPage({ onConfigured }: Props) {
                 onChange={e => { setKey(e.target.value); setError(''); }}
                 placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 autoComplete="off"
-                className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all pr-16"
+                className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all pr-16"
               />
               <button
                 type="button"
@@ -186,7 +186,7 @@ export default function SetupPage({ onConfigured }: Props) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-open/details:rotate-90 transition-transform"><polyline points="9 18 15 12 9 6"/></svg>
             VISUALIZAR ESQUEMA_SQL REQUERIDO
           </summary>
-          <div className="mt-6 bg-[#050505] rounded-3xl p-8 border border-white/5 overflow-x-auto max-h-[300px] custom-scrollbar">
+          <div className="mt-6 bg-[#030014] rounded-3xl p-8 border border-white/5 overflow-x-auto max-h-[300px] custom-scrollbar">
             <pre className="text-gray-300 text-[10px] leading-relaxed whitespace-pre font-mono">
               {`-- PERFILES_CORE
 CREATE TABLE IF NOT EXISTS perfiles (

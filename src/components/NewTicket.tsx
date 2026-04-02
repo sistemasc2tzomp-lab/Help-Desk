@@ -92,7 +92,7 @@ export default function NewTicket() {
 
   if (submitted) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-vh-[70vh] bg-[#050505]">
+      <div className="p-6 flex flex-col items-center justify-center min-vh-[70vh] bg-[#030014]">
         <div className="w-24 h-24 rounded-full bg-gray-400/10 border-4 border-gray-400/30 flex items-center justify-center mb-8 animate-pulse shadow-[0_0_50px_rgba(255,255,255,0.05)]">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
@@ -105,7 +105,7 @@ export default function NewTicket() {
   }
 
   return (
-    <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-10 min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 max-w-3xl mx-auto space-y-10 min-h-screen bg-[#030014]">
       {/* Header Area */}
       <div className="space-y-4">
         <button
@@ -137,7 +137,7 @@ export default function NewTicket() {
             onChange={e => setTitle(e.target.value)}
             placeholder="SYNTAX_ERROR_IN_CORE_..."
             required
-            className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+            className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]"
           />
         </div>
 
@@ -150,7 +150,7 @@ export default function NewTicket() {
             placeholder="Introduce los parámetros técnicos del problema. Incluye códigos de error, capturas y contexto operativo..."
             required
             rows={6}
-            className="w-full bg-[#121212]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none leading-relaxed"
+            className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none leading-relaxed"
           />
         </div>
 
@@ -161,7 +161,7 @@ export default function NewTicket() {
             <select
               value={category}
               onChange={e => setCategory(e.target.value as TicketCategory)}
-              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="Técnico">TÉCNICO</option>
               <option value="Facturación">FACTURACIÓN</option>
@@ -175,7 +175,7 @@ export default function NewTicket() {
             <select
               value={priority}
               onChange={e => setPriority(e.target.value as TicketPriority)}
-              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="Baja">BAJA_NODAL</option>
               <option value="Media">MEDIA_ESTÁNDAR</option>
@@ -193,7 +193,7 @@ export default function NewTicket() {
               value={departmentId}
               onChange={e => setDepartmentId(e.target.value)}
               required
-              className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
               <option value="" disabled>SELECCIONAR EL DEPARTAMENTO</option>
               {departments.map(d => (
@@ -214,7 +214,7 @@ export default function NewTicket() {
         <div className="space-y-4 relative z-10">
           <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Documentación Visual (Adjuntos)</label>
           {imagePreview ? (
-            <div className="relative rounded-3xl overflow-hidden border-2 border-[#ffffff]/30 bg-[#050505] group/prev shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden border-2 border-[#ffffff]/30 bg-[#030014] group/prev shadow-2xl">
               <img src={imagePreview} alt="Preview" className="w-full max-h-80 object-cover" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/prev:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                 <button
@@ -225,7 +225,7 @@ export default function NewTicket() {
                     Purgar Recurso
                 </button>
               </div>
-              <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#050505]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
+              <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#030014]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
                 <div className="w-2 h-2 rounded-full bg-[#aaaaaa] animate-pulse" />
                 <span className="text-[#aaaaaa] text-[10px] font-black uppercase tracking-[2px]">{imageFile?.name} cargado</span>
               </div>
@@ -285,7 +285,7 @@ export default function NewTicket() {
           >
             {uploadingImage ? (
               <span className="flex items-center gap-3">
-                <div className="w-4 h-4 border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
                 Dumping_Buff...
               </span>
             ) : (

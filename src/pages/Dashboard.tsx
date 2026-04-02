@@ -4,17 +4,17 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)]',
-  'En Progreso': 'bg-white/5 text-gray-300 border border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.05)]',
-  'Resuelto': 'bg-white/20 text-white border border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.15)]',
-  'Cerrado': 'bg-white/2 text-gray-500 border border-white/5',
+  'Abierto': 'bg-cyan-500/10 text-[#00f0ff] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,240,255,0.1)]',
+  'En Progreso': 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(123,47,255,0.1)]',
+  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
+  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-white font-black',
-  'Alta': 'text-gray-200 font-bold',
-  'Media': 'text-gray-400 font-semibold',
-  'Baja': 'text-gray-600',
+  'Urgente': 'text-pink-400 border-pink-500/30 bg-pink-500/10 shadow-[0_0_10px_rgba(255,45,149,0.1)]',
+  'Alta': 'text-orange-400 border-orange-500/30 bg-orange-500/10',
+  'Media': 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+  'Baja': 'text-slate-400 border-slate-500/30 bg-slate-500/10',
 };
 
 const StatCard = ({ label, value, icon, gradient, sub }: {
@@ -57,9 +57,9 @@ export default function Dashboard() {
   };
 
   const byStatus = [
-    { label: 'Abiertos', count: stats.open, color: '#ffffff' },
-    { label: 'En Progreso', count: stats.inProgress, color: '#bbbbbb' },
-    { label: 'Resueltos', count: stats.resolved, color: '#aaaaaa' },
+    { label: 'Abiertos', count: stats.open, color: '#00f0ff' },
+    { label: 'En Progreso', count: stats.inProgress, color: '#7b2fff' },
+    { label: 'Resueltos', count: stats.resolved, color: '#10b981' },
   ];
   const maxCount = Math.max(...byStatus.map(s => s.count), 1);
 
@@ -67,7 +67,7 @@ export default function Dashboard() {
   departments.forEach(d => { deptMap[d.id] = d.name; });
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -94,36 +94,29 @@ export default function Dashboard() {
         <StatCard 
           label="Total Unidades" 
           value={stats.total} 
-          gradient="from-white/10 to-white/20"
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
+          gradient="from-[#00f0ff]/20 to-[#7b2fff]/20"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
           sub="DATA_SYNC: 100%"
         />
         <StatCard 
           label="Soporte Activo" 
           value={stats.open} 
-          gradient="from-white/5 to-white/15"
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
-          sub="DATA_SYNC: 100%"
-        />
-        <StatCard 
-          label="Soporte Activo" 
-          value={stats.open} 
-          gradient="from-white/5 to-white/15"
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
-          sub="URGENCIA: ALTA"
+          gradient="from-[#00f0ff]/20 to-transparent"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+          sub="URGENCIA: DETECTADA"
         />
         <StatCard 
           label="En Ejecución" 
           value={stats.inProgress} 
-          gradient="from-white/10 to-white/5"
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
-          sub="PROCESANDO: 0%"
+          gradient="from-[#7b2fff]/20 to-transparent"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
+          sub="PROCESANDO_STREAMS"
         />
         <StatCard 
           label="Finalizados" 
           value={stats.resolved} 
-          gradient="from-white/20 to-white/5"
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+          gradient="from-[#10b981]/20 to-transparent"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
           sub="ESTADO: ÓPTIMO"
         />
       </div>
@@ -144,7 +137,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="p-4 sm:p-6 overflow-x-auto">
+          <div className="p-4 sm:p-6 overflow-hidden">
             {recentTickets.length === 0 ? (
               <div className="py-20 text-center">
                 <div className="text-5xl mb-6 grayscale opacity-20">🎫</div>
@@ -154,48 +147,77 @@ export default function Dashboard() {
                 </button>
               </div>
             ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">REQUERIMIENTO</th>
-                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">ESTADO</th>
-                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">PRIORIDAD</th>
-                    <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden sm:table-cell">CONTACTO / DEPARTAMENTO</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
+              <div className="space-y-4">
+                {/* Desktop Table - Hidden on very small screens */}
+                <div className="hidden sm:block overflow-x-auto custom-scrollbar">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">REQUERIMIENTO</th>
+                        <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">ESTADO</th>
+                        <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden lg:table-cell">PRIORIDAD</th>
+                        <th className="text-right text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">CONTACTO</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {recentTickets.map(ticket => (
+                        <tr
+                          key={ticket.id}
+                          onClick={() => handleTicketClick(ticket)}
+                          className="hover:bg-[#ffffff]/5 cursor-pointer transition-colors group"
+                        >
+                          <td className="px-4 py-5">
+                            <div className="text-white text-sm font-bold truncate max-w-[200px] font-rajdhani uppercase">{ticket.title}</div>
+                            <div className="text-[#8888aa] text-[10px] mt-1 font-mono">{ticket.category} — {formatDistanceToNow(ticket.updatedAt)}</div>
+                          </td>
+                          <td className="px-4 py-5">
+                            <span className={`inline-flex items-center text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${statusColors[ticket.status]}`}>
+                              {ticket.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-5 hidden lg:table-cell">
+                            <span className={`text-[10px] uppercase font-bold tracking-widest ${priorityColors[ticket.priority]}`}>
+                              {ticket.priority}
+                            </span>
+                          </td>
+                          <td className="px-4 py-5 text-right">
+                            <div className="text-white text-[10px] font-black uppercase tracking-tight font-orbitron">
+                              {ticket.createdByName.split(' ')[0] || 'DESCONOCIDO'}
+                            </div>
+                            <div className="text-[#8888aa] text-[9px] font-bold uppercase tracking-tight">
+                              {ticket.departmentId ? deptMap[ticket.departmentId]?.split(' ')[0] || 'GENÉRICO' : 'GENÉRICO'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View - Visible only on smallest screens */}
+                <div className="sm:hidden space-y-3">
                   {recentTickets.map(ticket => (
-                    <tr
+                    <div
                       key={ticket.id}
                       onClick={() => handleTicketClick(ticket)}
-                      className="hover:bg-[#ffffff]/5 cursor-pointer transition-colors group"
+                      className="bg-white/2 border border-white/5 rounded-2xl p-4 active:bg-white/5 transition-colors"
                     >
-                      <td className="px-4 py-5">
-                        <div className="text-white text-sm font-bold truncate max-w-[200px] font-rajdhani">{ticket.title}</div>
-                        <div className="text-[#8888aa] text-[10px] mt-1 font-mono">{ticket.category} — {formatDistanceToNow(ticket.updatedAt)}</div>
-                      </td>
-                      <td className="px-4 py-5">
-                        <span className={`inline-flex items-center text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${statusColors[ticket.status]}`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="text-white text-xs font-bold font-orbitron uppercase truncate pr-4">{ticket.title}</div>
+                        <span className={`shrink-0 text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter ${statusColors[ticket.status]}`}>
                           {ticket.status}
                         </span>
-                      </td>
-                      <td className="px-4 py-5">
-                        <span className={`text-[10px] uppercase font-bold tracking-widest ${priorityColors[ticket.priority]}`}>
-                          {ticket.priority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-5 hidden sm:table-cell">
-                        <div className="text-white text-[10px] font-black uppercase tracking-tight mb-1 font-orbitron">
-                          USUARIO: <span className="text-[#cccccc]">{ticket.createdByName || 'DESCONOCIDO'}</span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div className="text-[#8888aa] text-[10px] font-mono">{formatDistanceToNow(ticket.updatedAt).toUpperCase()}</div>
+                        <div className="text-white text-[9px] font-black uppercase tracking-widest bg-white/5 px-2 py-1 rounded border border-white/10">
+                          {ticket.createdByName.split(' ')[0]}
                         </div>
-                        <div className="text-[#8888aa] text-[9px] font-bold uppercase tracking-tight bg-white/5 inline-block px-2 py-0.5 rounded border border-white/10">
-                          DEPTO: {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
-                        </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
           </div>
         </div>

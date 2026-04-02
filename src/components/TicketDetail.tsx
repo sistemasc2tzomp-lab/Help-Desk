@@ -80,17 +80,17 @@ function generateProfessionalTicketReport(doc: jsPDF, ticket: any, dept: any) {
 }
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.05)]',
-  'En Progreso': 'bg-white/5 text-gray-300 border border-white/10 shadow-[0_0_10px_rgba(200,200,200,0.05)]',
-  'Resuelto': 'bg-white/20 text-white border border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.1)]',
-  'Cerrado': 'bg-white/2 text-gray-500 border border-white/5',
+  'Abierto': 'bg-cyan-500/10 text-[#00f0ff] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,240,255,0.1)]',
+  'En Progreso': 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(123,47,255,0.1)]',
+  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
+  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-white border-white/40 bg-white/10',
-  'Alta': 'text-gray-200 border-white/20 bg-white/5',
-  'Media': 'text-gray-400 border-white/10 bg-white/2',
-  'Baja': 'text-gray-600 border-white/5 bg-white/1',
+  'Urgente': 'text-pink-400 border-pink-500/30 bg-pink-500/10 shadow-[0_0_10px_rgba(255,45,149,0.1)]',
+  'Alta': 'text-orange-400 border-orange-500/30 bg-orange-500/10',
+  'Media': 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+  'Baja': 'text-slate-400 border-slate-500/30 bg-slate-500/10',
 };
 
 export default function TicketDetail() {
@@ -276,7 +276,7 @@ export default function TicketDetail() {
   };
 
   return (
-    <div className="p-6 sm:p-10 max-w-6xl mx-auto space-y-8 bg-[#050505] min-h-screen">
+    <div className="p-6 sm:p-10 max-w-6xl mx-auto space-y-8 bg-[#030014] min-h-screen">
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
@@ -342,7 +342,7 @@ export default function TicketDetail() {
                   >
                     <img src={ticket.imageUrl} alt="Adjunto del ticket" className="w-full max-h-80 object-cover group-hover/img:scale-105 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                       <span className="text-white text-[10px] font-black uppercase tracking-[5px] bg-[#050505]/80 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/10">Ampliar Vista</span>
+                       <span className="text-white text-[10px] font-black uppercase tracking-[5px] bg-[#030014]/80 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/10">Ampliar Vista</span>
                     </div>
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export default function TicketDetail() {
 
               <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#121212] to-[#333333] flex items-center justify-center text-white font-black font-orbitron border border-white/10">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0f0a28] to-[#333333] flex items-center justify-center text-white font-black font-orbitron border border-white/10">
                     {ticket.createdByName.slice(0,1)}
                   </div>
                   <div>
@@ -392,7 +392,7 @@ export default function TicketDetail() {
                       }`}
                     >
                       {msg.isInternal && (
-                        <div className="absolute top-0 right-0 px-6 py-2 bg-[#cccccc] text-[#050505] text-[9px] font-black uppercase tracking-[3px] rounded-bl-3xl">Nota del Sistema</div>
+                        <div className="absolute top-0 right-0 px-6 py-2 bg-[#cccccc] text-[#030014] text-[9px] font-black uppercase tracking-[3px] rounded-bl-3xl">Nota del Sistema</div>
                       )}
                       
                       <div className="flex items-start gap-6">
@@ -429,7 +429,7 @@ export default function TicketDetail() {
                               onClick={() => setLightboxUrl(msg.imageUrl!)}
                             >
                               <img src={msg.imageUrl} alt="Imagen adjunta" className="w-full max-h-52 object-cover group-hover/msg-img:scale-105 transition-transform duration-500" />
-                              <div className="px-4 py-3 bg-[#050505]/50 backdrop-blur-md flex items-center justify-between border-t border-white/5">
+                              <div className="px-4 py-3 bg-[#030014]/50 backdrop-blur-md flex items-center justify-between border-t border-white/5">
                                 <span className="text-white text-[9px] font-black uppercase tracking-[3px]">Visualizar Adjunto</span>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
                               </div>
@@ -479,7 +479,7 @@ export default function TicketDetail() {
                   onChange={e => setMessage(e.target.value)}
                   placeholder="Inyectar mensaje en la transmisión..."
                   rows={4}
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-3xl px-8 py-6 text-white placeholder-slate-700 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 focus:shadow-[0_0_30px_rgba(255,255,255,0.02)] transition-all resize-none"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-3xl px-8 py-6 text-white placeholder-slate-700 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 focus:shadow-[0_0_30px_rgba(255,255,255,0.02)] transition-all resize-none"
                 />
                </div>
 
@@ -491,7 +491,7 @@ export default function TicketDetail() {
                   <button
                     type="button"
                     onClick={() => { setReplyImage(null); setReplyPreview(null); if (replyFileRef.current) replyFileRef.current.value = ''; }}
-                    className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#999999] text-white flex items-center justify-center border-2 border-[#050505] hover:scale-110 transition shadow-lg"
+                    className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#999999] text-white flex items-center justify-center border-2 border-[#030014] hover:scale-110 transition shadow-lg"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -518,7 +518,7 @@ export default function TicketDetail() {
                 >
                   {sending ? (
                     <span className="flex items-center gap-3">
-                      <div className="w-4 h-4 border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
                       SINCRONIZANDO...
                     </span>
                   ) : (
@@ -552,7 +552,7 @@ export default function TicketDetail() {
                   <select
                     value={ticket.status}
                     onChange={e => updateTicketStatus(ticket.id, e.target.value as TicketStatus)}
-                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                    className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
                   >
                     <option>Abierto</option>
                     <option>En Progreso</option>
@@ -565,7 +565,7 @@ export default function TicketDetail() {
                   <select
                     value={ticket.priority}
                     onChange={e => updateTicketPriority(ticket.id, e.target.value as TicketPriority)}
-                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                    className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
                   >
                     <option>Urgente</option>
                     <option>Alta</option>
@@ -578,7 +578,7 @@ export default function TicketDetail() {
                   <select
                     value={ticket.assignedToId || ''}
                     onChange={e => assignTicket(ticket.id, e.target.value)}
-                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
+                    className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
                   >
                     <option value="">SIN ASIGNAR</option>
                     {agents.map(agent => (
@@ -634,7 +634,7 @@ export default function TicketDetail() {
           className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
           onClick={() => setLightboxUrl(null)}
         >
-          <div className="absolute inset-0 bg-[#050505]/95 backdrop-blur-2xl" />
+          <div className="absolute inset-0 bg-[#030014]/95 backdrop-blur-2xl" />
           <div className="relative max-w-5xl w-full flex flex-col items-center" onClick={e => e.stopPropagation()}>
             <div className="w-full flex justify-end mb-4">
                <button

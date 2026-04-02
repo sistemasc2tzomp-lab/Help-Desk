@@ -251,7 +251,7 @@ export default function ReportsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
         <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
@@ -532,7 +532,7 @@ export default function ReportsPage() {
   ] as const;
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -561,7 +561,7 @@ export default function ReportsPage() {
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className="bg-[#121212]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
+              className="bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -570,7 +570,7 @@ export default function ReportsPage() {
               type="date"
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              className="bg-[#121212]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
+              className="bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-[10px] font-black font-orbitron focus:outline-none focus:border-[#ffffff]/50 transition-all uppercase"
             />
           </div>
           {(dateFrom || dateTo) && (
@@ -592,14 +592,14 @@ export default function ReportsPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-3 bg-[#121212]/30 p-2 rounded-[32px] border border-white/5 backdrop-blur-xl">
+      <div className="flex flex-wrap gap-3 bg-[#0f0a28]/30 p-2 rounded-[32px] border border-white/5 backdrop-blur-xl">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-4 py-5 px-8 rounded-[24px] text-[10px] font-black tracking-[4px] transition-all duration-500 uppercase ${
               activeTab === tab.id
-                ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#050505] scale-[1.02]'
+                ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#030014] scale-[1.02]'
                 : 'text-[#8888aa] hover:text-white hover:bg-white/5'
             }`}
           >
@@ -671,16 +671,17 @@ export default function ReportsPage() {
           </SectionHeader>
 
           <div className="glass-panel border border-white/5 rounded-[40px] overflow-hidden shadow-2xl">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto custom-scrollbar">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 bg-white/2">
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">IDENTIFICADOR / NODO</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">ESTADO_VITAL</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">NIVEL_PRIORIDAD</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">CATEGORIA</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px] hidden lg:table-cell">CATEGORIA</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">RESPONSABLE</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">SELLO_TIEMPO</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px] hidden xl:table-cell">SELLO_TIEMPO</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -710,18 +711,18 @@ export default function ReportsPage() {
                              {t.priority}
                            </span>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-8 py-6 hidden lg:table-cell">
                            <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-[2px]">{t.category}</span>
                         </td>
                         <td className="px-8 py-6">
                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.avatarColor : '#121212' }}>
+                              <div className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.avatarColor : '#0f0a28' }}>
                                  {t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.initials : '??'}
                               </div>
-                              <span className="text-white text-[11px] font-bold font-rajdhani uppercase tracking-tight">{t.assignedToName || 'PENDIENTE_ASIGNACIÓN'}</span>
+                              <span className="text-white text-[11px] font-bold font-rajdhani uppercase tracking-tight">{t.assignedToName?.split(' ')[0] || 'PENDIENTE'}</span>
                            </div>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-8 py-6 hidden xl:table-cell">
                            <div className="text-white text-[10px] font-black font-orbitron tracking-tighter">{formatDate(t.createdAt)}</div>
                         </td>
                       </tr>
@@ -729,6 +730,39 @@ export default function ReportsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden divide-y divide-white/5">
+              {filtered.length === 0 ? (
+                <div className="p-12 text-center">
+                  <div className="text-3xl mb-4 opacity-20">🧬</div>
+                  <p className="text-[#8888aa] text-[8px] font-black uppercase tracking-[3px]">Sin señales detectadas</p>
+                </div>
+              ) : (
+                filtered.map(t => (
+                  <div key={t.id} className="p-6 active:bg-white/5 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="text-white font-black font-orbitron tracking-tight text-xs uppercase mb-1">{t.title}</div>
+                        <div className="text-[#8888aa] text-[8px] font-bold tracking-widest uppercase">REF_{t.id.slice(0,6).toUpperCase()}</div>
+                      </div>
+                      <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter" style={{ backgroundColor: `${statusColor[t.status]}22`, color: statusColor[t.status], border: `1px solid ${statusColor[t.status]}44` }}>
+                        {t.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[8px] font-black text-white" style={{ backgroundColor: t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.avatarColor : '#0f0a28' }}>
+                          {t.assignedToId ? users.find(u=>u.id===t.assignedToId)?.initials : '??'}
+                        </div>
+                        <span className="text-[#8888aa] text-[9px] font-bold uppercase tracking-tight">{t.assignedToName?.split(' ')[0] || 'PENDIENTE'}</span>
+                      </div>
+                      <span className="text-[#8888aa] text-[9px] font-mono">{formatDate(t.createdAt).split(' ')[0]}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -750,7 +784,7 @@ export default function ReportsPage() {
               <div key={agent.id} className="glass-panel border border-white/5 rounded-[40px] p-8 group relative overflow-hidden transition-all duration-500 hover:border-[#ffffff]/20">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffffff]/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex items-center gap-6 mb-8">
-                  <div className="w-16 h-16 rounded-[24px] border-2 border-[#050505] flex items-center justify-center text-white font-black font-orbitron text-xl shadow-2xl" style={{ backgroundColor: agent.avatarColor, boxShadow: `0 0 20px ${agent.avatarColor}44` }}>
+                  <div className="w-16 h-16 rounded-[24px] border-2 border-[#030014] flex items-center justify-center text-white font-black font-orbitron text-xl shadow-2xl" style={{ backgroundColor: agent.avatarColor, boxShadow: `0 0 20px ${agent.avatarColor}44` }}>
                     {agent.initials}
                   </div>
                   <div>

@@ -41,7 +41,7 @@ export default function DepartmentsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
         <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
@@ -101,7 +101,7 @@ export default function DepartmentsPage() {
   const unassigned = totalTickets - assigned;
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -136,7 +136,7 @@ export default function DepartmentsPage() {
             placeholder="SCAN_DEPARTMENTS..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[#121212]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm font-mono focus:outline-none focus:border-[#ffffff]/50 transition-all"
+            className="w-full bg-[#0f0a28]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm font-mono focus:outline-none focus:border-[#ffffff]/50 transition-all"
           />
         </div>
       </div>
@@ -225,9 +225,9 @@ export default function DepartmentsPage() {
                     <div className="flex items-center gap-3">
                        <div className="flex -space-x-2">
                          {deptUsers.slice(0, 3).map((u, i) => (
-                           <div key={i} className="w-7 h-7 rounded-lg border-2 border-[#050505] flex items-center justify-center text-white text-[8px] font-black" style={{ backgroundColor: u.avatarColor }}>{u.initials}</div>
+                           <div key={i} className="w-7 h-7 rounded-lg border-2 border-[#030014] flex items-center justify-center text-white text-[8px] font-black" style={{ backgroundColor: u.avatarColor }}>{u.initials}</div>
                          ))}
-                         {deptUsers.length > 3 && <div className="w-7 h-7 rounded-lg border-2 border-[#050505] bg-white/5 flex items-center justify-center text-[#8888aa] text-[8px] font-black">+{deptUsers.length - 3}</div>}
+                         {deptUsers.length > 3 && <div className="w-7 h-7 rounded-lg border-2 border-[#030014] bg-white/5 flex items-center justify-center text-[#8888aa] text-[8px] font-black">+{deptUsers.length - 3}</div>}
                        </div>
                        <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">{deptUsers.length} OPERADORES</span>
                     </div>
@@ -265,7 +265,7 @@ export default function DepartmentsPage() {
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="ID_DEPT_NAME"
                   required
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                 />
               </div>
 
@@ -276,7 +276,7 @@ export default function DepartmentsPage() {
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Detalla las responsabilidades y el alcance de este sector..."
                   rows={3}
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none"
                 />
               </div>
 
@@ -287,7 +287,7 @@ export default function DepartmentsPage() {
                   value={form.jefe}
                   onChange={e => setForm(f => ({ ...f, jefe: e.target.value }))}
                   placeholder="COMMAND_HEAD_ID"
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-rajdhani font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all"
                 />
               </div>
 

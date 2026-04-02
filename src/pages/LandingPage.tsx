@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
         this.speedX = (Math.random() - 0.5) * 0.5;
         this.speedY = (Math.random() - 0.5) * 0.5;
         this.opacity = Math.random() * 0.5 + 0.1;
-        this.color = ['255, 255, 255', '200, 200, 200', '150, 150, 150'][Math.floor(Math.random() * 3)];
+        this.color = ['0, 240, 255', '123, 47, 255', '255, 45, 149'][Math.floor(Math.random() * 3)];
       }
 
       update() {
@@ -124,7 +124,7 @@ const LandingPage: React.FC = () => {
 
           if (dist < 150) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 * (1 - dist / 150)})`;
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.05 * (1 - dist / 150)})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -215,23 +215,23 @@ const LandingPage: React.FC = () => {
   const runTerminal = () => {
     const terminalLines = [
       { prompt: '$ ', command: 'helpdesk --init --mode=production', delay: 300 },
-      { output: '[-] Inicializando Help Desk Tzomp v3.0...', delay: 800 },
-      { output: '[!] Cargando módulos principales...', delay: 600, class: 'output' },
-      { output: '   + Motor de Sistema cargado', delay: 400, class: 'output' },
-      { output: '   + Análisis listo', delay: 400, class: 'output' },
-      { output: '   + Clasificación automática activa', delay: 400, class: 'output' },
-      { output: '   + Base de conocimientos sincronizada', delay: 400, class: 'output' },
-      { output: '[!] Protocolos de seguridad habilitados', delay: 600, class: 'output' },
-      { output: '[+] Panel conectado — métricas en tiempo real activas', delay: 500, class: 'output' },
-      { output: '[-] Puerta de enlace API: https://api.tzomp.lab/v3', delay: 500 },
+      { output: '⚡ Initializing Help Desk Tzomp v3.0...', delay: 800 },
+      { output: '📦 Loading AI modules...', delay: 600, class: 'warning' },
+      { output: '   ✓ NLP Engine loaded', delay: 400, class: 'success' },
+      { output: '   ✓ Sentiment Analysis ready', delay: 400, class: 'success' },
+      { output: '   ✓ Auto-classification active', delay: 400, class: 'success' },
+      { output: '   ✓ Knowledge Base synced', delay: 400, class: 'success' },
+      { output: '🔐 Security protocols enabled (Zero Trust)', delay: 600, class: 'warning' },
+      { output: '📊 Dashboard connected — real-time metrics active', delay: 500, class: 'success' },
+      { output: '🌐 API Gateway: https://api.tzomp.lab/v3', delay: 500 },
       { prompt: '$ ', command: 'status --all', delay: 800 },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '  ESTADO DEL SISTEMA: ██████████████ EN LÍNEA', delay: 400, class: 'output' },
-      { output: '  MOTOR DEL SISTEMA:  ██████████████ ACTIVO', delay: 400, class: 'output' },
-      { output: '  TICKETS:           ██████████████ 0 PENDIENTES', delay: 400, class: 'output' },
-      { output: '  TIEMPO ACTIVIDAD:  99.97% (30 días)', delay: 400, class: 'output' },
+      { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'success' },
+      { output: '  AI ENGINE:     ██████████████ ACTIVE', delay: 400, class: 'success' },
+      { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'success' },
+      { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'success' },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '[OK] Todos los sistemas operativos. Listo para solicitudes.', delay: 600, class: 'output' },
+      { output: '✅ All systems operational. Ready for requests.', delay: 600, class: 'success' },
     ];
 
     const body = terminalBodyRef.current;
@@ -268,7 +268,7 @@ const LandingPage: React.FC = () => {
   };
 
   const initTypeEffect = () => {
-    const heroWords = ['Gestión Inteligente', 'Operación Eficiente', 'Automatización', 'Innovación'];
+    const heroWords = ['Inteligencia Artificial', 'Machine Learning', 'Automatización', 'Innovación'];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -323,12 +323,12 @@ const LandingPage: React.FC = () => {
       {/* LOADER */}
       <div className={`loader-screen ${isLoaderHidden ? 'hidden' : ''}`} id="loader">
         <img 
-          src="/favicon_io/android-chrome-512x512.png" 
+          src="img/logo_tzompantepec.png" 
           alt="Tzomp Logo" 
           className="loader-logo" 
         />
         <div className="loader-bar"><div className="loader-bar-fill"></div></div>
-        <p className="loader-text">INICIALIZANDO SISTEMA</p>
+        <p className="loader-text">INITIALIZING SYSTEM</p>
       </div>
 
       {/* CUSTOM CURSOR - Disabled in React to avoid performance issues if not carefully handled, but included for completeness */}
@@ -342,12 +342,12 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+          <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]" />
           <span className="nav-title uppercase tracking-tighter">Dto. Sistemas C2</span>
         </a>
 
         <ul className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
-          <li><Link to="/app" className="nav-cta btn-mega"><i className="fas fa-rocket"></i> Acceder</Link></li>
+          <li><Link to="/app" className="nav-cta"><i className="fas fa-rocket"></i> Acceder</Link></li>
         </ul>
 
         <div className={`hamburger ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>
@@ -364,40 +364,39 @@ const LandingPage: React.FC = () => {
         <div className="orb orb-2"></div>
         <div className="orb orb-3"></div>
 
-        <div className="hero-content centered">
-          <div className="hero-text full-width">
-            <div className="hero-badge reveal">
-              <i className="fas fa-shield-halved"></i>
-              SISTEMA FEDERAL DE TZOMPANTEPEC — ACTIVO
+        <div className="hero-content" style={{ flexDirection: 'column', textAlign: 'center' }}>
+          <div className="hero-text" style={{ maxWidth: '100%', marginBottom: '3rem' }}>
+            <div className="hero-badge" style={{ margin: '0 auto 1.5rem' }}>
+              <i className="fas fa-circle"></i>
+              Sistema activo — v3.0
             </div>
-            <h1 className="reveal-up">
-              <span className="line">HELP DESK</span>
-              <span className="line gradient-text">INSTITUCIONAL</span>
+            <h1>
+              <span className="line">Help Desk</span>
+              <span className="line gradient-text">Sistemas C2</span>
+              <span className="line gradient-text-2">Tzompantepec</span>
             </h1>
-            <p className="hero-description reveal-up stagger-1">
-              Plataforma unificada para la gestión de incidencias, mantenimiento preventivo 
-              y soporte técnico especializado del Dto. Sistemas C2 Tzompantepec.
+            <p className="hero-description" style={{ margin: '1.5rem auto', maxWidth: '700px' }}>
+              Plataforma institucional para la gestión, mantenimiento y soporte técnico 
+              de infraestructura tecnológica municipal.
             </p>
-            <div className="hero-buttons-centered reveal-up stagger-2">
-              <Link to="/app" className="btn btn-mega btn-primary pulse-glow">
-                <i className="fas fa-sign-in-alt"></i> ACCEDER AL SISTEMA
+            <div className="hero-buttons" style={{ justifyContent: 'center' }}>
+              <Link to="/app" className="btn btn-primary" style={{ padding: '1.5rem 4rem', fontSize: '1.5rem', borderRadius: '2rem' }}>
+                <i className="fas fa-play"></i> ACCEDER AL SISTEMA
               </Link>
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="hero-3d-container reveal-right">
-              <div className="system-preview-wrapper">
-                <img src="/assets/system-preview.png" alt="Help Desk Dashboard" className="system-main-preview" />
-                <div className="preview-glow"></div>
-              </div>
-              
-              <div className="hologram-ring ring-1"></div>
-              <div className="hologram-ring ring-2"></div>
-              
-              <div className="floating-badge fb-1"><i className="fas fa-check"></i> Eficiente</div>
-              <div className="floating-badge fb-2"><i className="fas fa-shield-alt"></i> Seguro</div>
-            </div>
+          <div className="system-preview-container reveal" style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
+            <div className="preview-glow" style={{ position: 'absolute', inset: '-20px', background: 'var(--primary)', opacity: '0.1', blur: '50px', borderRadius: '30px' }}></div>
+            <img 
+              src="/system-preview.png" 
+              alt="Vista previa del sistema" 
+              className="system-preview-img" 
+              style={{ width: '100%', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} 
+              onError={(e) => {
+                e.currentTarget.src = 'https://raw.githubusercontent.com/sistemasc2tzomp-lab/Help-Desk/main/public/system-preview.png';
+              }}
+            />
           </div>
         </div>
       </section>
@@ -407,7 +406,7 @@ const LandingPage: React.FC = () => {
         <div className="stats-grid stagger-children">
           <div className="stat-item">
             <div className="stat-number" data-count="99.9">0</div>
-            <div className="stat-label">% Disponibilidad</div>
+            <div className="stat-label">% Uptime</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="500">0</div>
@@ -415,64 +414,176 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="50">0</div>
-            <div className="stat-label">Áreas de Atención</div>
+            <div className="stat-label">Módulos IA</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="24">0</div>
-            <div className="stat-label">/7 Soporte</div>
+            <div className="stat-label">/7 Disponibilidad</div>
           </div>
         </div>
       </div>
 
-      {/* FEATURES SECTION SIMPLIFIED */}
+      {/* FEATURES SECTION */}
       <section className="features" id="features">
         <div className="section-header reveal">
           <div className="section-tag"><i className="fas fa-star"></i> Características</div>
           <h2>Funcionalidades <span className="gradient-text">Avanzadas</span></h2>
-          <div className="center-cta-wrap reveal">
-            <Link to="/app" className="btn btn-giant btn-primary">
-              <i className="fas fa-rocket"></i> Acceder al Sistema
-            </Link>
+          <p>Descubre las herramientas que hacen de nuestro Help Desk la solución más completa del mercado</p>
+        </div>
+
+        <div className="features-grid stagger-children">
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-1"><i className="fas fa-robot"></i></div>
+            <h3>Chatbot IA Avanzado</h3>
+            <p>Asistente virtual con procesamiento de lenguaje natural que resuelve consultas de forma autónoma e inteligente.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-2"><i className="fas fa-ticket"></i></div>
+            <h3>Gestión de Tickets</h3>
+            <p>Sistema completo de ticketing con priorización automática, asignación inteligente y seguimiento en tiempo real.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-3"><i className="fas fa-chart-line"></i></div>
+            <h3>Analytics Dashboard</h3>
+            <p>Visualización de datos con gráficas interactivas, métricas de rendimiento y reportes automatizados.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-4"><i className="fas fa-shield-halved"></i></div>
+            <h3>Seguridad Zero Trust</h3>
+            <p>Protección multicapa con autenticación biométrica, encriptación end-to-end y auditorías continuas.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-5"><i className="fas fa-rotate"></i></div>
+            <h3>Automatización Total</h3>
+            <p>Workflows automatizados que reducen el tiempo de resolución hasta en un 80% con flujos inteligentes.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon-wrap fi-6"><i className="fas fa-globe"></i></div>
+            <h3>Multi-plataforma</h3>
+            <p>Acceso desde cualquier dispositivo con diseño responsivo y experiencia nativa en web, móvil y desktop.</p>
           </div>
         </div>
       </section>
 
-      {/* AI SHOWCASE SIMPLIFIED */}
+      {/* AI SHOWCASE */}
       <section className="ai-showcase" id="ia">
-        <div className="section-header reveal">
-          <div className="section-tag"><i className="fas fa-microchip"></i> Motor IA</div>
-          <h2>Inteligencia Artificial de <span className="gradient-text">Nueva Generación</span></h2>
-          <div className="center-cta-wrap reveal">
-            <Link to="/app" className="btn btn-giant btn-primary">
-              <i className="fas fa-brain"></i> Acceder e Iniciar IA
-            </Link>
+        <div className="showcase-content">
+          <div className="showcase-visual reveal-left">
+            <div className="ai-brain">
+              <svg className="brain-connections" viewBox="0 0 300 300">
+                <line x1="150" y1="30" x2="45" y2="90" />
+                <line x1="150" y1="30" x2="255" y2="90" />
+                <line x1="45" y1="90" x2="24" y2="165" />
+                <line x1="255" y1="90" x2="276" y2="165" />
+                <line x1="45" y1="90" x2="135" y2="135" />
+                <line x1="255" y1="90" x2="135" y2="135" />
+                <line x1="24" y1="165" x2="75" y2="225" />
+                <line x1="276" y1="165" x2="225" y2="225" />
+                <line x1="135" y1="135" x2="75" y2="225" />
+                <line x1="135" y1="135" x2="225" y2="225" />
+                <line x1="75" y1="225" x2="225" y2="225" />
+                <line x1="150" y1="30" x2="135" y2="135" />
+              </svg>
+              {[...Array(8)].map((_, i) => <div key={i} className="brain-node"></div>)}
+            </div>
+          </div>
+
+          <div className="showcase-info reveal-right">
+            <div className="section-tag"><i className="fas fa-microchip"></i> Motor IA</div>
+            <h2>Inteligencia Artificial de <span className="gradient-text">Nueva Generación</span></h2>
+            <p>Nuestro motor de IA utiliza modelos de aprendizaje profundo entrenados específicamente para soporte técnico, capaces de entender contexto, emociones y resolver problemas complejos.</p>
+            <ul className="ai-features-list">
+              <li><i className="fas fa-check-circle"></i><span>Procesamiento de Lenguaje Natural (NLP)</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Clasificación automática de incidencias</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Predicción de problemas recurrentes</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Base de conocimiento auto-evolutiva</span></li>
+              <li><i className="fas fa-check-circle"></i><span>Análisis de sentimiento en tiempo real</span></li>
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* MODULES SECTION SIMPLIFIED */}
+      {/* TERMINAL SECTION */}
+      <section className="terminal-section" ref={terminalRef}>
+        <div className="section-header reveal">
+          <div className="section-tag"><i className="fas fa-terminal"></i> Live Demo</div>
+          <h2>Sistema en <span className="gradient-text-2">Acción</span></h2>
+          <p>Observa cómo nuestro sistema procesa solicitudes en tiempo real</p>
+        </div>
+        <div className="terminal reveal">
+          <div className="terminal-header">
+            <div className="terminal-dot red"></div>
+            <div className="terminal-dot yellow"></div>
+            <div className="terminal-dot green"></div>
+            <span className="terminal-title">tzomp-helpdesk@system ~ $</span>
+          </div>
+          <div className="terminal-body" ref={terminalBodyRef}></div>
+        </div>
+      </section>
+
+      {/* MODULES SECTION */}
       <section className="services" id="modulos">
         <div className="section-header reveal">
           <div className="section-tag"><i className="fas fa-cubes"></i> Módulos</div>
           <h2>Módulos del <span className="gradient-text">Sistema</span></h2>
-          <div className="center-cta-wrap reveal">
-            <Link to="/app" className="btn btn-giant btn-primary">
-              <i className="fas fa-layer-group"></i> Acceder a Módulos
-            </Link>
+          <p>Cada módulo está diseñado para optimizar un área específica de tu operación de soporte</p>
+        </div>
+        <div className="services-grid stagger-children">
+          <div className="service-card">
+            <div className="service-number">01</div>
+            <div className="service-info">
+              <h3>Panel de Control Central</h3>
+              <p>Dashboard unificado con vista 360° de todas las operaciones, métricas clave y alertas inteligentes.</p>
+              <div className="service-tags"><span>Dashboard</span><span>Analytics</span><span>Real-time</span></div>
+            </div>
+          </div>
+          <div className="service-card">
+            <div className="service-number">02</div>
+            <div className="service-info">
+              <h3>Motor de Resolución IA</h3>
+              <p>Algoritmos de machine learning que aprenden de cada interacción para ofrecer soluciones más precisas.</p>
+              <div className="service-tags"><span>ML</span><span>Deep Learning</span><span>NLP</span></div>
+            </div>
+          </div>
+          <div className="service-card">
+            <div className="service-number">03</div>
+            <div className="service-info">
+              <h3>Gestión de Usuarios</h3>
+              <p>Control completo de roles, permisos y perfiles con autenticación multifactor y SSO empresarial.</p>
+              <div className="service-tags"><span>Auth</span><span>Roles</span><span>MFA</span></div>
+            </div>
+          </div>
+          <div className="service-card">
+            <div className="service-number">04</div>
+            <div className="service-info">
+              <h3>Centro de Reportes</h3>
+              <p>Generación automática de reportes con exportación a múltiples formatos y envío programado.</p>
+              <div className="service-tags"><span>PDF</span><span>Excel</span><span>Automático</span></div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* TECH STACK SIMPLIFIED */}
+      {/* TECH STACK */}
       <section className="tech-stack" id="tech">
         <div className="section-header reveal">
           <div className="section-tag"><i className="fas fa-code"></i> Stack Tecnológico</div>
           <h2>Tecnologías que <span className="gradient-text-2">Impulsan</span> el Sistema</h2>
-          <div className="center-cta-wrap reveal">
-            <Link to="/app" className="btn btn-giant btn-primary">
-              <i className="fas fa-laptop-code"></i> Acceder al Entorno
-            </Link>
-          </div>
+          <p>Construido con las tecnologías más modernas y robustas del ecosistema</p>
+        </div>
+        <div className="tech-orbit reveal">
+          <div className="orbit-ring orbit-ring-1"></div>
+          <div className="orbit-ring orbit-ring-2"></div>
+          <div className="orbit-ring orbit-ring-3"></div>
+          <img src="favicon_io/android-chrome-192x192.png" alt="Center" className="tech-center" />
+          <div className="tech-planet orbit-c tp-1"><i className="fab fa-html5"></i></div>
+          <div className="tech-planet orbit-c tp-2"><i className="fab fa-css3-alt"></i></div>
+          <div className="tech-planet orbit-b tp-3"><i className="fab fa-js"></i></div>
+          <div className="tech-planet orbit-a tp-4"><i className="fab fa-react"></i></div>
+          <div className="tech-planet orbit-c tp-5"><i className="fab fa-node-js"></i></div>
+          <div className="tech-planet orbit-b tp-6"><i className="fas fa-database"></i></div>
+          <div className="tech-planet orbit-a tp-7"><i className="fab fa-git-alt"></i></div>
+          <div className="tech-planet orbit-c tp-8"><i className="fab fa-github"></i></div>
         </div>
       </section>
 
@@ -480,12 +591,14 @@ const LandingPage: React.FC = () => {
       <section className="cta-section">
         <div className="cta-glow"></div>
         <div className="cta-content reveal">
+          <div className="section-tag"><i className="fas fa-rocket"></i> Comenzar Ahora</div>
           <h2>¿Listo para <span className="gradient-text">Transformar</span> tu Soporte?</h2>
-          <p>Únete a la gestión tecnológica inteligente del municipio. Accede ahora al Help Desk institucional.</p>
-          <div className="cta-buttons-centered">
-            <Link to="/app" className="btn btn-mega btn-primary">
-              <i className="fas fa-sign-in-alt"></i> ACCEDER AHORA
-            </Link>
+          <p>Únete a la revolución del soporte técnico inteligente. Accede ahora al Help Desk más avanzado impulsado por IA.</p>
+          <div className="cta-buttons">
+            <Link to="/app" className="btn btn-primary"><i className="fas fa-arrow-right"></i> Acceder al Sistema</Link>
+            <a href="https://github.com/sistemasc2tzomp-lab/Help-Desk" className="btn btn-outline" target="_blank" rel="noopener noreferrer">
+              <i className="fab fa-github"></i> Ver en GitHub
+            </a>
           </div>
         </div>
       </section>
@@ -494,8 +607,8 @@ const LandingPage: React.FC = () => {
       <footer className="footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
-            <p>Help Desk Dto. Sistemas C2 Tzompantepec — Plataforma de soporte técnico institucional para la gestión tecnológica municipal.</p>
+            <img src="favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
+            <p>Help Desk Tzomp Lab — La plataforma de soporte técnico de nueva generación impulsada por inteligencia artificial.</p>
             <div className="footer-social">
               <a href="#"><i className="fab fa-github"></i></a>
               <a href="#"><i className="fab fa-linkedin-in"></i></a>
@@ -516,9 +629,9 @@ const LandingPage: React.FC = () => {
             <h4>Recursos</h4>
             <ul>
               <li><a href="#">Documentación</a></li>
-              <li><a href="#">Referencias API</a></li>
+              <li><a href="#">API Reference</a></li>
               <li><a href="#">Guía de Inicio</a></li>
-              <li><a href="#">Registro de Cambios</a></li>
+              <li><a href="#">Changelog</a></li>
             </ul>
           </div>
           <div className="footer-col">
@@ -527,7 +640,7 @@ const LandingPage: React.FC = () => {
               <li><a href="#">Centro de Ayuda</a></li>
               <li><a href="#">Contacto</a></li>
               <li><a href="#">Estado del Sistema</a></li>
-              <li><a href="#">Reportar Error</a></li>
+              <li><a href="#">Reportar Bug</a></li>
             </ul>
           </div>
         </div>

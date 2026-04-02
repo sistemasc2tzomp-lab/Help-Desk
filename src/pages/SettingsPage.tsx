@@ -98,7 +98,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-[#121212]/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all"
+      className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-4 text-white font-rajdhani font-bold placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all"
     />
   );
 }
@@ -121,7 +121,7 @@ function Toggle({ checked, onChange, label, description, onToggleSound }: {
         onClick={handleToggle}
         className={`relative w-14 h-8 rounded-full transition-all shrink-0 ml-4 border-2 ${checked ? 'bg-[#ffffff] border-[#ffffff]' : 'bg-white/5 border-white/10'}`}
       >
-        <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all shadow-xl ${checked ? 'translate-x-6 bg-[#050505]' : 'bg-[#8888aa]'}`} />
+        <span className={`absolute top-1 left-1 w-5 h-5 rounded-full transition-all shadow-xl ${checked ? 'translate-x-6 bg-[#030014]' : 'bg-[#8888aa]'}`} />
       </button>
     </div>
   );
@@ -139,7 +139,7 @@ export default function SettingsPage() {
 
   if (currentUser?.role !== 'Admin') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#050505]">
+      <div className="flex flex-col items-center justify-center p-20 min-h-[70vh] text-center space-y-8 bg-[#030014]">
         <div className="w-24 h-24 rounded-[32px] bg-gray-600/10 border-2 border-gray-600/30 flex items-center justify-center animate-pulse">
            <svg className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
@@ -179,7 +179,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Navigation Deck */}
         <aside className="w-full lg:w-72 shrink-0">
-          <nav className="flex flex-row lg:flex-col gap-3 p-2 bg-[#121212]/30 rounded-[32px] border border-white/5 backdrop-blur-xl overflow-x-auto lg:overflow-visible no-scrollbar sticky top-10">
+          <nav className="flex flex-row lg:flex-col gap-3 p-2 bg-[#0f0a28]/30 rounded-[32px] border border-white/5 backdrop-blur-xl overflow-x-auto lg:overflow-visible no-scrollbar sticky top-10">
             {sections.map(s => (
               <button
                 key={s.id}
@@ -228,7 +228,7 @@ export default function SettingsPage() {
                 }}
                 className={`flex-1 lg:w-full flex items-center gap-4 px-6 py-5 rounded-[24px] text-[10px] font-black tracking-[3px] transition-all duration-500 uppercase whitespace-nowrap ${
                   activeSection === s.id
-                    ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#050505] scale-[1.02]'
+                    ? 'bg-white shadow-[0_0_30px_rgba(255,255,255,0.1)] text-[#030014] scale-[1.02]'
                     : 'text-[#8888aa] hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -286,7 +286,7 @@ export default function SettingsPage() {
                       }}
                       className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[2px] transition-all border ${
                         settings.defaultPriority === p
-                          ? 'bg-[#ffffff] text-[#050505] border-[#ffffff] shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                          ? 'bg-[#ffffff] text-[#030014] border-[#ffffff] shadow-[0_0_20px_rgba(255,255,255,0.2)]'
                           : 'bg-white/5 text-[#8888aa] border-white/5 hover:border-white/20'
                       }`}
                     >
@@ -297,7 +297,7 @@ export default function SettingsPage() {
               </Field>
 
               <Field label="PURGA AUTOMÁTICA (DÍAS)" hint="Protocolo de cierre automático para unidades resueltas">
-                <div className="flex items-center gap-6 bg-[#121212]/50 p-6 rounded-3xl border border-white/5">
+                <div className="flex items-center gap-6 bg-[#0f0a28]/50 p-6 rounded-3xl border border-white/5">
                   <input
                     type="range"
                     min={0}
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                     onChange={e => set('autoCloseResolvedDays', Number(e.target.value))}
                     className="flex-1 accent-[#ffffff]"
                   />
-                  <div className="w-20 h-14 flex flex-col items-center justify-center bg-[#050505] border border-[#ffffff]/30 rounded-2xl shadow-inner">
+                  <div className="w-20 h-14 flex flex-col items-center justify-center bg-[#030014] border border-[#ffffff]/30 rounded-2xl shadow-inner">
                     <span className="text-[12px] font-black font-orbitron text-[#ffffff]">
                       {settings.autoCloseResolvedDays === 0 ? 'OFF' : `${settings.autoCloseResolvedDays}D`}
                     </span>
@@ -395,7 +395,7 @@ export default function SettingsPage() {
               </Field>
 
               {/* Preview Deck */}
-              <div className="bg-[#050505] border-2 border-dashed border-white/5 rounded-[40px] p-10 relative overflow-hidden group">
+              <div className="bg-[#030014] border-2 border-dashed border-white/5 rounded-[40px] p-10 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 blur-3xl opacity-10 rounded-full" style={{ backgroundColor: settings.primaryColor }} />
                 <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-[3px] mb-8 border-b border-white/5 pb-4">SIMULACIÓN_DE_ENTORNO</p>
                 <div className="flex items-center gap-6 mb-10">

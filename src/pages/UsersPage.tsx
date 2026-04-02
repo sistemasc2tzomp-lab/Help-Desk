@@ -103,7 +103,7 @@ export default function UsersPage() {
   });
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#050505]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
@@ -165,13 +165,13 @@ export default function UsersPage() {
               placeholder="SCAN_NAME_OR_EMAIL..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#121212]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono tracking-tighter"
+              className="w-full bg-[#0f0a28]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono tracking-tighter"
             />
           </div>
           <select
             value={filterRole}
             onChange={e => setFilterRole(e.target.value)}
-            className="bg-[#121212]/50 border border-white/5 rounded-2xl px-6 py-4 text-white text-xs font-bold font-rajdhani tracking-widest uppercase focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer"
+            className="bg-[#0f0a28]/50 border border-white/5 rounded-2xl px-6 py-4 text-white text-xs font-bold font-rajdhani tracking-widest uppercase focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer"
           >
             <option value="">FILTRAR_POR_RANGO</option>
             <option value="Admin">ADMIN</option>
@@ -294,7 +294,7 @@ export default function UsersPage() {
                   placeholder="AGENT_NAME"
                   value={createData.name}
                   onChange={e => setCreateData({...createData, name: e.target.value})}
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
                 />
               </div>
               
@@ -306,7 +306,7 @@ export default function UsersPage() {
                   placeholder="ID@TZOMP.LAB"
                   value={createData.email}
                   onChange={e => setCreateData({...createData, email: e.target.value})}
-                  className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
+                  className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export default function UsersPage() {
                   <select 
                     value={createData.role}
                     onChange={e => setCreateData({...createData, role: e.target.value as User['role']})}
-                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
+                    className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
                   >
                     <option value="Cliente">CLIENTE</option>
                     <option value="Agente">AGENTE</option>
@@ -328,7 +328,7 @@ export default function UsersPage() {
                    <select 
                     value={createData.departmentId}
                     onChange={e => setCreateData({...createData, departmentId: e.target.value})}
-                    className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
+                    className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-4 text-white text-xs font-bold focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-rajdhani"
                   >
                     <option value="">Global</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>)}
@@ -349,7 +349,7 @@ export default function UsersPage() {
               >
                 {saving ? (
                   <span className="flex items-center justify-center gap-3">
-                    <div className="w-4 h-4 border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
                     INJECTING_PROFILE...
                   </span>
                 ) : (
