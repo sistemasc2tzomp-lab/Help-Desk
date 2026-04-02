@@ -456,7 +456,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Auto-asignar al primer admin disponible (busca frescos en BD)
       let autoAdminId: string | null = null;
-      let autoAdminName: string | undefined;
       try {
         const { data: admins } = await sb
           .from('perfiles')
@@ -465,7 +464,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .limit(1);
         if (admins && admins.length > 0) {
           autoAdminId = String(admins[0].id);
-          autoAdminName = String(admins[0].nombre || 'Administrador del Dto. Sistemas C2');
         }
       } catch { /* si falla, continúa sin asignar */ }
 
@@ -484,7 +482,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         departamento_id: ticketData.departmentId || null,
         // Asignación automática al admin
         asignado_a_id: autoAdminId || ticketData.assignedToId || null,
-        asignado_a_nombre: autoAdminName || null,
         // Imagen de evidencia del ticket (jsonb array)
         ...(ticketData.imageUrl ? { imagenes: [{ url: ticketData.imageUrl }] } : {}),
       };

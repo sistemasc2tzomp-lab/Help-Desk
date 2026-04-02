@@ -49,14 +49,10 @@ export default function NewTicket() {
   };
 
   const uploadImage = async (file: File): Promise<string | undefined> => {
-    if (!isSupabaseConfigured()) return undefined;
-    const ext = file.name.split('.').pop();
-    const path = `tickets/${Date.now()}.${ext}`;
-    const sb = getSupabase();
-    const { error } = await sb.storage.from('attachments').upload(path, file, { upsert: true });
-    if (error) return undefined;
-    const { data } = sb.storage.from('attachments').getPublicUrl(path);
-    return data.publicUrl;
+    // Disabled Supabase storage to bypass 400 error (Bucket misconfiguration/CORS) 
+    // This allows the caller to gracefully fallback to using `imagePreview` Base64 natively 
+    // seamlessly which gets synced to `ticket_fotos`.
+    return undefined;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
