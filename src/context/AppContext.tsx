@@ -176,9 +176,9 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
     category: (category.charAt(0).toUpperCase() + category.slice(1)) as TicketCategory,
     departmentId: r.departamento_id ? String(r.departamento_id) : (r.department_id ? String(r.department_id) : undefined),
     createdById: creatorId,
-    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || 'Usuario'),
+    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || 'Solicitante'),
     assignedToId: assigneeId,
-    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || 'Pendiente'),
+    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || 'En espera'),
     createdAt: String(r.creado_en || r.created_at || new Date().toISOString()),
     updatedAt: String(r.actualizado_en || r.updated_at || new Date().toISOString()),
     messages: msgs,
@@ -387,10 +387,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPage('dashboard');
     } else {
       // Create new profile in perfiles
+      const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
       const name = authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
-        authUser.email?.split('@')[0] || 'Usuario';
-      const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
+        authUser.email?.split('@')[0] || (roleToSave === 'Admin' ? 'Administrador' : 'Solicitante');
 
       // Fallback insertion for perfiles
       const profileData: any = { 
@@ -403,7 +403,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       await sb.from('perfiles').upsert(profileData);
 
-      const user: User = {
+      const newUser: User = {
         id: authUser.id,
         name,
         initials: getInitials(name),
@@ -411,7 +411,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role: roleToSave,
         avatarColor: colorFor(authUser.id),
       };
-      setCurrentUser(user);
+      setCurrentUser(newUser);
       await refreshData();
       setPage('dashboard');
     }
@@ -445,7 +445,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .limit(1);
         if (admins && admins.length > 0) {
           autoAdminId = String(admins[0].id);
-          autoAdminName = String(admins[0].nombre || 'Admin');
+          autoAdminName = String(admins[0].nombre || 'Administrador de Sistemas');
         }
       } catch { /* si falla, continúa sin asignar */ }
 

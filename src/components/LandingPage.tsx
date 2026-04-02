@@ -215,23 +215,23 @@ const LandingPage: React.FC = () => {
   const runTerminal = () => {
     const terminalLines = [
       { prompt: '$ ', command: 'helpdesk --init --mode=production', delay: 300 },
-      { output: '[-] Initializing Help Desk Tzomp v3.0...', delay: 800 },
-      { output: '[!] Loading Core modules...', delay: 600, class: 'output' },
-      { output: '   + System Engine loaded', delay: 400, class: 'output' },
-      { output: '   + Analysis ready', delay: 400, class: 'output' },
-      { output: '   + Auto-classification active', delay: 400, class: 'output' },
-      { output: '   + Knowledge Base synced', delay: 400, class: 'output' },
-      { output: '[!] Security protocols enabled (Zero Trust)', delay: 600, class: 'output' },
-      { output: '[+] Dashboard connected — real-time metrics active', delay: 500, class: 'output' },
-      { output: '[-] API Gateway: https://api.tzomp.lab/v3', delay: 500 },
+      { output: '[-] Inicializando Help Desk Tzomp v3.0...', delay: 800 },
+      { output: '[!] Cargando módulos principales...', delay: 600, class: 'output' },
+      { output: '   + Motor de Sistema cargado', delay: 400, class: 'output' },
+      { output: '   + Análisis listo', delay: 400, class: 'output' },
+      { output: '   + Clasificación automática activa', delay: 400, class: 'output' },
+      { output: '   + Base de conocimientos sincronizada', delay: 400, class: 'output' },
+      { output: '[!] Protocolos de seguridad habilitados', delay: 600, class: 'output' },
+      { output: '[+] Panel conectado — métricas en tiempo real activas', delay: 500, class: 'output' },
+      { output: '[-] Puerta de enlace API: https://api.tzomp.lab/v3', delay: 500 },
       { prompt: '$ ', command: 'status --all', delay: 800 },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'output' },
-      { output: '  SYSTEM ENGINE: ██████████████ ACTIVE', delay: 400, class: 'output' },
-      { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'output' },
-      { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'output' },
+      { output: '  ESTADO DEL SISTEMA: ██████████████ EN LÍNEA', delay: 400, class: 'output' },
+      { output: '  MOTOR DEL SISTEMA:  ██████████████ ACTIVO', delay: 400, class: 'output' },
+      { output: '  TICKETS:           ██████████████ 0 PENDIENTES', delay: 400, class: 'output' },
+      { output: '  TIEMPO ACTIVIDAD:  99.97% (30 días)', delay: 400, class: 'output' },
       { output: '──────────────────────────────────────', delay: 300 },
-      { output: '[OK] All systems operational. Ready for requests.', delay: 600, class: 'output' },
+      { output: '[OK] Todos los sistemas operativos. Listo para solicitudes.', delay: 600, class: 'output' },
     ];
 
     const body = terminalBodyRef.current;
@@ -328,7 +328,7 @@ const LandingPage: React.FC = () => {
           className="loader-logo" 
         />
         <div className="loader-bar"><div className="loader-bar-fill"></div></div>
-        <p className="loader-text">INITIALIZING SYSTEM</p>
+        <p className="loader-text">INICIALIZANDO SISTEMA</p>
       </div>
 
       {/* CUSTOM CURSOR - Disabled in React to avoid performance issues if not carefully handled, but included for completeness */}
@@ -343,13 +343,13 @@ const LandingPage: React.FC = () => {
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
           <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo rounded-full border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
-          <span className="nav-title">TZOMP LAB</span>
+          <span className="nav-title uppercase tracking-tighter">Dto. Sistemas C2</span>
         </a>
 
         <ul className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
           <li><a href="#inicio" onClick={(e) => scrollToSection(e, '#inicio')}>Inicio</a></li>
           <li><a href="#features" onClick={(e) => scrollToSection(e, '#features')}>Características</a></li>
-          <li><a href="#ia" onClick={(e) => scrollToSection(e, '#ia')}>IA Engine</a></li>
+          <li><a href="#ia" onClick={(e) => scrollToSection(e, '#ia')}>Motor IA</a></li>
           <li><a href="#modulos" onClick={(e) => scrollToSection(e, '#modulos')}>Módulos</a></li>
           <li><a href="#tech" onClick={(e) => scrollToSection(e, '#tech')}>Tecnología</a></li>
           <li><Link to="/app" className="nav-cta"><i className="fas fa-rocket"></i> Acceder</Link></li>
@@ -377,13 +377,11 @@ const LandingPage: React.FC = () => {
             </div>
             <h1>
               <span className="line">Help Desk</span>
-              <span className="line gradient-text typing-text-target">Inteligencia Artificial</span>
-              <span className="line gradient-text-2">Future Ready</span>
+              <span className="line gradient-text typing-text-target">Soporte Técnico</span>
+              <span className="line gradient-text-2">Gubernamental</span>
             </h1>
             <p className="hero-description">
-              Plataforma de soporte técnico de nueva generación impulsada por
-              inteligencia artificial. Automatiza, resuelve y aprende de cada
-              interacción para ofrecer soluciones instantáneas.
+              Plataforma de soporte institucional para la gestión y mantenimiento de equipos tecnológicos, PCs, servidores y periféricos municipales.
             </p>
             <div className="hero-buttons">
               <Link to="/app" className="btn btn-primary">
@@ -419,7 +417,7 @@ const LandingPage: React.FC = () => {
         <div className="stats-grid stagger-children">
           <div className="stat-item">
             <div className="stat-number" data-count="99.9">0</div>
-            <div className="stat-label">% Uptime</div>
+            <div className="stat-label">% Disponibilidad</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="500">0</div>
@@ -427,7 +425,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="50">0</div>
-            <div className="stat-label">Módulos IA</div>
+            <div className="stat-label">Áreas de Atención</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="24">0</div>
@@ -457,13 +455,13 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-3"><i className="fas fa-chart-line"></i></div>
-            <h3>Analytics Dashboard</h3>
-            <p>Visualización de datos con gráficas interactivas, métricas de rendimiento y reportes automatizados.</p>
+            <h3>Panel de Análisis</h3>
+            <p>Visualización de datos con gráficas interactivas, métricas de rendimiento y reportes municipales.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-4"><i className="fas fa-shield-halved"></i></div>
-            <h3>Seguridad Zero Trust</h3>
-            <p>Protección multicapa con autenticación biométrica, encriptación end-to-end y auditorías continuas.</p>
+            <h3>Seguridad Avanzada</h3>
+            <p>Protección robusta con autenticación institucional y auditorías continuas para la integridad de datos.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-5"><i className="fas fa-rotate"></i></div>
@@ -519,9 +517,9 @@ const LandingPage: React.FC = () => {
       {/* TERMINAL SECTION */}
       <section className="terminal-section" ref={terminalRef}>
         <div className="section-header reveal">
-          <div className="section-tag"><i className="fas fa-terminal"></i> Live Demo</div>
-          <h2>Sistema en <span className="gradient-text-2">Acción</span></h2>
-          <p>Observa cómo nuestro sistema procesa solicitudes en tiempo real</p>
+          <div className="section-tag"><i className="fas fa-terminal"></i> Terminal del Sistema</div>
+          <h2>Estado en <span className="gradient-text-2">Tiempo Real</span></h2>
+          <p>Supervisión continua de los módulos de soporte y mantenimiento</p>
         </div>
         <div className="terminal reveal">
           <div className="terminal-header">
@@ -547,7 +545,7 @@ const LandingPage: React.FC = () => {
             <div className="service-info">
               <h3>Panel de Control Central</h3>
               <p>Dashboard unificado con vista 360° de todas las operaciones, métricas clave y alertas inteligentes.</p>
-              <div className="service-tags"><span>Dashboard</span><span>Analytics</span><span>Real-time</span></div>
+              <div className="service-tags"><span>Panel</span><span>Análisis</span><span>Tiempo Real</span></div>
             </div>
           </div>
           <div className="service-card">
@@ -555,15 +553,15 @@ const LandingPage: React.FC = () => {
             <div className="service-info">
               <h3>Motor de Resolución IA</h3>
               <p>Algoritmos de machine learning que aprenden de cada interacción para ofrecer soluciones más precisas.</p>
-              <div className="service-tags"><span>ML</span><span>Deep Learning</span><span>NLP</span></div>
+              <div className="service-tags"><span>ML</span><span>Aprendizaje Profundo</span><span>NLP</span></div>
             </div>
           </div>
           <div className="service-card">
             <div className="service-number">03</div>
             <div className="service-info">
               <h3>Gestión de Usuarios</h3>
-              <p>Control completo de roles, permisos y perfiles con autenticación multifactor y SSO empresarial.</p>
-              <div className="service-tags"><span>Auth</span><span>Roles</span><span>MFA</span></div>
+              <p>Control completo de roles, permisos y perfiles con autenticación multifactor y acceso único institucional.</p>
+              <div className="service-tags"><span>Autenticación</span><span>Roles</span><span>MFA</span></div>
             </div>
           </div>
           <div className="service-card">
@@ -588,7 +586,7 @@ const LandingPage: React.FC = () => {
           <div className="orbit-ring orbit-ring-1"></div>
           <div className="orbit-ring orbit-ring-2"></div>
           <div className="orbit-ring orbit-ring-3"></div>
-          <img src="/favicon_io/android-chrome-192x192.png" alt="Center" className="tech-center" />
+          <img src="/favicon_io/android-chrome-192x192.png" alt="Centro" className="tech-center" />
           <div className="tech-planet orbit-c tp-1"><i className="fab fa-html5"></i></div>
           <div className="tech-planet orbit-c tp-2"><i className="fab fa-css3-alt"></i></div>
           <div className="tech-planet orbit-b tp-3"><i className="fab fa-js"></i></div>
@@ -604,9 +602,8 @@ const LandingPage: React.FC = () => {
       <section className="cta-section">
         <div className="cta-glow"></div>
         <div className="cta-content reveal">
-          <div className="section-tag"><i className="fas fa-rocket"></i> Comenzar Ahora</div>
           <h2>¿Listo para <span className="gradient-text">Transformar</span> tu Soporte?</h2>
-          <p>Únete a la revolución del soporte técnico inteligente. Accede ahora al Help Desk más avanzado impulsado por IA.</p>
+          <p>Únete a la gestión tecnológica inteligente del municipio. Accede ahora al Help Desk institucional.</p>
           <div className="cta-buttons">
             <Link to="/app" className="btn btn-primary"><i className="fas fa-arrow-right"></i> Acceder al Sistema</Link>
             <a href="https://github.com/sistemasc2tzomp-lab/Help-Desk" className="btn btn-outline" target="_blank" rel="noopener noreferrer">
@@ -621,7 +618,7 @@ const LandingPage: React.FC = () => {
         <div className="footer-grid">
           <div className="footer-brand">
             <img src="/favicon_io/android-chrome-192x192.png" alt="Tzomp" className="nav-logo" />
-            <p>Help Desk Tzomp Lab — La plataforma de soporte técnico de nueva generación impulsada por inteligencia artificial.</p>
+            <p>Help Desk Dto. Sistemas C2 Tzompantepec — Plataforma de soporte técnico institucional para la gestión tecnológica municipal.</p>
             <div className="footer-social">
               <a href="#"><i className="fab fa-github"></i></a>
               <a href="#"><i className="fab fa-linkedin-in"></i></a>
@@ -642,9 +639,9 @@ const LandingPage: React.FC = () => {
             <h4>Recursos</h4>
             <ul>
               <li><a href="#">Documentación</a></li>
-              <li><a href="#">API Reference</a></li>
+              <li><a href="#">Referencias API</a></li>
               <li><a href="#">Guía de Inicio</a></li>
-              <li><a href="#">Changelog</a></li>
+              <li><a href="#">Registro de Cambios</a></li>
             </ul>
           </div>
           <div className="footer-col">
@@ -653,7 +650,7 @@ const LandingPage: React.FC = () => {
               <li><a href="#">Centro de Ayuda</a></li>
               <li><a href="#">Contacto</a></li>
               <li><a href="#">Estado del Sistema</a></li>
-              <li><a href="#">Reportar Bug</a></li>
+              <li><a href="#">Reportar Error</a></li>
             </ul>
           </div>
         </div>

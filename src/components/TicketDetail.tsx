@@ -16,12 +16,12 @@ function generateProfessionalTicketReport(doc: jsPDF, ticket: any, dept: any) {
   
   // Title
   doc.setTextColor(30, 30, 30);
-  doc.setFontSize(22);
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('HELP DESK TZOMP', 14, 20);
+  doc.text('HELP DESK TZOMPANTEPEC', 14, 20);
   
   doc.setFontSize(10);
-  doc.text('SISTEMAS & INTELIGENCIA ARTIFICIAL', 14, 28);
+  doc.text('DTO. SISTEMAS C2 TZOMPANTEPEC', 14, 28);
   doc.setTextColor(100, 100, 100);
   doc.text('MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 34);
 
@@ -316,7 +316,7 @@ export default function TicketDetail() {
                   {ticket.status}
                 </span>
                 <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest border ${priorityColors[ticket.priority]}`}>
-                  {ticket.priority}
+                  Prioridad: {ticket.priority}
                 </span>
                 {dept && (
                    <span className="text-[10px] px-4 py-1.5 rounded-full bg-white/5 text-[#8888aa] border border-white/10 font-bold uppercase tracking-widest">
@@ -486,7 +486,7 @@ export default function TicketDetail() {
               {replyPreview && (
                 <div className="relative inline-block z-10 animate-fade-in">
                   <div className="rounded-3xl overflow-hidden border-2 border-[#ffffff]/30 shadow-2xl">
-                    <img src={replyPreview} alt="Preview" className="h-40 object-cover" />
+                    <img src={replyPreview} alt="Vista previa" className="h-40 object-cover" />
                   </div>
                   <button
                     type="button"
@@ -580,7 +580,7 @@ export default function TicketDetail() {
                     onChange={e => assignTicket(ticket.id, e.target.value)}
                     className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
                   >
-                    <option value="">SIN_ASIGNAR</option>
+                    <option value="">SIN ASIGNAR</option>
                     {agents.map(agent => (
                       <option key={agent.id} value={agent.id}>{agent.name.toUpperCase()}</option>
                     ))}

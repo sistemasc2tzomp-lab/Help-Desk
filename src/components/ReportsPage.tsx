@@ -150,7 +150,7 @@ function addPdfHeader(doc: jsPDF, title: string, subtitle?: string) {
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...PDF_COLORS.headerTxt);
-  doc.text('DIRECCIÓN DE SISTEMAS E INTELIGENCIA ARTIFICIAL', 14, 23);
+  doc.text('DTO. SISTEMAS C2 TZOMPANTEPEC', 14, 23);
   doc.text('MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 29);
 
   // === TÍTULO DEL REPORTE (derecha) ===
