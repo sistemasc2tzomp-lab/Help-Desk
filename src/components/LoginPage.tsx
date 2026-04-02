@@ -43,9 +43,9 @@ export default function LoginPage() {
           <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="w-14 h-14 rounded-full object-contain" />
         </div>
         <h1 className="text-white text-3xl sm:text-4xl font-extrabold tracking-tight text-center font-orbitron">
-           HELP <span className="text-white">DESK</span>
+           SOPORTE <span className="text-white">TÉCNICO</span>
         </h1>
-        <p className="text-[#ffffff] text-sm mt-2 font-rajdhani font-semibold tracking-widest uppercase">Tzompantepec Sistemas & IA</p>
+        <p className="text-[#ffffff] text-sm mt-2 font-rajdhani font-semibold tracking-widest uppercase">Dto. Sistemas C2 Tzompantepec</p>
       </div>
 
       {/* Login Card */}
@@ -64,7 +64,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError(''); }}
-                placeholder="agente@tzomp.lab"
+                placeholder="usuario@tzompantepec.gob.mx"
                 autoComplete="email"
                 className="w-full bg-[#121212]/50 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-[#ffffff] focus:ring-1 focus:ring-[#ffffff] transition-all duration-300"
               />

@@ -1,58 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #ffffff;
-  --primary-dark: #cccccc;
-  --secondary: #999999;
-  --accent: #ffffff;
-  --accent2: #888888;
-  --bg-dark: #050505;
-  --bg-card: rgba(20, 20, 20, 0.6);
-  --text: #ffffff;
-  --text-muted: #888888;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --gradient-1: linear-gradient(135deg, #ffffff, #888888);
-  --gradient-2: linear-gradient(135deg, #cccccc, #555555);
-  --gradient-3: linear-gradient(135deg, #999999, #333333);
-  --shadow-neon: 0 0 30px rgba(255, 255, 255, 0.15);
-  --shadow-purple: 0 0 30px rgba(255, 255, 255, 0.1);
+  --primary: #3b82f6; /* Blue */
+  --primary-hover: #2563eb;
+  --secondary: #64748b; /* Slate Gray */
+  --accent: #60a5fa;
+  --bg-dark: #0f172a; /* Deep Navy */
+  --bg-darker: #020617;
+  --bg-card: rgba(15, 23, 42, 0.85);
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gradient-1: linear-gradient(135deg, #60a5fa, #1d4ed8);
+  --gradient-2: linear-gradient(135deg, #334155, #1e293b);
+  --shadow-neon: 0 0 20px rgba(59, 130, 246, 0.3);
   --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
   body {
-    @apply bg-[#050505] text-[#ffffff] font-sans;
+    @apply bg-[#020617] text-[#f1f5f9] font-sans;
+    background-image: radial-gradient(circle at center, rgba(30, 41, 59, 0.3) 0%, #020617 100%);
+    background-attachment: fixed;
   }
 }
 
-/* Global Futuristic Utilities */
+/* Institutional Glassmorphism for Dashboard */
 .glass-panel {
-  background: rgba(20, 20, 20, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  transition: var(--transition);
+}
+
+.glass-panel:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff, #cccccc);
+  background: var(--gradient-1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .neon-border {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
 }
 
-.btn-futuristic {
-  @apply relative overflow-hidden transition-all duration-300 transform rounded-xl active:scale-95;
-  background: linear-gradient(135deg, #ffffff, #cccccc);
-  color: #050505;
-  font-weight: 700;
+.active-sidebar-item {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+  border-left: 3px solid var(--primary);
+  color: var(--primary) !important;
 }
 
-.btn-futuristic:hover {
-  @apply -translate-y-1 shadow-[0_0_30px_rgba(255,255,255,0.2)];
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+/* Fade In Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+
+/* Custom Scrollbar for the App */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.3);
 }

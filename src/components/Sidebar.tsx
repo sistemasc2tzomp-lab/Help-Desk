@@ -10,7 +10,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'Panel',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -143,9 +143,9 @@ export default function Sidebar() {
         <div className="absolute -left-10 -top-10 w-20 h-20 bg-[#ffffff]/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
         <Logo />
         <div className="min-w-0">
-          <span className="text-white font-black text-lg font-orbitron leading-none block tracking-tighter">TZOMP</span>
+          <span className="text-white font-black text-lg font-orbitron leading-none block tracking-tighter">DTO. SISTEMAS C2</span>
           <div className="flex items-center gap-2 mt-1">
-            <div className="text-white/60 text-[9px] font-bold tracking-[3px] uppercase">HELP DESK</div>
+            <div className="text-white/60 text-[9px] font-bold tracking-[3px] uppercase">CENTRAL DE SOPORTE</div>
             <div className="bg-white/10 text-white text-[7px] font-black px-1.5 py-0.5 rounded border border-white/20 uppercase">v2.0</div>
           </div>
         </div>
@@ -213,8 +213,8 @@ export default function Sidebar() {
         <div className="flex items-center gap-3">
           <Logo />
           <div>
-            <span className="text-white font-black text-sm font-orbitron tracking-tighter">TZOMP</span>
-            <div className="text-[#ffffff] text-[8px] font-bold tracking-[2px]">HELP DESK</div>
+            <span className="text-white font-black text-sm font-orbitron tracking-tighter">DTO. SISTEMAS C2</span>
+            <div className="text-[#ffffff] text-[8px] font-bold tracking-[2px]">CENTRAL DE SOPORTE</div>
           </div>
         </div>
         <button

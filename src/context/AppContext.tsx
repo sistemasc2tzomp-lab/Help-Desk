@@ -390,7 +390,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
       const name = authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
-        authUser.email?.split('@')[0] || (roleToSave === 'Admin' ? 'Administrador' : 'Solicitante');
+        authUser.email?.split('@')[0] || (roleToSave === 'Admin' ? 'Administrador' : 'Usuario');
 
       // Fallback insertion for perfiles
       const profileData: any = { 
@@ -445,7 +445,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .limit(1);
         if (admins && admins.length > 0) {
           autoAdminId = String(admins[0].id);
-          autoAdminName = String(admins[0].nombre || 'Administrador de Sistemas');
+          autoAdminName = String(admins[0].nombre || 'Administrador del Dto. Sistemas C2');
         }
       } catch { /* si falla, continúa sin asignar */ }
 
@@ -679,7 +679,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const { data: authData, error: authError } = await sb.auth.signUp({
         email: userData.email,
-        password: 'ITFlow2024!',
+        password: 'Tzomp2024!',
         options: { data: { full_name: userData.name, role: resolvedRole } }
       });
       

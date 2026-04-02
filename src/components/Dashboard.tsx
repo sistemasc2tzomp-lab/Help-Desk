@@ -103,21 +103,28 @@ export default function Dashboard() {
           value={stats.open} 
           gradient="from-white/5 to-white/15"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
-          sub="URGENCY: HIGH"
+          sub="DATA_SYNC: 100%"
+        />
+        <StatCard 
+          label="Soporte Activo" 
+          value={stats.open} 
+          gradient="from-white/5 to-white/15"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+          sub="URGENCIA: ALTA"
         />
         <StatCard 
           label="En Ejecución" 
           value={stats.inProgress} 
           gradient="from-white/10 to-white/5"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
-          sub="PROCESS_THROTTLE: 0%"
+          sub="PROCESANDO: 0%"
         />
         <StatCard 
           label="Finalizados" 
           value={stats.resolved} 
           gradient="from-white/20 to-white/5"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
-          sub="STATUS: OPTIMAL"
+          sub="ESTADO: ÓPTIMO"
         />
       </div>
 
@@ -220,7 +227,7 @@ export default function Dashboard() {
 
           <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden group">
             <div className="relative z-10">
-              <div className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">IA_PREDICTION</div>
+              <div className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">PREDICCIÓN_SISTEMA</div>
               <div className="text-white font-bold text-sm leading-tight">Optimización de carga sugerida para el turno B.</div>
             </div>
             <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/5 blur-2xl rounded-full" />
