@@ -16,7 +16,7 @@ const roleIcons: Record<string, string> = {
 };
 
 export default function UsersPage() {
-  const { users, tickets, departments, refreshData, loading, currentUser, createUser } = useApp();
+  const { users, tickets, departments, refreshData, loading, currentUser, createUser, deleteUser } = useApp();
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<User['role']>('Cliente');
   const [saving, setSaving] = useState(false);
@@ -229,15 +229,30 @@ export default function UsersPage() {
                       {user.role}
                     </span>
                     {isAdmin && !isCurrentUser && (
-                      <button
-                        onClick={() => openEdit(user)}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-[#8888aa] hover:text-[#ffffff] hover:bg-[#ffffff]/10 transition-all border border-white/5"
-                        title="Modificar Permisos"
-                      >
-                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(user)}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-[#8888aa] hover:text-[#00f0ff] hover:bg-[#00f0ff]/10 transition-all border border-white/5"
+                          title="Modificar Permisos"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`¿Estás seguro de que deseas eliminar permanentemente al usuario ${user.name}?`)) {
+                              deleteUser(user.id);
+                            }
+                          }}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-[#8888aa] hover:text-[#ff2d95] hover:bg-[#ff2d95]/10 transition-all border border-white/5"
+                          title="Eliminar Usuario"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
                     )}
                   </div>
 

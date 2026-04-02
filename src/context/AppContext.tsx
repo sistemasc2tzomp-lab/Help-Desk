@@ -29,7 +29,8 @@ interface AppContextType {
   lastPing: string | null;
   loginWithSupabase: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
-  createUser: (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
+  createUser: (data: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
+  deleteUser: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -234,6 +235,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, [checkSupabase]);
 
+
+
   // ── fetch all data ──────────────────────────────────────────────────────
   const refreshData = useCallback(async () => {
     if (!isSupabaseConfigured()) return;
@@ -349,10 +352,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     (window as unknown as Record<string, unknown>).__sbRecheck = () => {
       checkSupabase();
-    };
-  }, [checkSupabase]);
+    }
+  }, [users, departments]);
 
-  // ── auth ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const sb = getSupabase();
+    const channel = sb.channel('public_schema_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+        refreshData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, () => {
+        refreshData();
+      })
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(channel);
+    };
+  }, [refreshData]);
+
+  // ── auth ─────────────────────────────────────────────────────────────────
   const loginWithSupabase = useCallback(async (email: string, password: string): Promise<string | null> => {
     if (!isSupabaseConfigured()) return 'Supabase no está configurado.';
     const sb = getSupabase();
@@ -472,6 +492,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data, error } = await sb.from('tickets').insert(insertData).select().single();
 
       if (data && !error) {
+        if (ticketData.imageUrl) {
+          // ALSO SAVE TO RECENTLY REQUIRED TICKET_FOTOS TABLE
+          await sb.from('ticket_fotos').insert({ ticket_id: customFolio, url: ticketData.imageUrl });
+        }
+
         const uMap: Record<string, User> = {};
         users.forEach(u => { uMap[u.id] = u; });
         const t = rowToTicket(data as Record<string, unknown>, [], uMap);
@@ -617,6 +642,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const { error: commentErr } = await sb.from('ticket_comentarios').insert(commentPayload);
       if (!commentErr) {
+        if (imageUrl) {
+          await sb.from('ticket_fotos').insert({ ticket_id: ticketId, url: imageUrl });
+        }
         await sb.from('tickets').update({ actualizado_en: now }).eq('id', ticketId);
         // Refrescar para sincronizar nombres/roles reales desde la BD
         await refreshData();
@@ -717,6 +745,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   }, [refreshData]);
 
+  const deleteUser = useCallback(async (id: string) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+    if (isSupabaseConfigured()) {
+      await getSupabase().from('perfiles').delete().eq('id', id);
+    }
+  }, []);
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -746,6 +781,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loginWithSupabase,
       logout,
       createUser,
+      deleteUser,
     }}>
       {children}
     </AppContext.Provider>

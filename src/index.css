@@ -22,10 +22,20 @@
 
 @layer base {
   body {
-    @apply bg-[#030014] text-[#e0e0ff] font-sans;
-    @apply bg-[var(--bg-dark)] text-[var(--text)] font-sans selection:bg-[var(--primary)]/30 selection:text-[var(--primary)];
+    @apply text-[#e0e0ff] font-sans;
+    background-image: url('/cyber_emerald_infrastructure_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-dark);
     margin: 0;
     min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .bg-\[\#030014\] {
+    background-color: rgba(3, 0, 20, 0.75) !important;
   }
 }
 
