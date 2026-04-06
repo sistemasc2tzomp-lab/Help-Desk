@@ -84,7 +84,7 @@ export default function NewTicket() {
         setPage('ticket-detail');
       }, 1500);
     } catch (err: any) {
-      alert(`Error al crear el ticket: ${err.message || 'Verifica tu conexión o permisos.'}`);
+      alert(`Error al crear la solicitud: ${err.message || 'Verifica tu conexión o permisos.'}`);
     }
   };
 
@@ -99,7 +99,7 @@ export default function NewTicket() {
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">TICKET ENVIADO</h2>
+        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">SOLICITUD ENVIADA</h2>
         <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase animate-fade-in">Redirigiendo al núcleo de control...</p>
       </div>
     );
@@ -120,7 +120,7 @@ export default function NewTicket() {
         </button>
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            NUEVO <span className="text-white">TICKET</span>
+            NUEVA <span className="text-white">SOLICITUD</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">MÓDULO DE REPORTE Y ASIGNACIÓN DE RECURSOS</p>
         </div>
@@ -131,7 +131,7 @@ export default function NewTicket() {
         
         {/* Title Node */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Asunto del Ticket</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Asunto de la Solicitud</label>
           <input
             type="text"
             value={title}
@@ -191,9 +191,9 @@ export default function NewTicket() {
           </div>
         </div>
 
-        {/* Sector Responsable - Auto detectado */}
+        {/* Departamento Responsable - Auto detectado */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Departamento Responsable</label>
           {autoDetectedDept ? (
             <div className="w-full bg-[#0f0a28]/50 border border-[#ffffff]/30 rounded-2xl px-5 py-4 flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -284,7 +284,7 @@ export default function NewTicket() {
             onClick={() => setPage('tickets')}
             className="text-[#8888aa] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[4px]"
           >
-            Reiniciar Ticket
+            Cancelar
           </button>
           <button
             type="submit"
@@ -298,7 +298,7 @@ export default function NewTicket() {
               </span>
             ) : (
               <span className="flex items-center gap-3">
-                ENVIAR TICKET
+                ENVIAR SOLICITUD
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
                    <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>

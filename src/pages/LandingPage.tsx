@@ -228,7 +228,7 @@ const LandingPage: React.FC = () => {
       { output: '──────────────────────────────────────', delay: 300 },
       { output: '  SYSTEM STATUS: ██████████████ ONLINE', delay: 400, class: 'success' },
       { output: '  CORE ENGINE:   ██████████████ ACTIVE', delay: 400, class: 'success' },
-      { output: '  TICKETS:       ██████████████ 0 PENDING', delay: 400, class: 'success' },
+      { output: '  SOLICITUDES:   ██████████████ 0 PENDING', delay: 400, class: 'success' },
       { output: '  UPTIME:        99.97% (30 days)', delay: 400, class: 'success' },
       { output: '──────────────────────────────────────', delay: 300 },
       { output: '✅ All systems operational. Ready for requests.', delay: 600, class: 'success' },
@@ -410,7 +410,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="500">0</div>
-            <div className="stat-label">Tickets Resueltos</div>
+            <div className="stat-label">Solicitudes Resueltas</div>
           </div>
           <div className="stat-item">
             <div className="stat-number" data-count="15">0</div>
@@ -439,8 +439,8 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-2"><i className="fas fa-ticket"></i></div>
-            <h3>Gestión de Tickets</h3>
-            <p>Sistema completo de ticketing con priorización automática, asignación inteligente y seguimiento en tiempo real.</p>
+            <h3>Gestión de Solicitudes</h3>
+            <p>Sistema completo de gestión de solicitudes con priorización automática, asignación inteligente y seguimiento en tiempo real.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon-wrap fi-3"><i className="fas fa-chart-line"></i></div>

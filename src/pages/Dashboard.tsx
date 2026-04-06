@@ -85,14 +85,14 @@ export default function Dashboard() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-500">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          REGISTRAR REQUERIMIENTO
+          NUEVA SOLICITUD
         </button>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard 
-          label="Total Unidades" 
+          label="Total Solicitudes" 
           value={stats.total} 
           gradient="from-[#00f0ff]/20 to-[#7b2fff]/20"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
@@ -153,7 +153,7 @@ export default function Dashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-white/5">
-                        <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">REQUERIMIENTO</th>
+                        <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">SOLICITUD</th>
                         <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">ESTADO</th>
                         <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px] hidden lg:table-cell">PRIORIDAD</th>
                         <th className="text-right text-[10px] text-[#8888aa] font-black px-4 py-4 uppercase tracking-[3px]">CONTACTO</th>

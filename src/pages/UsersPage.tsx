@@ -108,7 +108,7 @@ export default function UsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            NÚCLEO <span className="text-white">USUARIOS</span>
+            <span className="text-white">USUARIOS</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">
             GESTIÓN DE PERSONAL Y AUTORIZACIONES // {users.length} NODOS DETECTADOS
@@ -133,7 +133,7 @@ export default function UsersPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              ALTA INTEGRANTE
+              NUEVO USUARIO
             </button>
           )}
         </div>
@@ -266,7 +266,7 @@ export default function UsersPage() {
                   {/* Analytics */}
                   <div className="grid grid-cols-3 gap-3 border-t border-white/5 pt-6">
                     {[
-                      { l: 'INICIO', v: stats.created, c: 'text-white' },
+                      { l: 'SOLIC', v: stats.created, c: 'text-white' },
                       { l: 'ASIG', v: stats.assigned, c: 'text-gray-300' },
                       { l: 'SOLV', v: stats.resolved, c: 'text-[#aaaaaa]' },
                     ].map((s, i) => (
@@ -339,7 +339,7 @@ export default function UsersPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Sector (Opcional)</label>
+                   <label className="text-[10px] font-bold text-[#ffffff] uppercase tracking-[3px] ml-1">Departamento (Opcional)</label>
                    <select 
                     value={createData.departmentId}
                     onChange={e => setCreateData({...createData, departmentId: e.target.value})}

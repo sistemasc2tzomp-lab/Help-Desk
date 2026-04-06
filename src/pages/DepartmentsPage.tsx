@@ -47,7 +47,7 @@ export default function DepartmentsPage() {
         </div>
         <div>
           <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4">ACCESO DENEGADO</h2>
-          <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase">Solo administradores de nivel 4 pueden gestionar sectores</p>
+          <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase">Solo administradores pueden gestionar departamentos</p>
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export default function DepartmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ESTACIÓN <span className="text-white">SECTORES</span>
+            ESTACIÓN <span className="text-white">DEPARTAMENTOS</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">GESTIÓN DE DEPARTAMENTOS Y RECURSOS</p>
         </div>
@@ -115,13 +115,13 @@ export default function DepartmentsPage() {
           className="btn-futuristic flex items-center gap-3 px-8 py-4 text-[10px] tracking-[3px] group shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all"
         >
           <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          INSTALAR SECTOR
+          NUEVO DEPARTAMENTO
         </button>
       </div>
 
       {/* Analytics Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <StatCard label="SECTORES_ACTIVOS" value={departments.length} color="#ffffff" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
+        <StatCard label="DEPARTAMENTOS_ACTIVOS" value={departments.length} color="#ffffff" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
         <StatCard label="FLUJO_TOTAL" value={totalTickets} color="#cccccc" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
         <StatCard label="RECORRIDOS_OK" value={assigned} color="#aaaaaa" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
         <StatCard label="SIN_ALOCACIÓN" value={unassigned} color="#999999" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
@@ -133,7 +133,7 @@ export default function DepartmentsPage() {
           <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff]/40 group-focus-within:text-[#ffffff] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
             type="text"
-            placeholder="SCAN_DEPARTMENTS..."
+            placeholder="ESCANEAR_DEPARTAMENTOS..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-[#0f0a28]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-700 text-sm font-mono focus:outline-none focus:border-[#ffffff]/50 transition-all"
@@ -145,7 +145,7 @@ export default function DepartmentsPage() {
       {filtered.length === 0 ? (
         <div className="glass-panel border-dashed border-2 border-white/5 rounded-[40px] py-32 text-center">
           <div className="text-6xl mb-8 opacity-20 filter grayscale">🏢</div>
-          <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-lg mb-2">Sectores no localizados</h3>
+          <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-lg mb-2">Departamentos no localizados</h3>
           <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase">Inicia la instalación de un nuevo departamento operativo</p>
         </div>
       ) : (
@@ -247,7 +247,7 @@ export default function DepartmentsPage() {
             <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
               <div>
                 <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-2xl">
-                  {editingId ? 'ACTUALIZAR' : 'REGISTRAR'} <span className="text-white">SECTOR</span>
+                  {editingId ? 'ACTUALIZAR' : 'REGISTRAR'} <span className="text-white">DEPARTAMENTO</span>
                 </h3>
                 <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase mt-2">Protocolo de Configuración v4.2</p>
               </div>
@@ -258,7 +258,7 @@ export default function DepartmentsPage() {
 
             <form onSubmit={handleSave} className="space-y-8">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Identificador de Sector</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Nombre del Departamento</label>
                 <input
                   type="text"
                   value={form.name}
@@ -274,14 +274,14 @@ export default function DepartmentsPage() {
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Detalla las responsabilidades y el alcance de este sector..."
+                  placeholder="Detalla las responsabilidades y el alcance de este departamento..."
                   rows={3}
                   className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Responsable del Protocolo</label>
+                <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Encargado del Departamento</label>
                 <input
                   type="text"
                   value={form.jefe}
@@ -345,9 +345,9 @@ export default function DepartmentsPage() {
             <div className="w-20 h-20 bg-gray-600/10 border-2 border-gray-600/30 rounded-[28px] flex items-center justify-center mx-auto mb-8 animate-pulse text-red-500">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
             </div>
-            <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-xl mb-4">¿PURGAR SECTOR?</h3>
+            <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-xl mb-4">¿ELIMINAR DEPARTAMENTO?</h3>
             <p className="text-[#8888aa] text-sm font-rajdhani font-semibold mb-10 leading-relaxed uppercase tracking-tighter">
-              Esta acción desvinculará todos los nodos y tickets asignados. Perderás la integridad estructural de esta unidad.
+              Esta acción desvinculará todos los usuarios y solicitudes asignados. Perderás la integridad estructural de esta unidad.
             </p>
             <div className="flex flex-col gap-4">
               <button

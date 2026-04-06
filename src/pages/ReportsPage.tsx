@@ -257,7 +257,7 @@ export default function ReportsPage() {
         </div>
         <div>
           <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4">ACCESO RESTRINGIDO</h2>
-          <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase">Solo administradores de nivel 4 pueden acceder a la central de datos</p>
+          <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase">Solo administradores pueden acceder a la central de datos</p>
         </div>
       </div>
     );
@@ -303,7 +303,7 @@ export default function ReportsPage() {
       let y = startY;
       const boxW = (pw - 28 - 9) / 4;
       const kpis = [
-        { label: 'Total Tickets',      value: String(total),           color: PDF_COLORS.accentDark },
+        { label: 'Total Solicitudes',   value: String(total),           color: PDF_COLORS.accentDark },
         { label: 'Tasa Resolución',    value: `${resolutionRate}%`,    color: PDF_COLORS.success },
         { label: 'Abiertos',           value: String(byStatus[0].n),   color: PDF_COLORS.warning },
         { label: 'En Progreso',        value: String(byStatus[1].n),   color: PDF_COLORS.danger },
@@ -359,7 +359,7 @@ export default function ReportsPage() {
     setExportLoading('tickets-pdf');
     try {
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      addPdfHeader(doc, 'Bitácora de Incidencias', `Total de registros: ${filtered.length} tickets`);
+      addPdfHeader(doc, 'Bitácora de Solicitudes', `Total de registros: ${filtered.length} solicitudes`);
 
       autoTable(doc, {
         ...PDF_TABLE_STYLES,
@@ -388,7 +388,7 @@ export default function ReportsPage() {
       });
       // Actualizar total en todos los pies de página es complejo en jsPDF;
       // en su lugar se usa el número de página solo
-      doc.save(`BITACORA-TICKETS-${new Date().getTime()}.pdf`);
+      doc.save(`BITACORA-SOLICITUDES-${new Date().getTime()}.pdf`);
     } finally {
       setExportLoading(null);
     }
@@ -418,7 +418,7 @@ export default function ReportsPage() {
       autoTable(doc, {
         ...PDF_TABLE_STYLES,
         startY: y,
-        head: [['AGENTE', 'ROL', 'TICKETS ASIGNADOS', 'RESUELTOS', 'EFICIENCIA', 'MENSAJES ENVIADOS']],
+        head: [['AGENTE', 'ROL', 'SOLICITUDES ASIGNADAS', 'RESUELTAS', 'EFICIENCIA', 'MENSAJES ENVIADOS']],
         body: agentStats.map(({ agent, total: tot, resolved: res, rate, msgs }) => [
           agent.name,
           agent.role,
@@ -450,7 +450,7 @@ export default function ReportsPage() {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pw = doc.internal.pageSize.getWidth();
-      addPdfHeader(doc, 'Diagrama Departamental', 'Distribución de carga de trabajo por sector');
+      addPdfHeader(doc, 'Diagrama Departamental', 'Distribución de carga de trabajo por departamento');
 
       let y = 58;
       const boxW2 = (pw - 28 - 6) / 3;
@@ -526,7 +526,7 @@ export default function ReportsPage() {
 
   const tabs = [
     { id: 'general', label: 'ANÁLISIS_RESUMEN', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> },
-    { id: 'tickets', label: 'BASE_TICKETS', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg> },
+    { id: 'tickets', label: 'BASE_SOLICITUDES', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg> },
     { id: 'agents', label: 'RED_AGENTES', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
     { id: 'departments', label: 'ESTRUCTURA_DEPT', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> },
   ] as const;
@@ -537,7 +537,7 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            CENTRAL <span className="text-white">ANALÍTICA</span>
+            <span className="text-white">REPORTES</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">INTELIGENCIA DE DATOS Y RENDIMIENTO OPERATIVO</p>
         </div>
@@ -621,7 +621,7 @@ export default function ReportsPage() {
           </SectionHeader>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <KpiCard label="TICKETS_TOTALES" value={total} color="#ffffff" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
+            <KpiCard label="SOLICITUDES_TOTALES" value={total} color="#ffffff" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>} />
             <KpiCard label="EFICIENCIA_SOLUCIÓN" value={`${resolutionRate}%`} sub={`${resolved} de ${total} resueltos`} color="#aaaaaa" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
             <KpiCard label="ACTIVOS_PENDIENTES" value={byStatus[0].n} sub="Sincronización requerida" color="#999999" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>} />
             <KpiCard label="CARGA_ACTUAL" value={byStatus[1].n} sub="Operaciones en curso" color="#cccccc" icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>} />

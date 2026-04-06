@@ -59,10 +59,10 @@ export default function TicketList() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ARCHIVOS <span className="text-white">TICKETS</span>
+            ARCHIVOS <span className="text-white">SOLICITUDES</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
-            REGISTRO DE INCIDENCIAS // {sorted.length} ENTRADAS LOCALIZADAS
+            REGISTRO DE SOLICITUDES // {sorted.length} ENTRADAS LOCALIZADAS
           </p>
         </div>
         <div className="flex gap-3">
@@ -139,7 +139,7 @@ export default function TicketList() {
           <div className="text-6xl mb-8 opacity-20 filter grayscale">🎫</div>
           <h3 className="text-white font-black font-orbitron tracking-widest uppercase text-lg mb-2">Sin transmisiones activas</h3>
           <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase">
-            {hasFilters ? 'Reconfigura los parámetros de búsqueda' : 'Registra la primera incidencia en el sistema'}
+            {hasFilters ? 'Reconfigura los parámetros de búsqueda' : 'Registra la primera solicitud en el sistema'}
           </p>
         </div>
       ) : (
@@ -152,7 +152,7 @@ export default function TicketList() {
                   <th className="text-left text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">IDENTIFICADOR / ASUNTO</th>
                   <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px]">ESTADO_ACTUAL</th>
                   <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden lg:table-cell">PRIORIDAD</th>
-                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden xl:table-cell">SECTOR</th>
+                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden xl:table-cell">DEPARTAMENTO</th>
                   <th className="text-right text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">STREAM_TIME</th>
                 </tr>
               </thead>
