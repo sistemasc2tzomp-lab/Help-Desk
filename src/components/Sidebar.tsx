@@ -77,17 +77,6 @@ const adminNavItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    id: 'settings',
-    label: 'Configuración',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-        <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-      </svg>
-    ),
-  },
 ];
 
 const Logo = () => (
@@ -133,7 +122,7 @@ export default function Sidebar() {
         </div>
         <span className="text-[10px] font-black uppercase tracking-[3px] font-orbitron truncate">{item.label}</span>
         {item.id === 'tickets' && stats.open > 0 && (
-          <span className="ml-auto w-5 h-5 rounded-full bg-[#ff2d95] text-[#030014] text-[9px] font-black flex items-center justify-center shadow-[0_0_15px_rgba(255,45,149,0.5)] animate-pulse">
+          <span className="ml-auto w-5 h-5 rounded-full bg-[#ff2d95] text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_15px_rgba(255,45,149,0.5)] animate-pulse">
             {stats.open}
           </span>
         )}

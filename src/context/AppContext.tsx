@@ -451,78 +451,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ── tickets ─────────────────────────────────────────────────────────────
   const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
-    if (isSupabaseConfigured()) {
-      const sb = getSupabase();
-
-      // Auto-asignar al primer admin disponible (busca frescos en BD)
-      let autoAdminId: string | null = null;
-      try {
-        const { data: admins } = await sb
-          .from('perfiles')
-          .select('id, nombre, rol')
-          .or('rol.eq.Admin,rol.eq.admin,rol.eq.Administrador')
-          .limit(1);
-        if (admins && admins.length > 0) {
-          autoAdminId = String(admins[0].id);
-        }
-      } catch { /* si falla, continúa sin asignar */ }
-
-      // Generate highly robust unique TZH folio
-      const timestamp = Date.now().toString();
-      const customFolio = `TZH-${timestamp.slice(-6)}-${Math.floor(Math.random() * 100)}`;
-
-      const insertData: Record<string, unknown> = {
-        id: customFolio,
-        titulo: ticketData.title,
-        descripcion: ticketData.description,
-        creado_por_id: ticketData.createdById,
-        estado: mapToDbStatus('Abierto'),
-        prioridad: mapToDbPriority(ticketData.priority),
-        departamento_id: ticketData.departmentId || null,
-        // Asignación automática al admin
-        asignado_a_id: autoAdminId || ticketData.assignedToId || null,
-        // Imagen de evidencia del ticket (jsonb array)
-        ...(ticketData.imageUrl ? { imagenes: [{ url: ticketData.imageUrl }] } : {}),
-      };
-
-      const { data, error } = await sb.from('tickets').insert(insertData).select().single();
-
-      if (data && !error) {
-        if (ticketData.imageUrl) {
-          // ALSO SAVE TO RECENTLY REQUIRED TICKET_FOTOS TABLE
-          await sb.from('ticket_fotos').insert({ ticket_id: customFolio, url: ticketData.imageUrl });
-        }
-
-        const uMap: Record<string, User> = {};
-        users.forEach(u => { uMap[u.id] = u; });
-        const t = rowToTicket(data as Record<string, unknown>, [], uMap);
-        setTickets(prev => [t, ...prev]);
-        return t;
-      }
-      if (error) {
-        // Retry logic ensuring we keep lowercase values for Postgres CHECK constraints
-        const retryData = { ...insertData, estado: 'abierto', prioridad: mapToDbPriority(ticketData.priority) };
-        const { data: d2, error: e2 } = await sb.from('tickets').insert(retryData).select().single();
-        if (d2 && !e2) {
-          const uMap: Record<string, User> = {};
-          users.forEach(u => { uMap[u.id] = u; });
-          const t = rowToTicket(d2 as Record<string, unknown>, [], uMap);
-          setTickets(prev => [t, ...prev]);
-          return t;
-        }
-        console.error('addTicket error:', error, e2);
-      }
+    if (!isSupabaseConfigured()) {
+       throw new Error('Terminal no sincronizada: El núcleo no está conectado a la red central.');
     }
-    const newTicket: Ticket = {
-      ...ticketData,
-      id: `TKT-${Date.now()}`,
-      status: 'Abierto',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      messages: [],
+    
+    const sb = getSupabase();
+    let autoAdminId: string | null = null;
+    try {
+      const { data: admins } = await sb
+        .from('perfiles')
+        .select('id, nombre, rol')
+        .or('rol.eq.Admin,rol.eq.admin,rol.eq.Administrador')
+        .limit(1);
+      if (admins && admins.length > 0) {
+        autoAdminId = String(admins[0].id);
+      }
+    } catch { /* silent fallback for auto-assignment */ }
+
+    const timestamp = Date.now().toString();
+    const customFolio = `TZH-${timestamp.slice(-6)}-${Math.floor(Math.random() * 100)}`;
+
+    const insertData: Record<string, unknown> = {
+      id: customFolio,
+      titulo: ticketData.title,
+      descripcion: ticketData.description,
+      creado_por_id: ticketData.createdById,
+      estado: mapToDbStatus('Abierto'),
+      prioridad: mapToDbPriority(ticketData.priority),
+      departamento_id: ticketData.departmentId || null,
+      asignado_a_id: autoAdminId || ticketData.assignedToId || null,
+      ...(ticketData.imageUrl ? { imagenes: [{ url: ticketData.imageUrl }] } : {}),
     };
-    setTickets(prev => [newTicket, ...prev]);
-    return newTicket;
+
+    try {
+      const { data, error } = await sb.from('tickets').insert(insertData).select().single();
+      if (error || !data) {
+        throw new Error(error?.message || 'Error de sincronización con la base central.');
+      }
+
+      const uMap: Record<string, User> = {};
+      users.forEach(u => { uMap[u.id] = u; });
+      const t = rowToTicket(data as Record<string, unknown>, [], uMap);
+      setTickets(prev => [t, ...prev]);
+      return t;
+    } catch (err: any) {
+      console.error('addTicket failure:', err);
+      throw new Error(`Error de red: La terminal no pudo sincronizar el ticket. Detalle: ${err.message || 'Verifica tu conexión.'}`);
+    }
   }, [users]);
 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
@@ -638,9 +613,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const { error: commentErr } = await sb.from('ticket_comentarios').insert(commentPayload);
       if (!commentErr) {
-        if (imageUrl) {
-          await sb.from('ticket_fotos').insert({ ticket_id: ticketId, url: imageUrl });
-        }
         await sb.from('tickets').update({ actualizado_en: now }).eq('id', ticketId);
         // Refrescar para sincronizar nombres/roles reales desde la BD
         await refreshData();

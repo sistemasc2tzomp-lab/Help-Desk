@@ -184,35 +184,8 @@ export default function TicketDetail() {
   };
 
   const uploadReplyImage = async (file: File): Promise<string | undefined> => {
-    if (!isSupabaseConfigured()) return undefined;
-    try {
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `messages/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const sb = getSupabase();
-
-      // Intento 1: upload normal
-      let { error } = await sb.storage
-        .from('attachments')
-        .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
-
-      if (error) {
-        // Intento 2: convertir a Blob con tipo explícito y reintentar
-        const arrayBuffer = await file.arrayBuffer();
-        const blob = new Blob([arrayBuffer], { type: file.type || 'image/jpeg' });
-        const retry = await sb.storage
-          .from('attachments')
-          .upload(path, blob, { upsert: true, contentType: file.type || 'image/jpeg' });
-        error = retry.error;
-      }
-
-      if (!error) {
-        const { data } = sb.storage.from('attachments').getPublicUrl(path);
-        // Verificar que la URL sea accesible (evita retornar una URL rota)
-        if (data?.publicUrl) return data.publicUrl;
-      }
-    } catch (err) {
-      console.warn('Storage upload failed, will use base64 fallback:', err);
-    }
+    // Disabled Supabase storage to bypass 400 error (Bucket misconfiguration/CORS)
+    // and seamlessly force the use of Base64 fallback in 'handleSendMessage', synchronizing the same behavior as 'NewTicket'
     return undefined;
   };
 
@@ -392,7 +365,7 @@ export default function TicketDetail() {
                       }`}
                     >
                       {msg.isInternal && (
-                        <div className="absolute top-0 right-0 px-6 py-2 bg-[#cccccc] text-[#030014] text-[9px] font-black uppercase tracking-[3px] rounded-bl-3xl">Nota del Sistema</div>
+                        <div className="absolute top-0 right-0 px-6 py-2 bg-purple-600 text-white text-[9px] font-black uppercase tracking-[3px] rounded-bl-3xl">Nota del Sistema</div>
                       )}
                       
                       <div className="flex items-start gap-6">

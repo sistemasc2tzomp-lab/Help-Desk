@@ -19,16 +19,18 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const err = await loginWithSupabase(email.trim(), password);
-      if (err) setError(err);
-    } finally {
+      if (err) {
+        setError(err);
+        setLoading(false);
+      }
+      // Note: If successful, the App.tsx will switch to Dashboard
+    } catch (e: any) {
+      setError(e.message || 'Error inesperado en el terminal');
       setLoading(false);
+    } finally {
+      // Small delay to ensure we don't snap back too fast if redirected
+      setTimeout(() => setLoading(false), 2000);
     }
-  };
-
-  const handleChangeConfig = () => {
-    localStorage.removeItem('sb_url');
-    localStorage.removeItem('sb_key');
-    window.location.reload();
   };
 
   return (
@@ -146,12 +148,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="mt-12 text-center relative z-10 flex flex-col items-center gap-6">
-        <button
-          onClick={handleChangeConfig}
-          className="text-[#8888aa] hover:text-[#00f0ff] text-[10px] font-black tracking-[4px] transition-all uppercase border-b-2 border-transparent hover:border-[#00f0ff] pb-1"
-        >
-          CONFIGURACIÓN DE NÚCLEO
-        </button>
+        {/* Security notice and terminal status */}
         
         {/* Security notice */}
         <div className="px-6 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] text-white/30 font-mono tracking-widest uppercase">
