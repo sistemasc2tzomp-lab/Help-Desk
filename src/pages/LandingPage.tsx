@@ -387,7 +387,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="system-preview-container reveal" style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
-            <div className="preview-glow" style={{ position: 'absolute', inset: '-20px', background: 'var(--primary)', opacity: '0.1', blur: '50px', borderRadius: '30px' }}></div>
+            <div className="preview-glow" style={{ position: 'absolute', inset: '-20px', background: 'var(--primary)', opacity: '0.1', filter: 'blur(50px)', borderRadius: '30px' }}></div>
             <img 
               src="/system-preview.png" 
               alt="Vista previa del sistema" 
@@ -651,6 +651,16 @@ const LandingPage: React.FC = () => {
       >
         <i className="fas fa-chevron-up"></i>
       </button>
+
+      {/* BOTÓN FLOTANTE ACCESO - Solo visible en móvil */}
+      <Link
+        to="/app"
+        className="mobile-access-fab"
+        aria-label="Acceder al sistema"
+      >
+        <i className="fas fa-sign-in-alt" style={{ marginRight: '0.5rem' }}></i>
+        ACCEDER AL SISTEMA
+      </Link>
     </div>
   );
 };
