@@ -8,29 +8,48 @@ function playNotificationSound(type: 'new_ticket' | 'update') {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
+    
+    // Resume context if suspended (browser policy)
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
+    
     oscillator.connect(gain);
     gain.connect(ctx.destination);
+    
     if (type === 'new_ticket') {
-      // Tono doble ascendente para nuevo ticket
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-      oscillator.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.5);
+      // Arpegio ascendente (Cyber-Alert)
+      const now = ctx.currentTime;
+      oscillator.type = 'square'; // Más "digital/cyber"
+      oscillator.frequency.setValueAtTime(330, now); // Mi (E4)
+      oscillator.frequency.exponentialRampToValueAtTime(660, now + 0.1); // Mi (E5)
+      oscillator.frequency.exponentialRampToValueAtTime(880, now + 0.2); // La (A5)
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+      gain.gain.linearRampToValueAtTime(0, now + 0.4);
+      
+      oscillator.start(now);
+      oscillator.stop(now + 0.4);
     } else {
-      // Tono simple corto para actualización
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(520, ctx.currentTime);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.3);
+      // Pulso corto de confirmación
+      const now = ctx.currentTime;
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(523.25, now); // Do (C5)
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
+      gain.gain.linearRampToValueAtTime(0, now + 0.3);
+      
+      oscillator.start(now);
+      oscillator.stop(now + 0.3);
     }
-  } catch { /* silent fail if audio not supported */ }
+  } catch (e) {
+    console.warn('Audio notification failed:', e);
+  }
 }
 
 interface AppContextType {
@@ -389,23 +408,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
     const sb = getSupabase();
+    console.log("INICIANDO_SISTEMA_DE_SINCRONIZACIÓN_BITÁCORA...");
+
     const channel = sb.channel('public_schema_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, (payload) => {
+        console.log("NUEVA_SOLICITUD_DETECTADA", payload);
         playNotificationSound('new_ticket');
         refreshData();
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, () => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, (payload) => {
+        console.log("ACTUALIZACIÓN_DE_SOLICITUD_RECIBIDA", payload);
         playNotificationSound('update');
         refreshData();
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, (payload) => {
+        console.log("NUEVO_MENSAJE_EN_FRECUENCIA", payload);
         playNotificationSound('update');
         refreshData();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`ESTADO_DEL_CANAL_DE_DATOS: ${status.toUpperCase()}`);
+      });
+
+    // Fallback Polling (Cada 45 segundos por seguridad si falla el websocket)
+    const fallbackId = setInterval(() => {
+      console.log("EJECUTANDO_SINCRONIZACIÓN_DE_RESPALDO...");
+      refreshData();
+    }, 45000);
 
     return () => {
       sb.removeChannel(channel);
+      clearInterval(fallbackId);
     };
   }, [refreshData]);
 

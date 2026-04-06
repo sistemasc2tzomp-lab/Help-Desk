@@ -4,8 +4,8 @@ import { Ticket } from '../types';
 import { formatDate } from './date';
 
 export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, departmentName?: string) => {
-  const primaryColor = [3, 0, 20]; // #030014 (Deep Night)
-  const accentColor = [0, 240, 255]; // #00f0ff (Cyber Cyan)
+  const primaryColor: [number, number, number] = [3, 0, 20]; // #030014 (Deep Night)
+  const accentColor: [number, number, number] = [0, 240, 255]; // #00f0ff (Cyber Cyan)
   
   // -- Header --
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -48,7 +48,7 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
     theme: 'striped',
     headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
     styles: { fontSize: 10, cellPadding: 5 },
-    columnStyles: { 0: { fontStyle: 'bold', width: 50 } }
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
   });
   
   // -- Description --
