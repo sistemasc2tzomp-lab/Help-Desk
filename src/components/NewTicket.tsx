@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketPriority, TicketCategory } from '../types';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 
 export default function NewTicket() {
   const { currentUser, addTicket, setPage, setSelectedTicketId, departments } = useApp();
@@ -12,12 +11,18 @@ export default function NewTicket() {
   const [departmentId, setDepartmentId] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  // Inicializa el primer departamento si están disponibles
-  React.useEffect(() => {
-    if (departments.length > 0 && !departmentId) {
-      setDepartmentId(departments[0].id);
+  // Auto-detectar departamento del usuario logueado
+  useEffect(() => {
+    if (departments.length > 0) {
+      // Si el usuario tiene departamento asignado, usarlo
+      if (currentUser?.departmentId) {
+        setDepartmentId(currentUser.departmentId);
+      } else if (!departmentId) {
+        // Fallback: seleccionar el primero disponible
+        setDepartmentId(departments[0].id);
+      }
     }
-  }, [departments]);
+  }, [departments, currentUser]);
 
   // Image attachment
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,43 +53,43 @@ export default function NewTicket() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const uploadImage = async (file: File): Promise<string | undefined> => {
-    // Disabled Supabase storage to bypass 400 error (Bucket misconfiguration/CORS) 
-    // This allows the caller to gracefully fallback to using `imagePreview` Base64 natively 
-    // seamlessly which gets synced to `ticket_fotos`.
-    return undefined;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !currentUser || !departmentId) return;
 
     setUploadingImage(true);
     let imageUrl: string | undefined;
-    if (imageFile) {
-      imageUrl = await uploadImage(imageFile);
-      if (!imageUrl && imagePreview) imageUrl = imagePreview;
+    if (imageFile && imagePreview) {
+      // Usar base64 directamente (fallback estable sin Supabase Storage)
+      imageUrl = imagePreview;
     }
     setUploadingImage(false);
 
-    const newTicket = await addTicket({
-      title: title.trim(),
-      description: description.trim(),
-      status: 'Abierto',
-      priority,
-      category,
-      departmentId: departmentId || undefined,
-      createdById: currentUser.id,
-      createdByName: currentUser.name,
-      imageUrl,
-    });
+    try {
+      const newTicket = await addTicket({
+        title: title.trim(),
+        description: description.trim(),
+        status: 'Abierto',
+        priority,
+        category,
+        departmentId: departmentId || undefined,
+        createdById: currentUser.id,
+        createdByName: currentUser.name,
+        imageUrl,
+      });
 
-    setSubmitted(true);
-    setTimeout(() => {
-      setSelectedTicketId(newTicket.id);
-      setPage('ticket-detail');
-    }, 1500);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSelectedTicketId(newTicket.id);
+        setPage('ticket-detail');
+      }, 1500);
+    } catch (err: any) {
+      alert(`Error al crear el ticket: ${err.message || 'Verifica tu conexión o permisos.'}`);
+    }
   };
+
+  // Nombre del departamento detectado automáticamente
+  const autoDetectedDept = departments.find(d => d.id === departmentId);
 
   if (submitted) {
     return (
@@ -94,7 +99,7 @@ export default function NewTicket() {
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">TRANSMISIÓN ESTABLECIDA</h2>
+        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">TICKET ENVIADO</h2>
         <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase animate-fade-in">Redirigiendo al núcleo de control...</p>
       </div>
     );
@@ -111,13 +116,13 @@ export default function NewTicket() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
           </svg>
-          Abortar Operación
+          Regresar
         </button>
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            NUEVA <span className="text-white">INCIDENCIA</span>
+            NUEVO <span className="text-white">TICKET</span>
           </h1>
-          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">MODULO DE REPORTE Y ASIGNACIÓN DE RECURSOS</p>
+          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">MÓDULO DE REPORTE Y ASIGNACIÓN DE RECURSOS</p>
         </div>
       </div>
 
@@ -126,87 +131,102 @@ export default function NewTicket() {
         
         {/* Title Node */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Cabezal del Reporte (Asunto)</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Asunto del Ticket</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="SYNTAX_ERROR_IN_CORE_..."
+            placeholder="Describe brevemente el problema..."
             required
             className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-lg font-orbitron tracking-tight focus:outline-none focus:border-[#ffffff]/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]"
           />
         </div>
 
-        {/* Description Base */}
+        {/* Description */}
         <div className="space-y-3 relative z-10">
-          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Bitácora de Detalles</label>
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Descripción Detallada</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            placeholder="Introduce los parámetros técnicos del problema. Incluye códigos de error, capturas y contexto operativo..."
+            placeholder="Describe el problema con detalle: qué pasó, cuándo ocurrió, equipos afectados..."
             required
             rows={6}
             className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-3xl px-6 py-6 text-[#8888aa] placeholder-slate-800 text-base font-rajdhani font-semibold focus:outline-none focus:border-[#ffffff]/50 transition-all resize-none leading-relaxed"
           />
         </div>
 
-        {/* Configuration Unit */}
+        {/* Clasificación + Prioridad */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Clasificación</label>
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Clasificación del Problema</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value as TicketCategory)}
               className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="Técnico">TÉCNICO</option>
-              <option value="Facturación">FACTURACIÓN</option>
-              <option value="Bug">BUG_SISTEMA</option>
-              <option value="Feature">MEJORA_REQUEST</option>
-              <option value="General">GENERAL</option>
+              <option value="Hardware">🖥️ Hardware</option>
+              <option value="Software">💿 Software</option>
+              <option value="Red">🌐 Red / Conectividad</option>
+              <option value="Seguridad">🔒 Seguridad</option>
+              <option value="Acceso">🔑 Acceso / Contraseñas</option>
+              <option value="Impresora">🖨️ Impresora / Escáner</option>
+              <option value="Correo">📧 Correo Electrónico</option>
+              <option value="Servidor">🗄️ Servidor / Sistema</option>
+              <option value="Respaldo">💾 Respaldo / Datos</option>
+              <option value="General">📋 General</option>
             </select>
           </div>
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Nivel_Prioridad</label>
+            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Nivel de Prioridad</label>
             <select
               value={priority}
               onChange={e => setPriority(e.target.value as TicketPriority)}
               className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
             >
-              <option value="Baja">BAJA_NODAL</option>
-              <option value="Media">MEDIA_ESTÁNDAR</option>
-              <option value="Alta">ALTA_VALOR</option>
-              <option value="Urgente">URGENTE_CRÍTICO</option>
+              <option value="Baja">🟢 Baja — Consultas y Mejoras</option>
+              <option value="Media">🟡 Media — Flujo Reducido</option>
+              <option value="Alta">🟠 Alta — Bloqueo Operativo</option>
+              <option value="Urgente">🔴 Urgente — Sistema Caído</option>
             </select>
           </div>
         </div>
 
-        {/* Sector Allocation */}
-        {departments.length > 0 ? (
-          <div className="space-y-3 relative z-10">
-            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
-            <select
-              value={departmentId}
-              onChange={e => setDepartmentId(e.target.value)}
-              required
-              className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
-            >
-              <option value="" disabled>SELECCIONAR EL DEPARTAMENTO</option>
-              {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div className="space-y-3 relative z-10">
-            <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
-            <div className="w-full bg-red-500/10 border border-red-500/30 rounded-2xl px-5 py-4 text-red-500 text-xs font-black uppercase tracking-widest font-mono">
-              ERROR: NO SE ENCONTRARON DEPARTAMENTOS. CONTACTA AL ADMINISTRADOR.
+        {/* Sector Responsable - Auto detectado */}
+        <div className="space-y-3 relative z-10">
+          <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Sector Responsable (Departamento)</label>
+          {autoDetectedDept ? (
+            <div className="w-full bg-[#0f0a28]/50 border border-[#ffffff]/30 rounded-2xl px-5 py-4 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white text-xs font-black uppercase tracking-widest font-mono">{autoDetectedDept.name}</span>
+              <span className="text-[#8888aa] text-[9px] font-bold uppercase tracking-[2px] ml-auto">Auto-detectado</span>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-amber-400 text-xs font-black uppercase tracking-widest font-mono">
+              ⚠️ Sin departamento asignado — Contacta al administrador
+            </div>
+          )}
+          {/* Campo oculto por si se necesita seleccionar manualmente */}
+          {departments.length > 1 && (
+            <details className="mt-2">
+              <summary className="text-[9px] text-[#8888aa] cursor-pointer hover:text-white transition-colors uppercase tracking-[2px] font-bold">
+                ▸ Cambiar departamento manualmente
+              </summary>
+              <select
+                value={departmentId}
+                onChange={e => setDepartmentId(e.target.value)}
+                required
+                className="mt-2 w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
+              >
+                <option value="" disabled>SELECCIONAR DEPARTAMENTO</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>
+                ))}
+              </select>
+            </details>
+          )}
+        </div>
 
-        {/* Visual Documentation Subsystem */}
+        {/* Visual Documentation */}
         <div className="space-y-4 relative z-10">
           <label className="text-[10px] font-black text-[#ffffff] uppercase tracking-[4px] ml-1">Documentación Visual (Adjuntos)</label>
           {imagePreview ? (
@@ -218,7 +238,7 @@ export default function NewTicket() {
                     onClick={removeImage}
                     className="bg-[#999999] text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[3px] border border-white/20 hover:scale-105 transition-all shadow-2xl"
                 >
-                    Purgar Recurso
+                    Eliminar imagen
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 w-full px-6 py-3 bg-[#030014]/60 backdrop-blur-md flex items-center gap-3 border-t border-white/10">
@@ -234,29 +254,21 @@ export default function NewTicket() {
             >
               <div className="w-20 h-20 rounded-3xl bg-white/5 group-hover:bg-[#ffffff]/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 border border-white/10">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                 </svg>
               </div>
               <div className="text-center">
-                <p className="text-white text-xs font-black uppercase tracking-[3px]">Click para inyectar recursos visuales</p>
-                <p className="text-[#8888aa] text-[9px] font-bold mt-2 tracking-[2px] uppercase opacity-60">Filtro: PNG / JPG / GIF / WEBP — Límite 5MB</p>
+                <p className="text-white text-xs font-black uppercase tracking-[3px]">Adjuntar imagen</p>
+                <p className="text-[#8888aa] text-[9px] font-bold mt-2 tracking-[2px] uppercase opacity-60">PNG / JPG / GIF / WEBP — Máx 5MB</p>
               </div>
             </button>
           )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageSelect}
-            className="hidden"
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden"/>
         </div>
 
         {/* Priority Matrix Helper */}
         <div className="glass-panel rounded-3xl p-5 border border-white/5 space-y-3 relative z-10">
-          <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 opacity-50">Matriz de Priorización Operativa</p>
+          <p className="text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 opacity-50">Guía de Priorización</p>
           <div className="grid grid-cols-2 gap-4">
              <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white/5" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">BAJA: CONSULTAS Y MEJORAS</div></div>
              <div className="flex items-center gap-3"><div className="w-1.5 h-6 bg-white/10" /><div className="text-[9px] text-[#8888aa] font-bold tracking-widest uppercase">MEDIA: FLUJO REDUCIDO</div></div>
@@ -272,21 +284,21 @@ export default function NewTicket() {
             onClick={() => setPage('tickets')}
             className="text-[#8888aa] hover:text-white transition-colors text-[10px] font-black uppercase tracking-[4px]"
           >
-            Purgar Entrada
+            Reiniciar Ticket
           </button>
           <button
             type="submit"
-            disabled={!title.trim() || !description.trim() || uploadingImage}
+            disabled={!title.trim() || !description.trim() || !departmentId || uploadingImage}
             className="btn-futuristic px-12 py-5 text-xs font-black tracking-[5px] group"
           >
             {uploadingImage ? (
               <span className="flex items-center gap-3">
                 <div className="w-4 h-4 border-2 border-[#030014]/30 border-t-[#030014] rounded-full animate-spin" />
-                Dumping_Buff...
+                Procesando...
               </span>
             ) : (
               <span className="flex items-center gap-3">
-                LANZAR TRANSMISIÓN
+                ENVIAR TICKET
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
                    <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>

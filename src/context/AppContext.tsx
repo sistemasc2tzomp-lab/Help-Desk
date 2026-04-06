@@ -2,6 +2,37 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory, Message } from '../types';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 
+// ── Sound Notification Helper ────────────────────────────────────
+function playNotificationSound(type: 'new_ticket' | 'update') {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'new_ticket') {
+      // Tono doble ascendente para nuevo ticket
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+      oscillator.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.5);
+    } else {
+      // Tono simple corto para actualización
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(520, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.3);
+    }
+  } catch { /* silent fail if audio not supported */ }
+}
+
 interface AppContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
@@ -359,10 +390,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!isSupabaseConfigured()) return;
     const sb = getSupabase();
     const channel = sb.channel('public_schema_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, () => {
+        playNotificationSound('new_ticket');
+        refreshData();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, () => {
+        playNotificationSound('update');
         refreshData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, () => {
+        playNotificationSound('update');
         refreshData();
       })
       .subscribe();
@@ -456,6 +493,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     const sb = getSupabase();
+
+    // Verificar que el usuario está autenticado en Supabase Auth
+    const { data: sessionData } = await sb.auth.getSession();
+    const authUid = sessionData.session?.user?.id;
+    if (!authUid) {
+      throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
+    }
+
+    // Usar el UID real de la sesión Supabase Auth (CRÍTICO para RLS)
+    const creadorId = authUid;
+
     let autoAdminId: string | null = null;
     try {
       const { data: admins } = await sb
@@ -468,14 +516,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch { /* silent fallback for auto-assignment */ }
 
-    const timestamp = Date.now().toString();
-    const customFolio = `TZH-${timestamp.slice(-6)}-${Math.floor(Math.random() * 100)}`;
-
+    // NO enviamos 'id' — dejamos que el TRIGGER de BD lo genere (folio consecutivo)
+    // Si no hay trigger configurado, generamos uno temporal como fallback
     const insertData: Record<string, unknown> = {
-      id: customFolio,
       titulo: ticketData.title,
       descripcion: ticketData.description,
-      creado_por_id: ticketData.createdById,
+      creado_por_id: creadorId,  // ← DEBE coincidir con auth.uid() para pasar RLS
       estado: mapToDbStatus('Abierto'),
       prioridad: mapToDbPriority(ticketData.priority),
       departamento_id: ticketData.departmentId || null,
@@ -486,6 +532,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const { data, error } = await sb.from('tickets').insert(insertData).select().single();
       if (error || !data) {
+        console.error('addTicket DB error:', error);
+        // Si el error es de RLS, dar mensaje claro
+        if (error?.code === '42501' || error?.message?.includes('row-level security')) {
+          throw new Error('Permiso denegado: Tu usuario no tiene permisos para crear tickets. Contacta al administrador para que ejecute el script SQL de permisos.');
+        }
         throw new Error(error?.message || 'Error de sincronización con la base central.');
       }
 
@@ -496,7 +547,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return t;
     } catch (err: any) {
       console.error('addTicket failure:', err);
-      throw new Error(`Error de red: La terminal no pudo sincronizar el ticket. Detalle: ${err.message || 'Verifica tu conexión.'}`);
+      throw new Error(`${err.message || 'Error de red. Verifica tu conexión.'}`);
     }
   }, [users]);
 

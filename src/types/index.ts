@@ -12,7 +12,7 @@ export interface User {
 
 export type TicketStatus = 'Abierto' | 'En Progreso' | 'Resuelto' | 'Cerrado';
 export type TicketPriority = 'Baja' | 'Media' | 'Alta' | 'Urgente';
-export type TicketCategory = 'Técnico' | 'Facturación' | 'General' | 'Bug' | 'Feature';
+export type TicketCategory = 'Hardware' | 'Software' | 'Red' | 'Seguridad' | 'Acceso' | 'Impresora' | 'Correo' | 'Servidor' | 'Respaldo' | 'General';
 
 export interface Message {
   id: string;
