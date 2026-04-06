@@ -127,6 +127,12 @@ export default function TicketDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTicketId, currentUser?.id]);
 
+  // ── Modal Status State ───────────────────────────────
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<TicketStatus | null>(null);
+  const [statusComment, setStatusComment] = useState('');
+  const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+
   // ── Supabase Realtime subscription for live chat ──────────────────────────
   useEffect(() => {
     if (!selectedTicketId || !isSupabaseConfigured()) return;
@@ -136,15 +142,18 @@ export default function TicketDetail() {
       .channel(`ticket-messages-${selectedTicketId}`)
       .on(
         'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'ticket_comentarios', 
-          filter: `ticket_id=eq.${selectedTicketId}` 
-        },
+        { event: '*',  schema: 'public', table: 'ticket_comentarios', filter: `ticket_id=eq.${selectedTicketId}` },
         () => { 
           console.log('Realtime update: New comment detected');
           refreshData(); 
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tickets', filter: `id=eq.${selectedTicketId}` },
+        () => {
+          console.log('Realtime update: Ticket changed');
+          refreshData();
         }
       )
       .subscribe();
@@ -245,6 +254,25 @@ export default function TicketDetail() {
       if (replyFileRef.current) replyFileRef.current.value = '';
     } finally {
       setSending(false);
+    }
+  const confirmStatusChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingStatus || !statusComment.trim()) return;
+    setIsSubmittingStatus(true);
+    try {
+      // 1. Añadimos el comentario
+      await addMessage(ticket.id, statusComment.trim(), false, undefined);
+      // 2. Actualizamos el status
+      await updateTicketStatus(ticket.id, pendingStatus);
+      // 3. Reset
+      setStatusComment('');
+      setShowStatusModal(false);
+      setPendingStatus(null);
+    } catch(err) {
+      console.error(err);
+      alert('Error cambiando el estado');
+    } finally {
+      setIsSubmittingStatus(false);
     }
   };
 
@@ -524,13 +552,16 @@ export default function TicketDetail() {
                   <label className="block text-[9px] font-black text-[#8888aa] uppercase tracking-[3px] mb-2 ml-1">Estatus</label>
                   <select
                     value={ticket.status}
-                    onChange={e => updateTicketStatus(ticket.id, e.target.value as TicketStatus)}
+                    onChange={e => {
+                      setPendingStatus(e.target.value as TicketStatus);
+                      setShowStatusModal(true);
+                    }}
                     className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-xl px-4 py-3.5 text-white text-[11px] font-black focus:outline-none focus:border-[#ffffff]/50 transition-all font-mono uppercase tracking-widest cursor-pointer"
                   >
-                    <option>Abierto</option>
-                    <option>En Progreso</option>
-                    <option>Resuelto</option>
-                    <option>Cerrado</option>
+                    <option value="Abierto">Abierto</option>
+                    <option value="En Progreso">En Progreso</option>
+                    <option value="Resuelto">Resuelto</option>
+                    <option value="Cerrado">Cerrado</option>
                   </select>
                 </div>
                 <div>
@@ -625,6 +656,50 @@ export default function TicketDetail() {
           </div>
         </div>
       )}
+
+      {/* STATUS CHANGE MODAL */}
+      {showStatusModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#000000]/80 backdrop-blur-sm" onClick={() => setShowStatusModal(false)}></div>
+          <div className="glass-panel border-white/10 p-8 sm:p-10 rounded-[32px] w-full max-w-lg relative z-10 space-y-6 animate-fade-in shadow-2xl">
+            <h3 className="text-xl font-black font-orbitron text-white tracking-[3px] uppercase">
+              Actualizar Estatus
+            </h3>
+            <p className="text-[#8888aa] font-rajdhani text-sm">
+              Está a punto de cambiar el estatus a <span className="text-white font-bold">{pendingStatus}</span>. Es obligatorio agregar un comentario explicando el motivo.
+            </p>
+            <form onSubmit={confirmStatusChange} className="space-y-6">
+              <textarea
+                autoFocus
+                required
+                value={statusComment}
+                onChange={e => setStatusComment(e.target.value)}
+                placeholder="Motivo del cambio..."
+                rows={4}
+                className="w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-sm font-rajdhani focus:outline-none focus:border-white/50 transition-all resize-none"
+              ></textarea>
+              <div className="flex gap-4 items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowStatusModal(false)}
+                  className="px-6 py-3 text-[10px] font-black text-[#8888aa] hover:text-white uppercase tracking-[2px] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={!statusComment.trim() || isSubmittingStatus}
+                  className="btn-futuristic px-8 py-3 text-[10px] uppercase tracking-[3px]"
+                >
+                  {isSubmittingStatus ? 'PROCESANDO...' : 'CONFIRMAR'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+}
+
