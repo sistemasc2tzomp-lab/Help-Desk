@@ -582,6 +582,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loginWithSupabase = useCallback(async (email: string, password: string): Promise<string | null> => {
     if (!isSupabaseConfigured()) return 'Supabase no está configurado.';
     const sb = getSupabase();
+    console.log('INTENTO DE LOGIN:', { email, password });
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       console.error('DETALLE ERROR SUPABASE:', error);
