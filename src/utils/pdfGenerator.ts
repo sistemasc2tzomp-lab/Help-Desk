@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Ticket } from '../types';
 import { formatDate } from './date';
+import { logoBase64 } from './logoBase64';
 
 export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, departmentName?: string) => {
   // Configuración de Hoja Carta (Letter): 215.9 x 279.4 mm
@@ -20,16 +21,11 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
   doc.rect(0, 0, pageWidth, 45, 'F');
   
   // -- Institutional Icons (Simulated as geometric professional shapes) --
-  // Icono Izq (Escudo)
-  doc.setFillColor(51, 65, 85, 0.1);
-  doc.circle(marginX + 5, 22, 10, 'F');
-  doc.setDrawColor(51, 65, 85);
-  doc.setLineWidth(0.5);
-  doc.text('🛡️', marginX + 2, 25); // Placeholder emoji while we don't have base64
+  // Logo Izq
+  doc.addImage(logoBase64, 'PNG', marginX - 5, 12, 35, 15);
   
-  // Icono Der (Tecnología)
-  doc.circle(pageWidth - marginX - 5, 22, 10, 'F');
-  doc.text('⚙️', pageWidth - marginX - 8, 25);
+  // Logo Der
+  doc.addImage(logoBase64, 'PNG', pageWidth - marginX - 30, 12, 35, 15);
   
   // -- Title --
   doc.setFont('helvetica', 'bold');

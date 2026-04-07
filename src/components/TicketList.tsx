@@ -59,7 +59,7 @@ export default function TicketList() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ARCHIVOS <span className="text-white">SOLICITUDES</span>
+            HISTORICO <span className="text-white">SOLICITUDES</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
             REGISTRO DE SOLICITUDES // {sorted.length} ENTRADAS LOCALIZADAS
@@ -133,7 +133,7 @@ export default function TicketList() {
         </div>
       </div>
 
-      {/* Main Stream */}
+      {/* Main Stream Grupped by Department */}
       {sorted.length === 0 ? (
         <div className="glass-panel border-dashed border-2 border-white/5 rounded-[40px] py-32 text-center">
           <div className="text-6xl mb-8 opacity-20 filter grayscale">🎫</div>
@@ -143,113 +143,69 @@ export default function TicketList() {
           </p>
         </div>
       ) : (
-        <div className="glass-panel rounded-[40px] overflow-hidden border border-white/5 shadow-2xl">
-          {/* Desktop Table - Hidden on small devices */}
-          <div className="hidden md:block overflow-x-auto custom-scrollbar">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10 bg-white/2">
-                  <th className="text-left text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">IDENTIFICADOR / ASUNTO</th>
-                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px]">ESTADO_ACTUAL</th>
-                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden lg:table-cell">PRIORIDAD</th>
-                  <th className="text-left text-[10px] text-[#8888aa] font-black px-4 py-6 uppercase tracking-[4px] hidden xl:table-cell">DEPARTAMENTO</th>
-                  <th className="text-right text-[10px] text-[#8888aa] font-black px-8 py-6 uppercase tracking-[4px]">STREAM_TIME</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {sorted.map(ticket => (
-                  <tr
+        <div className="space-y-12">
+          {Object.entries(
+            sorted.reduce((acc, ticket) => {
+              const deptName = ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO';
+              if (!acc[deptName]) acc[deptName] = [];
+              acc[deptName].push(ticket);
+              return acc;
+            }, {} as Record<string, Ticket[]>)
+          ).map(([deptName, deptTickets]) => (
+            <div key={deptName} className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="h-px bg-white/10 flex-1"></div>
+                <h2 className="text-white font-orbitron font-bold tracking-[4px] uppercase flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.5)]"></span>
+                  {deptName} <span className="text-[#8888aa] text-[10px] ml-2 font-mono">[{deptTickets.length}]</span>
+                </h2>
+                <div className="h-px bg-white/10 flex-1"></div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {deptTickets.map(ticket => (
+                  <div
                     key={ticket.id}
                     onClick={() => handleTicketClick(ticket)}
-                    className="hover:bg-[#ffffff]/5 cursor-pointer transition-all group relative duration-300"
+                    className="glass-panel border border-white/5 hover:border-white/20 rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] group relative"
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex flex-col">
-                        <div className="text-white text-sm font-bold font-orbitron tracking-tighter group-hover:text-[#ffffff] transition-colors truncate max-w-[300px]">
-                          {ticket.title.toUpperCase()}
-                        </div>
-                        <div className="text-[#8888aa] text-[10px] mt-2 font-mono flex items-center gap-3">
-                          <span className="text-[#ffffff]/50">FOLIO: {ticket.folio || ticket.id.slice(0,8)}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                          <span>{ticket.category.toUpperCase()}</span>
-                          {ticket.messages.length > 0 && (
-                            <>
-                              <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                              <span className="text-[#cccccc] font-bold">{ticket.messages.length} COMENTARIOS</span>
-                            </>
-                          )}
-                        </div>
+                    <div className="flex justify-between items-start gap-4 mb-4">
+                      <div className="text-white text-lg font-bold font-orbitron tracking-tight flex-1 uppercase group-hover:text-[#00f0ff] transition-colors line-clamp-2">
+                        {ticket.title}
                       </div>
-                    </td>
-                    <td className="px-4 py-6">
-                      <span className={`inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-lg ${statusColors[ticket.status]}`}>
+                      <span className={`shrink-0 inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg ${statusColors[ticket.status]}`}>
                         {ticket.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-6 hidden lg:table-cell">
-                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-black uppercase border tracking-[2px] ${priorityColors[ticket.priority]}`}>
-                         {ticket.priority}
-                      </span>
-                    </td>
-                    <td className="px-4 py-6 hidden xl:table-cell">
-                      <div className="flex items-center gap-2">
-                         <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                         <span className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest">
-                          {ticket.departmentId ? deptMap[ticket.departmentId] || 'GENÉRICO' : 'GENÉRICO'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex flex-col items-end">
-                        <span className="text-white font-mono text-[11px] font-bold">{formatDistanceToNow(ticket.createdAt).toUpperCase()}</span>
+                    </div>
+                    
+                    <div className="text-[#8888aa] text-[10px] font-mono flex flex-wrap gap-x-4 gap-y-2 mb-6">
+                      <span className="text-white/40 font-bold">FOL: {ticket.folio || ticket.id.slice(0, 8)}</span>
+                      <span className={`font-bold tracking-widest uppercase ${priorityColors[ticket.priority].split(' ')[0]}`}>{ticket.priority}</span>
+                      <span className="text-[#8888aa] truncate max-w-[150px]">{ticket.category.toUpperCase()}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-white font-mono text-[10px] uppercase font-bold">{formatDistanceToNow(ticket.createdAt)}</span>
                         {ticket.assignedToName && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[9px] text-[#8888aa] font-bold tracking-widest">OP:</span>
-                            <span className="text-[#ffffff] text-[9px] font-bold uppercase tracking-tighter">{ticket.assignedToName}</span>
-                          </div>
+                           <div className="flex items-center gap-2">
+                             <span className="text-[9px] text-[#8888aa] font-bold tracking-widest">OP:</span>
+                             <span className="text-[#00f0ff] text-[9px] font-bold uppercase tracking-widest">{ticket.assignedToName}</span>
+                           </div>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Card List - Visible only on small devices */}
-          <div className="md:hidden divide-y divide-white/5">
-            {sorted.map(ticket => (
-              <div
-                key={ticket.id}
-                onClick={() => handleTicketClick(ticket)}
-                className="p-6 active:bg-white/5 transition-colors space-y-4"
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="text-white text-sm font-bold font-orbitron tracking-tight truncate flex-1 uppercase">
-                    {ticket.title}
+                      {ticket.messages.length > 0 && (
+                        <span className="text-[#ffffff] text-[9px] font-black uppercase tracking-[2px] bg-[#ffffff]/5 px-3 py-2 rounded-lg border border-[#ffffff]/10 group-hover:bg-[#ffffff]/10 transition-colors flex items-center gap-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+                          {ticket.messages.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className={`shrink-0 inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${statusColors[ticket.status]}`}>
-                    {ticket.status}
-                  </span>
-                </div>
-                
-                <div className="text-[#8888aa] text-[10px] font-mono flex flex-wrap gap-x-4 gap-y-2">
-                  <span className="text-white/40">FOLIO: {ticket.folio || ticket.id.slice(0, 8)}</span>
-                  <span className={`font-bold tracking-widest uppercase ${priorityColors[ticket.priority].split(' ')[0]}`}>{ticket.priority}</span>
-                  <span>{ticket.category.toUpperCase()}</span>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                  <span className="text-white font-mono text-[10px]">{formatDistanceToNow(ticket.createdAt).toUpperCase()}</span>
-                  {ticket.messages.length > 0 && (
-                    <span className="text-[#ffffff] text-[9px] font-black uppercase tracking-[2px] bg-white/5 px-3 py-1 rounded-lg border border-white/10">
-                      {ticket.messages.length} MSG
-                    </span>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -110,9 +110,9 @@ export default function UsersPage() {
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
             <span className="text-white">USUARIOS</span>
           </h1>
-          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">
-            GESTIÓN DE PERSONAL Y AUTORIZACIONES // {users.length} NODOS DETECTADOS
-          </p>
+          <h2 className="text-[#8888aa] text-[9px] font-black uppercase tracking-[4px] mt-2 bg-white/5 inline-block px-4 py-1.5 rounded-full border border-white/10">
+            GESTIÓN DE PERSONAL Y AUTORIZACIONES // {users.length} CLIENTES DETECTADOS
+          </h2>
         </div>
         <div className="flex gap-3">
           <button
@@ -142,7 +142,7 @@ export default function UsersPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         {[
-          { label: 'NODOS_TOTAL', val: users.length, color: 'text-white' },
+          { label: 'CLIENTES_TOTAL', val: users.length, color: 'text-white' },
           { label: 'ADMINS', val: users.filter(u => u.role === 'Admin').length, color: 'text-[#cccccc]' },
           { label: 'AGENTES', val: users.filter(u => u.role === 'Agente').length, color: 'text-[#ffffff]' },
           { label: 'CLIENTES', val: users.filter(u => u.role === 'Cliente').length, color: 'text-[#aaaaaa]' },
@@ -188,7 +188,7 @@ export default function UsersPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 glass-panel rounded-3xl border-dashed border-2 border-white/5">
-            <p className="text-[#8888aa] font-bold tracking-[4px] uppercase text-xs">No se detectaron nodos coincidentes</p>
+            <p className="text-[#8888aa] font-bold tracking-[4px] uppercase text-xs">No se detectaron clientes coincidentes</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

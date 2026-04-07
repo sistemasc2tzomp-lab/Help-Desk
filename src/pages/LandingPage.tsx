@@ -328,7 +328,7 @@ const LandingPage: React.FC = () => {
           className="loader-logo" 
         />
         <div className="loader-bar"><div className="loader-bar-fill"></div></div>
-        <p className="loader-text">INITIALIZING SYSTEM</p>
+        <p className="loader-text">INICIANDO SISTEMA</p>
       </div>
 
       {/* CUSTOM CURSOR - Disabled in React to avoid performance issues if not carefully handled, but included for completeness */}

@@ -275,7 +275,7 @@ export default function SettingsPage() {
                 <TextInput value={settings.ticketPrefix} onChange={v => set('ticketPrefix', v.toUpperCase().slice(0, 6))} placeholder="TZH" />
               </Field>
 
-              <Field label="PRIORIDAD DE INICIO" hint="Nivel de urgencia por defecto para nuevos nodos">
+              <Field label="PRIORIDAD DE INICIO" hint="Nivel de urgencia por defecto para nuevos clientes">
                 <div className="flex gap-4 flex-wrap mt-2">
                   {PRIORITY_OPTIONS.map(p => (
                     <button

@@ -210,7 +210,7 @@ export default function DepartmentsPage() {
                   {total > 0 && (
                     <div className="mb-8 space-y-2">
                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[3px]">
-                        <span className="text-[#8888aa]">{total} NODOS TOTAL</span>
+                        <span className="text-[#8888aa]">{total} CLIENTES TOTAL</span>
                         <span className="text-[#ffffff]">{Math.round((resolved / total) * 100)}% COMPLETADO</span>
                       </div>
                       <div className="h-2 bg-white/5 rounded-full overflow-hidden flex shadow-inner">

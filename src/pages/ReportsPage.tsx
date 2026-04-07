@@ -626,7 +626,7 @@ export default function ReportsPage() {
           <div className="w-10 h-10 rounded-2xl bg-[#ffffff]/10 flex items-center justify-center text-[#ffffff] border border-[#ffffff]/20">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
-          <span className="text-xs font-black font-orbitron text-white uppercase tracking-[2px]">PERÍODO_CRONOS:</span>
+          <span className="text-xs font-black font-orbitron text-white uppercase tracking-[2px]">PERIODO DE BUSQUEDA REPORTE:</span>
         </div>
 
         <div className="flex items-center gap-6 flex-wrap">
@@ -661,7 +661,7 @@ export default function ReportsPage() {
         <div className="ml-auto flex items-center gap-3">
            <div className="w-2 h-2 rounded-full bg-[#ffffff] shadow-[0_0_10px_#ffffff] animate-pulse" />
            <span className="text-[#8888aa] text-[10px] font-black uppercase tracking-[3px]">
-             {total} NODOS_SERIALIZADOS
+             {total} CLIENTES_SERIALIZADOS
            </span>
         </div>
       </div>
@@ -688,7 +688,7 @@ export default function ReportsPage() {
       {activeTab === 'general' && (
         <div className="space-y-12 animate-fade-in">
           <SectionHeader
-            title="Cuadro de Mando"
+            title="REPORTES SISTEMA"
             subtitle="MÉTRICAS CLAVE DE INFRAESTRUCTURA"
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
           >
@@ -705,7 +705,7 @@ export default function ReportsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="glass-panel border border-white/5 rounded-[40px] p-10 space-y-10 shadow-2xl relative overflow-hidden group">
                <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#ffffff]/5 blur-3xl rounded-full group-hover:bg-[#ffffff]/10 transition-colors" />
-               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#ffffff] pl-4">STATUS_DISTRIBUTION</h3>
+               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#ffffff] pl-4">DISTRIBUCIÓN DE ESTADOS</h3>
                <div className="space-y-8">
                  {byStatus.map(({ s, n }) => (
                    <BarRow key={s} label={s} value={n} max={total} color={statusColor[s]} />
@@ -714,7 +714,7 @@ export default function ReportsPage() {
             </div>
             <div className="glass-panel border border-white/5 rounded-[40px] p-10 space-y-10 shadow-2xl relative overflow-hidden group">
                <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#cccccc]/5 blur-3xl rounded-full group-hover:bg-[#cccccc]/10 transition-colors" />
-               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#cccccc] pl-4">PRIORITY_MATRIX</h3>
+               <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#cccccc] pl-4">MATRIZ DE PRIORIDADES</h3>
                <div className="space-y-8">
                  {byPriority.map(({ p, n }) => (
                    <BarRow key={p} label={p} value={n} max={total} color={priorityColor[p]} />
@@ -724,7 +724,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="glass-panel border border-white/5 rounded-[40px] p-10 shadow-2xl">
-            <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#aaaaaa] pl-4 mb-10">CATEGORIES_LOAD_BALANCING</h3>
+            <h3 className="text-white font-black font-orbitron tracking-widest text-xs uppercase border-l-4 border-[#aaaaaa] pl-4 mb-10">BALANCEO DE CARGA POR CATEGORÍAS</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-8">
                {byCategory.map(({ c, n }) => (
                  <BarRow key={c} label={c} value={n} max={total} color="#ffffff" />
@@ -751,7 +751,7 @@ export default function ReportsPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 bg-white/2">
-                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">IDENTIFICADOR / NODO</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">IDENTIFICADOR / CLIENTE</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">ESTADO_VITAL</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px]">NIVEL_PRIORIDAD</th>
                     <th className="px-8 py-6 text-[10px] font-black text-[#8888aa] uppercase tracking-[3px] hidden lg:table-cell">CATEGORIA</th>

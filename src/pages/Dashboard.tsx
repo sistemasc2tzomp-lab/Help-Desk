@@ -381,7 +381,7 @@ export default function Dashboard() {
             <Shield className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <h4 className="text-xs font-black text-white uppercase tracking-[2px]">MUNICIPAL INFRASTRUCTURE SECURITY</h4>
+            <h4 className="text-xs font-black text-white uppercase tracking-[2px]">SISTEMA TICKETS TZOMPANTEPEC</h4>
             <p className="text-[9px] font-bold text-slate-500 uppercase">Procesamiento de datos en clúster descentralizado activo</p>
           </div>
         </div>
