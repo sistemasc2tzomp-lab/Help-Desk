@@ -20,12 +20,9 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
   doc.setFillColor(primarySoftColor[0], primarySoftColor[1], primarySoftColor[2]);
   doc.rect(0, 0, pageWidth, 45, 'F');
   
-  // -- Institutional Icons (Simulated as geometric professional shapes) --
-  // Logo Izq
-  doc.addImage(logoBase64, 'PNG', marginX - 5, 12, 35, 15);
-  
-  // Logo Der
-  doc.addImage(logoBase64, 'PNG', pageWidth - marginX - 30, 12, 35, 15);
+  // -- Institutional Icons --
+  // Logo Izq (Aspect ratio 1:1 since the new logo is square)
+  doc.addImage(logoBase64, 'PNG', marginX - 5, 10, 22, 22);
   
   // -- Title --
   doc.setFont('helvetica', 'bold');
@@ -45,10 +42,20 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
 
   // -- Folio Badge --
   const folioText = ticket.folio ? `FOLIO NO. ${ticket.folio.toString().padStart(6, '0')}` : `ID: ${ticket.id.slice(0, 8).toUpperCase()}`;
-  doc.setFont('courier', 'bold');
+  
+  const badgeWidth = 45;
+  const badgeHeight = 8;
+  const badgeX = pageWidth - marginX - badgeWidth + 5;
+  const badgeY = 14;
+  
+  // Draw a subtle background for the folio badge
+  doc.setFillColor(254, 226, 226); // Light red background (matches detailColor intent)
+  doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
+  
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(detailColor[0], detailColor[1], detailColor[2]);
-  doc.setFontSize(12);
-  doc.text(folioText, pageWidth - marginX, 20, { align: 'right' });
+  doc.setFontSize(10);
+  doc.text(folioText, badgeX + (badgeWidth / 2), badgeY + 5.5, { align: 'center' });
   
   // -- Metadata Section --
   let currentY = 55;

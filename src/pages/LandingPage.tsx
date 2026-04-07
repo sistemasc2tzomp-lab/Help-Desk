@@ -391,7 +391,7 @@ const LandingPage: React.FC = () => {
           <div className="system-preview-container reveal" style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
             <div className="preview-glow" style={{ position: 'absolute', inset: '-20px', background: 'var(--primary)', opacity: '0.1', filter: 'blur(50px)', borderRadius: '30px' }}></div>
             <img 
-              src="/system-preview.png" 
+              src="system-preview.png" 
               alt="Vista previa del sistema" 
               className="system-preview-img" 
               style={{ width: '100%', borderRadius: '20px', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} 
