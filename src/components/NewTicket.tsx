@@ -13,16 +13,16 @@ export default function NewTicket() {
 
   // Auto-detectar departamento del usuario logueado
   useEffect(() => {
-    if (departments.length > 0) {
+    if (departments && departments.length > 0) {
       // Si el usuario tiene departamento asignado, usarlo
       if (currentUser?.departmentId) {
         setDepartmentId(currentUser.departmentId);
-      } else if (!departmentId) {
+      } else if (!departmentId && departments[0]) {
         // Fallback: seleccionar el primero disponible
         setDepartmentId(departments[0].id);
       }
     }
-  }, [departments, currentUser]);
+  }, [departments, currentUser, departmentId]);
 
   // Image attachment
   const [imageFile, setImageFile] = useState<File | null>(null);

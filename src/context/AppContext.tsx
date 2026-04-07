@@ -417,8 +417,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
       // 2. Departamentos
+      // 2. Departamentos
       try {
-        const { data: deptsData } = await sb.from('departamentos').select('*').order('created_at', { ascending: true });
+        const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
         if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
 
@@ -428,7 +429,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { data: comentariosData } = await sb
           .from('ticket_comentarios')
           .select('*')
-          .order('created_at', { ascending: true });
+          .order('creado_en', { ascending: true });
         if (comentariosData) {
           (comentariosData as Record<string, unknown>[]).forEach(r => {
             const m = rowToMessage(r, freshUMap);
@@ -443,7 +444,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { data: tktData } = await sb
           .from('tickets')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('creado_en', { ascending: false });
         if (tktData) {
           setTickets((tktData as Record<string, unknown>[]).map(r =>
             rowToTicket(r, msgsByTicket[String(r.id)] || [], freshUMap)
