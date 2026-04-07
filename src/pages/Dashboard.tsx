@@ -231,7 +231,7 @@ export default function Dashboard() {
             <PieChartIcon className="w-4 h-4 text-blue-400" />
           </div>
           
-          <div className="w-full h-72 flex justify-center">
+          <div className="w-full h-72 min-w-0 flex justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <PieComponent
@@ -281,7 +281,7 @@ export default function Dashboard() {
             <ActivityIcon className="w-4 h-4 text-emerald-400" />
           </div>
 
-          <div className="w-full h-80">
+          <div className="w-full h-80 min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeData}>
                 <defs>

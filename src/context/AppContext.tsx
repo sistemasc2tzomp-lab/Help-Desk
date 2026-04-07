@@ -720,7 +720,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const insertData: Record<string, unknown> = {
       titulo: ticketData.title,
       descripcion: ticketData.description,
-      creado_por_id: creadorId,  // ← DEBE coincidir con auth.uid() para pasar RLS
+      creado_por_id: currentUser?.id || creadorId,  // Priorizamos ID local, fallback a auth
       estado: mapToDbStatus('Abierto'),
       prioridad: mapToDbPriority(ticketData.priority),
       departamento_id: ticketData.departmentId || null,
