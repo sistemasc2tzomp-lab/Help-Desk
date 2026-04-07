@@ -133,71 +133,91 @@ const PDF_TABLE_STYLES: Parameters<typeof autoTable>[1] = {
 function addPdfHeader(doc: jsPDF, title: string, subtitle?: string) {
   const pw = doc.internal.pageSize.getWidth();
 
-  // === BANDA SUPERIOR (fondo azul marino) ===
-  doc.setFillColor(...PDF_COLORS.primary);
-  doc.rect(0, 0, pw, 44, 'F');
+  // === FONDO SUAVE SUPERIOR (Gris Azulado muy claro / Soft Emerald tint) ===
+  doc.setFillColor(248, 250, 252); // Much softer gray-blue
+  doc.rect(0, 0, pw, 40, 'F');
 
-  // Franja de acento izquierda
+  // Franja de acento institucional sutil
   doc.setFillColor(...PDF_COLORS.accent);
-  doc.rect(0, 0, 6, 44, 'F');
+  doc.rect(0, 39, pw, 1, 'F');
+
+  // === ICONOS INSTITUCIONALES / LOGOS ===
+  // Izquierda: Nodo TI / Escudo (Placeholder visual avanzado)
+  doc.setFillColor(30, 41, 59, 0.05);
+  doc.roundedRect(12, 10, 20, 20, 4, 4, 'F');
+  doc.setDrawColor(...PDF_COLORS.accent);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(12, 10, 20, 20, 4, 4, 'S');
+  doc.setFontSize(14);
+  doc.text('🛡️', 16, 24); 
+
+  // Derecha: Nodo de Datos / QR Placeholder
+  doc.setFillColor(30, 41, 59, 0.05);
+  doc.roundedRect(pw - 32, 10, 20, 20, 4, 4, 'F');
+  doc.roundedRect(pw - 32, 10, 20, 20, 4, 4, 'S');
+  doc.text('📊', pw - 28, 24);
 
   // === LOGO / NOMBRE INSTITUCIONAL ===
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(...PDF_COLORS.white);
-  doc.text('HELP DESK TZOMP', 14, 16);
+  doc.setFontSize(11);
+  doc.setTextColor(...PDF_COLORS.primary);
+  doc.text('H. AYUNTAMIENTO DE TZOMPANTEPEC', pw / 2, 16, { align: 'center' });
+  doc.setFontSize(14);
+  doc.setTextColor(...PDF_COLORS.accentDark);
+  doc.text('HELP DESK — CENTRO DE SOPORTE', pw / 2, 24, { align: 'center' });
 
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...PDF_COLORS.headerTxt);
-  doc.text('DTO. SISTEMAS C2 TZOMPANTEPEC', 14, 23);
-  doc.text('MUNICIPIO DE TZOMPANTEPEC, TLAXCALA', 14, 29);
-
-  // === TÍTULO DEL REPORTE (derecha) ===
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...PDF_COLORS.white);
-  doc.text(title.toUpperCase(), pw - 14, 16, { align: 'right' });
-
-  // Subtítulo / folio
-  const folio = `FOLIO: ${new Date().getTime().toString(36).toUpperCase()}`;
-  const emitido = `EMITIDO: ${new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}`;
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...PDF_COLORS.headerTxt);
-  doc.text(folio, pw - 14, 24, { align: 'right' });
-  doc.text(emitido, pw - 14, 30, { align: 'right' });
+  doc.setTextColor(...PDF_COLORS.muted);
+  doc.text('UNIDAD DE TI Y COMUNICACIONES INSTITUCIONALES', pw / 2, 30, { align: 'center' });
 
-  // === LÍNEA SEPARADORA ===
-  doc.setDrawColor(...PDF_COLORS.accent);
-  doc.setLineWidth(0.8);
-  doc.line(0, 44, pw, 44);
+  // === TÍTULO DEL REPORTE ===
+  if (title) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...PDF_COLORS.primary);
+    doc.text(title.toUpperCase(), 14, 48);
+  }
 
   // === SUBTÍTULO DE SECCIÓN (si existe) ===
   if (subtitle) {
-    doc.setFillColor(...PDF_COLORS.light);
-    doc.rect(0, 44, pw, 12, 'F');
+    doc.setFillColor(248, 250, 252);
+    doc.rect(14, 45, pw - 28, 8, 'F');
     doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...PDF_COLORS.muted);
-    doc.text(subtitle.toUpperCase(), 14, 52);
+    doc.text(subtitle.toUpperCase(), 18, 50.5);
   }
 }
 
 function addPdfFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
+
+  // === AREA DE FIRMAS ===
+  const footerY = ph - 45;
+  doc.setDrawColor(...PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.line(30, footerY + 20, 90, footerY + 20); // Firma Izquierda
+  doc.line(pw - 90, footerY + 20, pw - 30, footerY + 20); // Firma Derecha
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...PDF_COLORS.primary);
+  doc.text('FIRMA RESPONSABLE TI', 60, footerY + 25, { align: 'center' });
+  doc.text('FIRMA DE CONFORMIDAD USUARIO', pw - 60, footerY + 25, { align: 'center' });
+
   // Línea separadora pie
   doc.setDrawColor(...PDF_COLORS.border);
   doc.setLineWidth(0.3);
   doc.line(14, ph - 14, pw - 14, ph - 14);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
+  doc.setFontSize(6.5);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text('SISTEMA HELP DESK TZOMP — DOCUMENTO OFICIAL GENERADO AUTOMÁTICAMENTE', 14, ph - 8);
+  doc.text('SISTEMA HELP DESK TZOMP — DOCUMENTO OFICIAL GENERADO AUTOMÁTICAMENTE — CONFIDENCIAL', 14, ph - 8);
   const pageLabel = totalPages ? `${pageNum} / ${totalPages}` : String(pageNum);
-  doc.text(`PÁG ${pageLabel}`, pw - 14, ph - 8, { align: 'right' });
+  doc.text(`PÁGINA ${pageLabel}`, pw - 14, ph - 8, { align: 'right' });
 }
 
 function addSectionLabel(doc: jsPDF, label: string, y: number): number {
@@ -293,11 +313,11 @@ export default function ReportsPage() {
   const exportGeneralPDF = () => {
     setExportLoading('general-pdf');
     try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pw = doc.internal.pageSize.getWidth();
-      const startY = 58;
+      const startY = 50;
 
-      addPdfHeader(doc, 'Reporte General del Sistema', 'Cuadro de Mando — Métricas Clave de Infraestructura');
+      addPdfHeader(doc, 'Reporte Ejecutivo Operativo', 'Resumen de métricas de desempeño');
 
       // ── BLOQUE DE MÉTRICAS KPI ──
       let y = startY;
@@ -363,25 +383,29 @@ export default function ReportsPage() {
 
       autoTable(doc, {
         ...PDF_TABLE_STYLES,
-        startY: 58,
-        head: [['FOLIO', 'TÍTULO / ASUNTO', 'SOLICITANTE', 'DEPARTAMENTO', 'PRIORIDAD', 'ESTADO', 'ASIGNADO A', 'FECHA CREACIÓN']],
-        body: filtered.map(t => [
-          t.id,
-          t.title.substring(0, 55),
-          t.createdByName,
-          departments.find(d => d.id === t.departmentId)?.name ?? '—',
+        startY: 55,
+        head: [['FOLIO', 'ASUNTO', 'SOLICITANTE', 'DEPTO', 'CATEGORÍA', 'PRIORIDAD', 'ESTADO', 'FECHA']],
+        body: filtered.slice(0, 25).map(t => [ // Limit for single page preview if too many
+          t.id.slice(0, 8).toUpperCase(),
+          t.title.substring(0, 35),
+          t.createdByName.split(' ')[0],
+          departments.find(d => d.id === t.departmentId)?.name.substring(0, 12) ?? '—',
+          t.category,
           t.priority,
           t.status,
-          users.find(u => u.id === t.assignedToId)?.name ?? 'Pendiente',
-          formatDate(t.createdAt),
+          formatDate(t.createdAt).split(' ')[0],
         ]),
         columnStyles: {
-          0: { cellWidth: 22, fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
-          1: { cellWidth: 60 },
-          4: { halign: 'center' },
-          5: { halign: 'center', fontStyle: 'bold' },
-          7: { cellWidth: 35 },
+          0: { cellWidth: 18, fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 20 },
+          6: { cellWidth: 20 },
+          7: { cellWidth: 22 },
         },
+        margin: { bottom: 60 }, // Leave space for signatures
         didDrawPage: (d) => {
           addPdfFooter(doc, d.pageNumber);
         },
@@ -397,9 +421,9 @@ export default function ReportsPage() {
   const exportAgentsPDF = () => {
     setExportLoading('agents-pdf');
     try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pw = doc.internal.pageSize.getWidth();
-      addPdfHeader(doc, 'Rendimiento por Agente', 'Métricas de productividad y eficiencia operativa del equipo');
+      addPdfHeader(doc, 'Productividad por Agente', 'Análisis de eficiencia operativa');
 
       // Métricas globales del equipo
       let y = 58;
@@ -448,9 +472,9 @@ export default function ReportsPage() {
   const exportDeptPDF = () => {
     setExportLoading('dept-pdf');
     try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pw = doc.internal.pageSize.getWidth();
-      addPdfHeader(doc, 'Diagrama Departamental', 'Distribución de carga de trabajo por departamento');
+      addPdfHeader(doc, 'Análisis Departamental', 'Carga de trabajo segregada');
 
       let y = 58;
       const boxW2 = (pw - 28 - 6) / 3;
@@ -498,9 +522,39 @@ export default function ReportsPage() {
     ], `database-dump-${new Date().getTime()}.xlsx`);
   };
 
-  const exportTicketsExcel = () => {/* logic simplified */}
-  const exportAgentsExcel = () => {/* logic simplified */}
-  const exportDeptExcel = () => {/* logic simplified */}
+  const exportTicketsExcel = () => {
+    const data = [['Folio', 'Título', 'Solicitante', 'Departamento', 'Prioridad', 'Estado', 'Categoría', 'Asignado', 'Fecha']];
+    filtered.forEach(t => {
+      data.push([
+        t.id, t.title, t.createdByName, 
+        departments.find(d => d.id === t.departmentId)?.name || 'N/A', 
+        t.priority, t.status, t.category, 
+        t.assignedToName || 'Pendiente', 
+        formatDate(t.createdAt)
+      ]);
+    });
+    downloadExcel([{ name: 'Tickets', data }], `bitacora-tickets-${Date.now()}.xlsx`);
+  };
+
+  const exportAgentsExcel = () => {
+    const data = [['Agente', 'Rol', 'Total Asignados', 'Resueltos', 'Eficiencia %', 'Mensajes']];
+    agentStats.forEach(as => {
+      data.push([as.agent.name, as.agent.role, as.total, as.resolved, as.rate, as.msgs]);
+    });
+    downloadExcel([{ name: 'Agentes', data }], `rendimiento-agentes-${Date.now()}.xlsx`);
+  };
+
+  const exportDeptExcel = () => {
+    const data = [['Departamento', 'Total', 'Abiertos', 'En Progreso', 'Resueltos', 'Carga %']];
+    byDept.forEach(({ d, n }) => {
+      const dt = filtered.filter(t => t.departmentId === d.id);
+      const open = dt.filter(t => t.status === 'Abierto').length;
+      const ip = dt.filter(t => t.status === 'En Progreso').length;
+      const res = dt.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
+      data.push([d.name, n, open, ip, res, pct(n, total)]);
+    });
+    downloadExcel([{ name: 'Departamentos', data }], `analisis-depts-${Date.now()}.xlsx`);
+  };
 
   function ExportMenu({ onPDF, onExcel, id }: { onPDF: () => void; onExcel: () => void; id: string }) {
     return (
@@ -533,13 +587,34 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6 sm:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-[#030014]">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-        <div>
-          <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            <span className="text-white">REPORTES</span>
-          </h1>
-          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">INTELIGENCIA DE DATOS Y RENDIMIENTO OPERATIVO</p>
+      {/* Header Premium con Iconos */}
+      <div className="relative group">
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+        
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 relative z-10 border-b border-white/5 pb-8">
+           <div className="flex items-center gap-6">
+              <div className="w-16 h-16 rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl overflow-hidden group/icon">
+                 <div className="absolute inset-0 bg-blue-500/20 opacity-0 group-hover/icon:opacity-100 transition-opacity" />
+                 <svg className="w-8 h-8 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter uppercase leading-none">
+                  DATOS <span className="text-blue-400">&</span> REPORTES
+                </h1>
+                <p className="text-[#8888aa] text-[10px] font-black tracking-[4.5px] uppercase mt-2">INTELIGENCIA DE DATOS Y RENDIMIENTO OPERATIVO</p>
+              </div>
+           </div>
+           
+           <div className="hidden lg:flex items-center gap-4">
+              <div className="text-right">
+                 <div className="text-white text-[10px] font-black uppercase font-orbitron">Estado del Repositorio</div>
+                 <div className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest mt-1 animate-pulse">Sincronizado_OK</div>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                 <svg className="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+           </div>
         </div>
       </div>
 

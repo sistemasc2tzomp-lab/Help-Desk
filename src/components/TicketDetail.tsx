@@ -32,10 +32,18 @@ const predefinedSolutions: Record<TicketCategory, string[]> = {
   'General': ['Solicitud procesada y resuelta.', 'Asistencia brindada.', 'Duda aclarada, ticket cerrado.']
 };
 
-const getDeptIcon = () => (
-  // Generic futuristic department / user identity icon
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-);
+const getDeptIcon = (category: string = 'General', size = 20) => {
+  const c = category.toLowerCase();
+  if (c.includes('hard')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>;
+  if (c.includes('soft')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>;
+  if (c.includes('red')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M5 22v-3a7 7 0 0 1 14 0v3"/><circle cx="5" cy="11" r="2"/><circle cx="19" cy="11" r="2"/><line x1="5" y1="13" x2="7" y2="17"/><line x1="19" y1="13" x2="17" y2="17"/><line x1="12" y1="8" x2="12" y2="12"/></svg>;
+  if (c.includes('print') || c.includes('imp')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
+  if (c.includes('seg')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+  if (c.includes('corr')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2-2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+  if (c.includes('serv')) return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>;
+  // Generic user/dept icon fallback
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+};
 
 export default function TicketDetail() {
   const {
@@ -222,16 +230,16 @@ export default function TicketDetail() {
               </div>
             )}
 
-            <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white border border-white/10">
-                  {getDeptIcon()}
+              <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#00f0ff]/5 flex items-center justify-center text-[#00f0ff] border border-[#00f0ff]/20">
+                    {getDeptIcon(ticket.category)}
+                  </div>
+                  <div>
+                    <p className="text-[#8888aa] text-[8px] font-black uppercase tracking-widest">Originador</p>
+                    <p className="text-white text-[10px] font-bold uppercase">{ticket.createdByName}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[#8888aa] text-[8px] font-black uppercase tracking-widest">Originador</p>
-                  <p className="text-white text-[10px] font-bold uppercase">{ticket.createdByName}</p>
-                </div>
-              </div>
               <div className="h-6 w-px bg-white/10" />
               <div>
                 <p className="text-[#8888aa] text-[8px] font-black uppercase tracking-widest">Iniciada</p>
@@ -250,7 +258,7 @@ export default function TicketDetail() {
                     {msg.isInternal && <div className="absolute top-0 right-0 px-4 py-1.5 bg-white/10 text-white text-[8px] font-black uppercase tracking-[3px] rounded-bl-2xl">Sistema</div>}
                     <div className="flex items-start gap-5">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white border-white/10 border" style={{ backgroundColor: msg.authorColor }}>
-                         {getDeptIcon()}
+                         {getDeptIcon(ticket.category, 18)}
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-3">
@@ -281,27 +289,46 @@ export default function TicketDetail() {
                 </span>
                 <div className="flex items-center gap-3">
                   {canManage && (
-                     <div className="relative">
-                       <button type="button" onClick={() => setShowSolutionsMenu(!showSolutionsMenu)} className="flex items-center gap-2 text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border border-white/10 text-white bg-white/5 hover:bg-white/10 transition-all">
-                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                         Soluciones
-                       </button>
-                       {showSolutionsMenu && (
-                         <div className="absolute right-0 top-full mt-2 w-64 glass-panel border border-white/10 rounded-2xl p-2 z-50 shadow-2xl">
-                           <p className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] px-3 py-2 mb-1 border-b border-white/5">Clasificación: {ticket.category}</p>
-                           {predefinedSolutions[ticket.category]?.map((sol, idx) => (
-                             <button type="button" key={idx} onClick={() => { setMessage(sol); setShowSolutionsMenu(false); }} className="w-full text-left text-xs font-medium text-white hover:bg-white/10 px-3 py-3 rounded-xl transition-all">
-                               {sol}
-                             </button>
-                           ))}
-                         </div>
-                       )}
-                     </div>
+                    <div className="relative group">
+                      <button 
+                        type="button" 
+                        onClick={() => setShowSolutionsMenu(!showSolutionsMenu)} 
+                        className={`flex items-center gap-3 text-[9px] font-black tracking-[3px] uppercase px-5 py-2.5 rounded-full border transition-all ${showSolutionsMenu ? 'bg-[#00f0ff] text-black border-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.4)]' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'}`}
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <div className="w-2.5 h-0.5 bg-current rounded-full" />
+                          <div className="w-4 h-0.5 bg-current rounded-full" />
+                          <div className="w-2.5 h-0.5 bg-current rounded-full" />
+                        </div>
+                        Soluciones
+                      </button>
+
+                      {showSolutionsMenu && (
+                        <div className="absolute bottom-full right-0 mb-4 w-72 glass-panel border border-white/10 rounded-3xl p-4 shadow-2xl z-[100] max-h-96 overflow-y-auto animate-fade-up">
+                          <p className="text-[8px] font-black text-[#8888aa] uppercase tracking-[3px] mb-4 border-b border-white/5 pb-2">Respuestas Rápidas</p>
+                          <div className="space-y-2">
+                            {predefinedSolutions[ticket.category]?.map((sol, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => { setMessage(sol); setShowSolutionsMenu(false); }}
+                                className="w-full text-left p-4 rounded-2xl hover:bg-white/10 text-white transition-all border border-transparent hover:border-white/5 group"
+                              >
+                                <p className="text-[10px] font-bold leading-relaxed line-clamp-3 group-hover:text-[#00f0ff] transition-colors uppercase tracking-tight">{sol}</p>
+                              </button>
+                            ))}
+                            {(!predefinedSolutions[ticket.category] || predefinedSolutions[ticket.category].length === 0) && (
+                              <p className="text-center py-4 text-[9px] text-[#8888aa] font-black uppercase">Sin soluciones predefinidas</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {canManage && (
-                     <button type="button" onClick={() => setIsInternal(!isInternal)} className={`text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border transition-all ${isInternal?'bg-white text-[#030014] border-white':'text-[#8888aa] border-white/10'}`}>
-                       {isInternal ? 'MODO: PRIVADO' : 'MODO: PÚBLICO'}
-                     </button>
+                    <button type="button" onClick={() => setIsInternal(!isInternal)} className={`text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border transition-all ${isInternal?'bg-white text-[#030014] border-white':'text-[#8888aa] border-white/10'}`}>
+                      {isInternal ? 'MODO: PRIVADO' : 'MODO: PÚBLICO'}
+                    </button>
                   )}
                 </div>
               </div>

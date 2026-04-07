@@ -4,119 +4,132 @@ import { Ticket } from '../types';
 import { formatDate } from './date';
 
 export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, departmentName?: string) => {
-  const primaryColor: [number, number, number] = [30, 64, 175]; // Lighter background: #1e40af (primary-dark)
-  const accentColor: [number, number, number] = [96, 165, 250]; // Lighter accent: #60a5fa (primary-light)
+  // Configuración de Hoja Carta (Letter): 215.9 x 279.4 mm
+  const pageWidth = 215.9;
+  const pageHeight = 279.4;
   
-  // -- Header --
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(0, 0, 210, 40, 'F');
+  // Colores mejorados y más suaves
+  const primarySoftColor: [number, number, number] = [250, 251, 252]; // Softest Slate
+  const headerTextColor: [number, number, number] = [30, 41, 59];    // Slate 800
+  const detailColor: [number, number, number] = [220, 38, 38];      // Red for folio
   
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.text('HELP DESK TZOMPANTEPEC', 15, 25);
+  const marginX = 20;
   
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('REPORTE OFICIAL DE SOLICITUD', 15, 32);
+  // -- Header Background (Softer) --
+  doc.setFillColor(primarySoftColor[0], primarySoftColor[1], primarySoftColor[2]);
+  doc.rect(0, 0, pageWidth, 45, 'F');
   
-  doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  const folioText = ticket.folio ? `FOLIO: ${ticket.folio.toString().padStart(6, '0')}` : `REF: ${ticket.id.slice(0, 8).toUpperCase()}`;
-  doc.text(folioText, 195, 25, { align: 'right' });
-  
-  // -- Info Block --
-  doc.setTextColor(60, 60, 60);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('DETALLES DE LA SOLICITUD', 15, 55);
-  
-  // Horizontal line
-  doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
+  // -- Institutional Icons (Simulated as geometric professional shapes) --
+  // Icono Izq (Escudo)
+  doc.setFillColor(51, 65, 85, 0.1);
+  doc.circle(marginX + 5, 22, 10, 'F');
+  doc.setDrawColor(51, 65, 85);
   doc.setLineWidth(0.5);
-  doc.line(15, 58, 195, 58);
+  doc.text('🛡️', marginX + 2, 25); // Placeholder emoji while we don't have base64
   
+  // Icono Der (Tecnología)
+  doc.circle(pageWidth - marginX - 5, 22, 10, 'F');
+  doc.text('⚙️', pageWidth - marginX - 8, 25);
+  
+  // -- Title --
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(headerTextColor[0], headerTextColor[1], headerTextColor[2]);
+  doc.setFontSize(16);
+  doc.text('HELP DESK TZOMPANTEPEC', pageWidth / 2, 20, { align: 'center' });
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('COORDINACIÓN DE TECNOLOGÍAS DE LA INFORMACIÓN Y COMUNICACIONES', pageWidth / 2, 26, { align: 'center' });
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(51, 65, 85);
+  doc.text('REPORTE OFICIAL DE INCIDENCIAS Y SERVICIOS', pageWidth / 2, 34, { align: 'center' });
+
+  // -- Folio Badge --
+  const folioText = ticket.folio ? `FOLIO NO. ${ticket.folio.toString().padStart(6, '0')}` : `ID: ${ticket.id.slice(0, 8).toUpperCase()}`;
+  doc.setFont('courier', 'bold');
+  doc.setTextColor(detailColor[0], detailColor[1], detailColor[2]);
+  doc.setFontSize(12);
+  doc.text(folioText, pageWidth - marginX, 20, { align: 'right' });
+  
+  // -- Metadata Section --
+  let currentY = 55;
+  doc.setTextColor(headerTextColor[0], headerTextColor[1], headerTextColor[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('DETALLES TÉCNICOS DE LA SOLICITUD', marginX, currentY);
+  
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.3);
+  doc.line(marginX, currentY + 2, pageWidth - marginX, currentY + 2);
+  
+  currentY += 8;
+
   autoTable(doc, {
-    startY: 65,
-    head: [['Campo', 'Información']],
+    startY: currentY,
+    margin: { left: marginX, right: marginX },
+    head: [['ATRIBUTO', 'INFORMACIÓN REGISTRADA']],
     body: [
-      ['Título', ticket.title.toUpperCase()],
-      ['Departamento', (departmentName || 'GENERAL').toUpperCase()],
-      ['Estado', ticket.status.toUpperCase()],
-      ['Prioridad', ticket.priority.toUpperCase()],
-      ['Creado por', ticket.createdByName.toUpperCase()],
-      ['Fecha de Inicio', formatDate(ticket.createdAt).toUpperCase()],
+      ['ASUNTO DEL PROBLEMA', ticket.title.toUpperCase()],
+      ['CLASIFICACIÓN', (ticket.category || 'GENERAL').toUpperCase()],
+      ['DEPARTAMENTO', (departmentName || 'ÁREA GENERAL').toUpperCase()],
+      ['SOLICITANTE', ticket.createdByName.toUpperCase()],
+      ['TÉCNICO RESPONSABLE', (ticket.assignedToName && ticket.assignedToName !== 'En espera' ? ticket.assignedToName : 'PENDIENTE DE ASIGNACIÓN').toUpperCase()],
+      ['ESTADO OPERATIVO', ticket.status.toUpperCase()],
+      ['FECHA Y HORA REGISTRO', formatDate(ticket.createdAt).toUpperCase()],
     ],
-    theme: 'striped',
-    headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
-    styles: { fontSize: 10, cellPadding: 5 },
-    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    theme: 'grid',
+    headStyles: { fillColor: [51, 65, 85], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+    styles: { fontSize: 8, cellPadding: 3, font: 'helvetica', lineColor: [226, 232, 240], lineWidth: 0.1 },
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50, fillColor: [248, 250, 252] } }
   });
   
-  // -- Description --
-  const finalY = (doc as any).lastAutoTable.finalY + 15;
-  doc.setFontSize(12);
+  // -- Problem Description (Expanded) --
+  currentY = (doc as any).lastAutoTable.finalY + 12;
   doc.setFont('helvetica', 'bold');
-  doc.text('DESCRIPCIÓN', 15, finalY);
-  
   doc.setFontSize(10);
+  doc.text('DESCRIPCIÓN Y CLASIFICACIÓN DEL REQUERIMIENTO', marginX, currentY);
+  
   doc.setFont('helvetica', 'normal');
-  const splitDescription = doc.splitTextToSize(ticket.description, 180);
-  doc.text(splitDescription, 15, finalY + 8);
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+  const splitDesc = doc.splitTextToSize(ticket.description, pageWidth - (marginX * 2));
+  doc.text(splitDesc, marginX, currentY + 7);
   
-  // -- Flow --
-  if (ticket.messages && ticket.messages.length > 0) {
-    const flowY = finalY + (splitDescription.length * 5) + 20;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('HISTORIAL DE RESOLUCIÓN', 15, flowY);
-    
-    autoTable(doc, {
-      startY: flowY + 5,
-      head: [['Fecha', 'Autor', 'Contenido']],
-      body: ticket.messages.map(m => [
-        formatDate(m.timestamp).toUpperCase(),
-        m.authorName.toUpperCase(),
-        m.content
-      ]),
-      theme: 'grid',
-      headStyles: { fillColor: [50, 50, 50], textColor: [255, 255, 255] },
-      styles: { fontSize: 8 }
-    });
-  }
+  // -- Footer Area (Firma y Avisos) --
+  const signY = pageHeight - 50;
   
-  // -- Firmas --
-  const pageCount = doc.getNumberOfPages();
-  doc.setPage(pageCount); // Set back to last page for signatures
+  // Signature Lines
+  const lineW = 65;
+  const col1X = marginX + (lineW / 2);
+  const col2X = pageWidth - marginX - (lineW / 2);
   
-  let currentY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 30 : 200;
-  if (currentY > 240) {
-    doc.addPage();
-    currentY = 40;
-  }
+  doc.setDrawColor(148, 163, 184);
+  doc.setLineWidth(0.5);
+  doc.line(col1X - (lineW/2), signY, col1X + (lineW/2), signY);
+  doc.line(col2X - (lineW/2), signY, col2X + (lineW/2), signY);
   
-  doc.setDrawColor(100, 100, 100);
-  // Firma Usuario
-  doc.line(30, currentY, 80, currentY);
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  doc.text('Firma del Solicitante', 55, currentY + 5, { align: 'center' });
-  doc.text(ticket.createdByName.toUpperCase(), 55, currentY + 10, { align: 'center' });
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(headerTextColor[0], headerTextColor[1], headerTextColor[2]);
+  doc.text('FIRMA DE CONFORMIDAD SOLICITANTE', col1X, signY + 5, { align: 'center' });
+  doc.text('AUTORIZACIÓN / ÁREA TÉCNICA', col2X, signY + 5, { align: 'center' });
   
-  // Firma Admin/Agente
-  doc.line(130, currentY, 180, currentY);
-  doc.text('Firma del Operador / Soporte', 155, currentY + 5, { align: 'center' });
-  doc.text(ticket.assignedToName && ticket.assignedToName !== 'En espera' ? ticket.assignedToName.toUpperCase() : 'SOPORTE TÉCNICO', 155, currentY + 10, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text(ticket.createdByName.toUpperCase(), col1X, signY + 9, { align: 'center' });
+  doc.text('SISTEMA DE GESTIÓN IT - TZOMPANTEPEC', col2X, signY + 9, { align: 'center' });
   
-  // -- Footer --
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`HELP DESK TZOMPANTEPEC - Página ${i} de ${totalPages}`, 105, 285, { align: 'center' });
-    doc.text(`Documento generado electrónicamente el ${new Date().toLocaleString()}`, 105, 290, { align: 'center' });
-  }
-  
-  const fileName = ticket.folio ? `SOLICITUD_${ticket.folio.toString().padStart(6, '0')}.pdf` : `SOLICITUD_${ticket.id.slice(0, 8).toUpperCase()}.pdf`;
+  // Institutional Footer
+  doc.setFontSize(6.5);
+  doc.setTextColor(148, 163, 184);
+  const footerText = 'Este documento es un comprobante oficial emitido por el sistema centralizado de soporte técnico de Tzompantepec.';
+  doc.text(footerText, pageWidth / 2, pageHeight - 12, { align: 'center' });
+  doc.text(`Página 1 de 1 · Generado por Soporte Técnico · ${new Date().toLocaleString()}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+
+  // Save with appropriate filename
+  const fileName = ticket.folio ? `HELP_DE_TZOMP_F${ticket.folio}.pdf` : `REPORTE_T${ticket.id.slice(0, 6).toUpperCase()}.pdf`;
   doc.save(fileName);
 };

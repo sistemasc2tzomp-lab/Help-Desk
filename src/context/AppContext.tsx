@@ -19,6 +19,14 @@ if (typeof window !== 'undefined') {
       if (_sharedAudioCtx?.state === 'suspended') {
         _sharedAudioCtx.resume();
       }
+      // Play a tiny silent buffer to "prime" the audio engine
+      const silentBuffer = _sharedAudioCtx?.createBuffer(1, 1, 22050);
+      const node = _sharedAudioCtx?.createBufferSource();
+      if (node && silentBuffer) {
+        node.buffer = silentBuffer;
+        node.connect(_sharedAudioCtx!.destination);
+        node.start(0);
+      }
     } catch {}
     // Remover listeners después de la primera activación
     document.removeEventListener('click', activateAudio);
@@ -29,6 +37,7 @@ if (typeof window !== 'undefined') {
   document.addEventListener('keydown', activateAudio, { once: true });
   document.addEventListener('touchstart', activateAudio, { once: true });
 }
+
 
 function playNotificationSound(type: 'new_ticket' | 'update') {
   if (!_userInteracted) return; // Esperar interacción del usuario
@@ -50,42 +59,39 @@ function playNotificationSound(type: 'new_ticket' | 'update') {
       gain.connect(ctx.destination);
       
       if (type === 'new_ticket') {
-        // Arpegio triple ascendente — Alerta de nuevo ticket
+        // Arpegio triple ascendente — Alerta de nuevo ticket — Más fuerte y claro
         const now = ctx.currentTime;
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(440, now);         // La4
-        oscillator.frequency.setValueAtTime(554, now + 0.12); // Do#5
-        oscillator.frequency.setValueAtTime(659, now + 0.24); // Mi5
+        oscillator.frequency.setValueAtTime(554, now + 0.1);  // Do#5
+        oscillator.frequency.setValueAtTime(659, now + 0.2);  // Mi5
+        oscillator.frequency.setValueAtTime(880, now + 0.3);  // La5
         
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
-        gain.gain.setValueAtTime(0.18, now + 0.10);
-        gain.gain.linearRampToValueAtTime(0, now + 0.14);
-        gain.gain.linearRampToValueAtTime(0.18, now + 0.16);
-        gain.gain.setValueAtTime(0.18, now + 0.22);
-        gain.gain.linearRampToValueAtTime(0, now + 0.26);
-        gain.gain.linearRampToValueAtTime(0.18, now + 0.28);
-        gain.gain.linearRampToValueAtTime(0, now + 0.50);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+        gain.gain.setValueAtTime(0.3, now + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
         
         oscillator.start(now);
-        oscillator.stop(now + 0.55);
+        oscillator.stop(now + 0.6);
       } else {
         // Doble pulso suave — Actualización / mensaje
         const now = ctx.currentTime;
         oscillator.type = 'triangle';
         oscillator.frequency.setValueAtTime(523, now);   // Do5
-        oscillator.frequency.setValueAtTime(659, now + 0.15); // Mi5
+        oscillator.frequency.setValueAtTime(659, now + 0.1); // Mi5
         
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
-        gain.gain.linearRampToValueAtTime(0, now + 0.13);
-        gain.gain.linearRampToValueAtTime(0.1, now + 0.18);
-        gain.gain.linearRampToValueAtTime(0, now + 0.32);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + 0.15);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.20);
+        gain.gain.linearRampToValueAtTime(0, now + 0.40);
         
         oscillator.start(now);
-        oscillator.stop(now + 0.35);
+        oscillator.stop(now + 0.4);
       }
     };
+
 
     if (ctx.state === 'suspended') {
       ctx.resume().then(playSound).catch(e => console.warn('Audio resume failed:', e));
@@ -115,6 +121,8 @@ interface AppContextType {
   updateDepartment: (id: string, dept: Partial<Department>) => Promise<void>;
   deleteDepartment: (id: string) => Promise<void>;
   refreshData: () => Promise<void>;
+  offlineTickets: any[];
+  syncOfflineTickets: () => Promise<void>;
   page: string;
   setPage: (page: string) => void;
   selectedTicketId: string | null;
@@ -306,7 +314,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [supabaseReady, setSupabaseReady] = useState(isSupabaseConfigured());
   const [sbStatus, setSbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [offlineTickets, setOfflineTickets] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('helpdesk_offline_tickets');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [lastPing, setLastPing] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('helpdesk_offline_tickets', JSON.stringify(offlineTickets));
+  }, [offlineTickets]);
 
   const checkSupabase = useCallback(async () => {
     const ready = isSupabaseConfigured();
@@ -330,6 +350,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const interval = setInterval(checkSupabase, 30000);
     return () => clearInterval(interval);
   }, [checkSupabase]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("CONEXIÓN_RESTABLECIDA: Sincronizando datos...");
+      setIsOnline(true);
+      checkSupabase();
+    };
+    const handleOffline = () => {
+      console.log("MODO_DESCONECTADO_ACTIVO.");
+      setIsOnline(false);
+      setSbStatus('disconnected');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [checkSupabase]);
+
+  // Persistir tickets offline
+  useEffect(() => {
+    localStorage.setItem('offline_tickets', JSON.stringify(offlineTickets));
+  }, [offlineTickets]);
 
 
 
@@ -488,6 +533,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [refreshData]);
 
+  // Sync tickets offline when back online
+  const syncOfflineTickets = useCallback(async () => {
+    if (offlineTickets.length === 0 || sbStatus !== 'connected' || !isSupabaseConfigured()) return;
+    
+    console.log("Sincronizando tickets capturados fuera de línea...");
+    const sb = getSupabase();
+    const remaining: any[] = [];
+
+    for (let i = 0; i < offlineTickets.length; i++) {
+        const t = offlineTickets[i];
+        try {
+            const { error } = await sb.from('tickets').insert({
+                titulo: t.title,
+                descripcion: t.description,
+                creado_por_id: t.createdById,
+                estado: mapToDbStatus('Abierto'),
+                prioridad: mapToDbPriority(t.priority),
+                departamento_id: t.departmentId || null,
+                asignado_a_id: t.assignedToId || null,
+                ...(t.imageUrl ? { imagenes: [{ url: t.imageUrl }] } : {}),
+            });
+            if (!error) {
+                console.log(`Ticket offline "${t.title}" sincronizado con éxito.`);
+            } else {
+                console.error("Error sincronizando ticket offline:", error);
+                remaining.push(t);
+            }
+        } catch (err) {
+            console.error("Fallo de red en sincronización offline:", err);
+            remaining.push(t);
+        }
+    }
+    setOfflineTickets(remaining);
+    if (remaining.length < offlineTickets.length) {
+        refreshData();
+    }
+  }, [offlineTickets, sbStatus, refreshData]);
+
+  useEffect(() => {
+    if (isOnline && sbStatus === 'connected') {
+        syncOfflineTickets();
+    }
+  }, [isOnline, sbStatus, syncOfflineTickets]);
+
   // ── auth ─────────────────────────────────────────────────────────────────
   const loginWithSupabase = useCallback(async (email: string, password: string): Promise<string | null> => {
     if (!isSupabaseConfigured()) return 'Supabase no está configurado.';
@@ -567,8 +656,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ── tickets ─────────────────────────────────────────────────────────────
   const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
-    if (!isSupabaseConfigured()) {
-       throw new Error('Terminal no sincronizada: El núcleo no está conectado a la red central.');
+    const effectivelyOnline = isOnline && sbStatus === 'connected' && isSupabaseConfigured();
+    
+    // Si no está en línea, guardamos para después (Modo Offline)
+    if (!effectivelyOnline) {
+      console.warn("MODO_FUERA_DE_LÍNEA: Resguardando solicitud en bitácora local...");
+      const tempId = `offline-${Date.now()}`;
+      const newOfflineTicket = {
+        ...ticketData,
+        id: tempId,
+        createdById: currentUser?.id || 'anonymous',
+        createdByName: currentUser?.name || 'Usuario Offline',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+        status: 'Abierto',
+        isOfflinePending: true
+      };
+      
+      setOfflineTickets(prev => [...prev, newOfflineTicket]);
+      // Al ser offline, agregamos al estado local para que el usuario vea su ticket
+      const t = rowToTicket({
+        id: tempId,
+        titulo: ticketData.title,
+        descripcion: ticketData.description,
+        creado_por_id: currentUser?.id,
+        estado: 'Abierto',
+        prioridad: ticketData.priority,
+        departamento_id: ticketData.departmentId,
+        creado_en: new Date().toISOString(),
+      }, [], { [currentUser?.id || '']: currentUser as User });
+      
+      setTickets(prev => [t, ...prev]);
+      return t;
     }
     
     const sb = getSupabase();
@@ -869,6 +989,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateDepartment,
       deleteDepartment,
       refreshData,
+      offlineTickets,
+      syncOfflineTickets,
       page,
       setPage,
       selectedTicketId,
