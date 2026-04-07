@@ -1,10 +1,6 @@
 -- =============================================
--- SCRIPT V14 - REPARACIÓN DE ESQUEMA Y RECREACIÓN
+-- SCRIPT V15 - COMPATIBLE CON DISPARADORES
 -- =============================================
--- 1. REPARAR PERMISOS DEL MOTOR DE AUTH
-GRANT USAGE ON SCHEMA auth TO postgres, anon, authenticated, service_role;
-GRANT SELECT ON ALL TABLES IN SCHEMA auth TO postgres, anon, authenticated, service_role;
-
 DO $$
 DECLARE
     v_email TEXT := 'industria@helpdesk.tzomp';
@@ -12,7 +8,8 @@ DECLARE
     v_user_id UUID;
     v_dept_id UUID;
 BEGIN
-    -- 2. LIMPIEZA TOTAL
+    -- 1. LIMPIEZA ATÓMICA
+    -- Primero buscamos si existe un usuario con ese email
     SELECT id INTO v_user_id FROM auth.users WHERE email = v_email;
     
     IF v_user_id IS NOT NULL THEN
@@ -21,12 +18,14 @@ BEGIN
         DELETE FROM auth.users WHERE id = v_user_id;
     END IF;
 
-    -- 3. RECREACIÓN ATÓMICA
+    -- 2. GENERAR NUEVO ID
     v_user_id := gen_random_uuid();
+    
+    -- Buscar departamento correlacionado
     SELECT id INTO v_dept_id FROM public.departamentos WHERE nombre ILIKE '%Industria%' LIMIT 1;
     IF v_dept_id IS NULL THEN SELECT id INTO v_dept_id FROM public.departamentos LIMIT 1; END IF;
 
-    -- auth.users
+    -- Insertar en auth.users
     INSERT INTO auth.users (
         id, instance_id, aud, role, email, encrypted_password, 
         email_confirmed_at, raw_app_meta_data, raw_user_meta_data, 
@@ -38,7 +37,7 @@ BEGIN
         NOW(), NOW(), '', false
     );
 
-    -- auth.identities
+    -- Insertar en identidades
     INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at)
     VALUES (
         v_user_id, v_user_id, 
@@ -46,9 +45,13 @@ BEGIN
         'email', v_email, NOW(), NOW(), NOW()
     );
 
-    -- public.perfiles
+    -- 3. SINCRONIZAR PERFIL (Evitando conflicto con triggers automáticos)
     INSERT INTO public.perfiles (id, nombre, email, rol, departamento_id)
-    VALUES (v_user_id, 'Dpto. Industria y Comercio', v_email, 'usuario', v_dept_id);
+    VALUES (v_user_id, 'Industria y Comercio', v_email, 'usuario', v_dept_id)
+    ON CONFLICT (id) DO UPDATE SET
+        nombre = EXCLUDED.nombre,
+        rol = EXCLUDED.rol,
+        departamento_id = EXCLUDED.departamento_id;
 
-    RAISE NOTICE 'V14: Reparación profunda completada. Intente login ahora.';
+    RAISE NOTICE 'V15 Ejecutada con éxito. Pruebe el login ahora.';
 END $$;
