@@ -284,7 +284,7 @@ export default function Dashboard() {
           </div>
           
           <div className="w-full h-80 flex justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
               <PieChart>
                 <PieComponent
                   activeIndex={activeIndex}
@@ -336,7 +336,7 @@ export default function Dashboard() {
           </div>
 
           <div className="w-full h-80">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
               <AreaChart data={timeData}>
                 <defs>
                   <linearGradient id="colorTks" x1="0" y1="0" x2="0" y2="1">
@@ -408,7 +408,7 @@ export default function Dashboard() {
            </div>
            
            <div className="w-full h-80 flex justify-center">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
                   <PolarGrid stroke="rgba(255,255,255,0.05)" />
                   <PolarAngleAxis dataKey="subject" tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }} />
