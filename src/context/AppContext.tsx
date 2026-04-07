@@ -583,7 +583,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!isSupabaseConfigured()) return 'Supabase no está configurado.';
     const sb = getSupabase();
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) return error.message;
+    if (error) {
+      console.error('DETALLE ERROR SUPABASE:', error);
+      return error.message;
+    }
     if (!data.user) return 'Error al iniciar sesión';
 
     const authUser = data.user;
