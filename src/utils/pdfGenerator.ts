@@ -4,8 +4,8 @@ import { Ticket } from '../types';
 import { formatDate } from './date';
 
 export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, departmentName?: string) => {
-  const primaryColor: [number, number, number] = [3, 0, 20]; // #030014 (Deep Night)
-  const accentColor: [number, number, number] = [0, 240, 255]; // #00f0ff (Cyber Cyan)
+  const primaryColor: [number, number, number] = [30, 64, 175]; // Lighter background: #1e40af (primary-dark)
+  const accentColor: [number, number, number] = [96, 165, 250]; // Lighter accent: #60a5fa (primary-light)
   
   // -- Header --
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -21,7 +21,8 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
   doc.text('REPORTE OFICIAL DE SOLICITUD', 15, 32);
   
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.text(`REF: ${ticket.id.slice(0, 8).toUpperCase()}`, 195, 25, { align: 'right' });
+  const folioText = ticket.folio ? `FOLIO: ${ticket.folio.toString().padStart(6, '0')}` : `REF: ${ticket.id.slice(0, 8).toUpperCase()}`;
+  doc.text(folioText, 195, 25, { align: 'right' });
   
   // -- Info Block --
   doc.setTextColor(60, 60, 60);
@@ -83,15 +84,39 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
     });
   }
   
-  // -- Footer --
+  // -- Firmas --
   const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  doc.setPage(pageCount); // Set back to last page for signatures
+  
+  let currentY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 30 : 200;
+  if (currentY > 240) {
+    doc.addPage();
+    currentY = 40;
+  }
+  
+  doc.setDrawColor(100, 100, 100);
+  // Firma Usuario
+  doc.line(30, currentY, 80, currentY);
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text('Firma del Solicitante', 55, currentY + 5, { align: 'center' });
+  doc.text(ticket.createdByName.toUpperCase(), 55, currentY + 10, { align: 'center' });
+  
+  // Firma Admin/Agente
+  doc.line(130, currentY, 180, currentY);
+  doc.text('Firma del Operador / Soporte', 155, currentY + 5, { align: 'center' });
+  doc.text(ticket.assignedToName && ticket.assignedToName !== 'En espera' ? ticket.assignedToName.toUpperCase() : 'SOPORTE TÉCNICO', 155, currentY + 10, { align: 'center' });
+  
+  // -- Footer --
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`HELP DESK TZOMPANTEPEC - Página ${i} de ${pageCount}`, 105, 285, { align: 'center' });
+    doc.text(`HELP DESK TZOMPANTEPEC - Página ${i} de ${totalPages}`, 105, 285, { align: 'center' });
     doc.text(`Documento generado electrónicamente el ${new Date().toLocaleString()}`, 105, 290, { align: 'center' });
   }
   
-  doc.save(`SOLICITUD_${ticket.id.slice(0, 8).toUpperCase()}.pdf`);
+  const fileName = ticket.folio ? `SOLICITUD_${ticket.folio.toString().padStart(6, '0')}.pdf` : `SOLICITUD_${ticket.id.slice(0, 8).toUpperCase()}.pdf`;
+  doc.save(fileName);
 };

@@ -2,50 +2,95 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory, Message } from '../types';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 
-// ── Sound Notification Helper ────────────────────────────────────
+// ── Sound Notification System ─────────────────────────────────────
+// Shared AudioContext — se crea una vez y se reutiliza
+let _sharedAudioCtx: AudioContext | null = null;
+let _userInteracted = false;
+
+// Activar audio tras primera interacción del usuario (política del navegador)
+if (typeof window !== 'undefined') {
+  const activateAudio = () => {
+    _userInteracted = true;
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass && !_sharedAudioCtx) {
+        _sharedAudioCtx = new AudioContextClass();
+      }
+      if (_sharedAudioCtx?.state === 'suspended') {
+        _sharedAudioCtx.resume();
+      }
+    } catch {}
+    // Remover listeners después de la primera activación
+    document.removeEventListener('click', activateAudio);
+    document.removeEventListener('keydown', activateAudio);
+    document.removeEventListener('touchstart', activateAudio);
+  };
+  document.addEventListener('click', activateAudio, { once: true });
+  document.addEventListener('keydown', activateAudio, { once: true });
+  document.addEventListener('touchstart', activateAudio, { once: true });
+}
+
 function playNotificationSound(type: 'new_ticket' | 'update') {
+  if (!_userInteracted) return; // Esperar interacción del usuario
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
     
-    // Resume context if suspended (browser policy)
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+    // Reusar el contexto compartido o crear uno nuevo
+    if (!_sharedAudioCtx) {
+      _sharedAudioCtx = new AudioContextClass();
     }
+    const ctx = _sharedAudioCtx;
+    
+    // Resume si está suspendido
+    const playSound = () => {
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      
+      if (type === 'new_ticket') {
+        // Arpegio triple ascendente — Alerta de nuevo ticket
+        const now = ctx.currentTime;
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, now);         // La4
+        oscillator.frequency.setValueAtTime(554, now + 0.12); // Do#5
+        oscillator.frequency.setValueAtTime(659, now + 0.24); // Mi5
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
+        gain.gain.setValueAtTime(0.18, now + 0.10);
+        gain.gain.linearRampToValueAtTime(0, now + 0.14);
+        gain.gain.linearRampToValueAtTime(0.18, now + 0.16);
+        gain.gain.setValueAtTime(0.18, now + 0.22);
+        gain.gain.linearRampToValueAtTime(0, now + 0.26);
+        gain.gain.linearRampToValueAtTime(0.18, now + 0.28);
+        gain.gain.linearRampToValueAtTime(0, now + 0.50);
+        
+        oscillator.start(now);
+        oscillator.stop(now + 0.55);
+      } else {
+        // Doble pulso suave — Actualización / mensaje
+        const now = ctx.currentTime;
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(523, now);   // Do5
+        oscillator.frequency.setValueAtTime(659, now + 0.15); // Mi5
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + 0.13);
+        gain.gain.linearRampToValueAtTime(0.1, now + 0.18);
+        gain.gain.linearRampToValueAtTime(0, now + 0.32);
+        
+        oscillator.start(now);
+        oscillator.stop(now + 0.35);
+      }
+    };
 
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-    
-    if (type === 'new_ticket') {
-      // Arpegio ascendente (Cyber-Alert)
-      const now = ctx.currentTime;
-      oscillator.type = 'square'; // Más "digital/cyber"
-      oscillator.frequency.setValueAtTime(330, now); // Mi (E4)
-      oscillator.frequency.exponentialRampToValueAtTime(660, now + 0.1); // Mi (E5)
-      oscillator.frequency.exponentialRampToValueAtTime(880, now + 0.2); // La (A5)
-      
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0, now + 0.4);
-      
-      oscillator.start(now);
-      oscillator.stop(now + 0.4);
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(playSound).catch(e => console.warn('Audio resume failed:', e));
     } else {
-      // Pulso corto de confirmación
-      const now = ctx.currentTime;
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(523.25, now); // Do (C5)
-      
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
-      gain.gain.linearRampToValueAtTime(0, now + 0.3);
-      
-      oscillator.start(now);
-      oscillator.stop(now + 0.3);
+      playSound();
     }
   } catch (e) {
     console.warn('Audio notification failed:', e);
@@ -220,6 +265,7 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
 
   return {
     id: String(r.id),
+    folio: r.folio ? Number(r.folio) : (r.numero_folio ? Number(r.numero_folio) : undefined),
     title: String(r.titulo || r.title || r.asunto || ''),
     description: String(r.descripcion || r.description || r.detalles || ''),
     status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,

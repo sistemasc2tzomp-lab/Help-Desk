@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { Ticket, TicketStatus, TicketPriority, User } from '../types';
+import { TicketStatus, TicketPriority, TicketCategory } from '../types';
 import { formatDate } from '../utils/date';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import jsPDF from 'jspdf';
@@ -19,6 +19,23 @@ const priorityColors: Record<string, string> = {
   'Media': 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
   'Baja': 'text-slate-400 border-slate-500/30 bg-slate-500/10',
 };
+const predefinedSolutions: Record<TicketCategory, string[]> = {
+  'Hardware': ['Reemplazo de equipo en proceso.', 'Mantenimiento preventivo completado.', 'Falla de hardware detectada, se solicita refacción.'],
+  'Software': ['Actualización de software completada.', 'Error de sistema corregido.', 'Instalación de aplicación exitosa.', 'Se requiere reinicio para aplicar cambios.'],
+  'Red': ['Restablecimiento de conexión exitoso.', 'Monitoreo de red activado, sin anomalías.', 'Ajuste en configuración de firewall aplicado.', 'Se detectó caída de enlace por proveedor externo.'],
+  'Seguridad': ['Análisis de vulnerabilidad concluido.', 'Permisos ajustados según políticas.', 'Incidente de seguridad mitigado.', 'Se aplicó bloqueo preventivo.'],
+  'Acceso': ['Credenciales restablecidas, favor de verificar.', 'Acceso a sistema concedido.', 'Usuario bloqueado/desbloqueado según solicitud.'],
+  'Impresora': ['Niveles de tinta y papel restablecidos.', 'Configuración de impresora en red corregida.', 'Atasco de papel resuelto.', 'Mantenimiento preventivo a equipo de impresión.'],
+  'Correo': ['Buzón de correo restaurado.', 'Configuración de cliente de correo aplicada.', 'Problema de envío/recepción solucionado.', 'Contraseña de correo institucional restablecida.'],
+  'Servidor': ['Reinicio de servicio completado.', 'Espacio en disco liberado.', 'Parche de seguridad aplicado en servidor.', 'Monitoreo de CPU/RAM estabilizado.'],
+  'Respaldo': ['Respaldo de datos completado exitosamente.', 'Restauración de archivos realizada.', 'Configuración de backup automático ajustada.'],
+  'General': ['Solicitud procesada y resuelta.', 'Asistencia brindada.', 'Duda aclarada, ticket cerrado.']
+};
+
+const getDeptIcon = () => (
+  // Generic futuristic department / user identity icon
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+);
 
 export default function TicketDetail() {
   const {
@@ -58,6 +75,7 @@ export default function TicketDetail() {
   const [pendingStatus, setPendingStatus] = useState<TicketStatus | null>(null);
   const [statusComment, setStatusComment] = useState('');
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+  const [showSolutionsMenu, setShowSolutionsMenu] = useState(false);
 
   // ── Refresh on Mount ───────────────────────────────
   useEffect(() => {
@@ -188,7 +206,9 @@ export default function TicketDetail() {
         <div className="lg:col-span-3 space-y-8">
           <div className="glass-panel rounded-[40px] border border-white/5 p-8 sm:p-12 relative overflow-hidden">
             <div className="flex flex-wrap items-center gap-4 mb-8">
-              <span className="text-[#8888aa] text-[9px] font-black tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/10 uppercase">REF_{ticket.id.slice(0,8).toUpperCase()}</span>
+              <span className="text-[#8888aa] text-[9px] font-black tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/10 uppercase">
+                {ticket.folio ? `FOLIO_${ticket.folio.toString().padStart(6, '0')}` : `REF_${ticket.id.slice(0,8).toUpperCase()}`}
+              </span>
               <span className={`text-[9px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest ${statusColors[ticket.status]}`}>{ticket.status}</span>
               <span className={`text-[9px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest border ${priorityColors[ticket.priority as string]}`}>{ticket.priority}</span>
             </div>
@@ -204,7 +224,9 @@ export default function TicketDetail() {
 
             <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white font-black text-xs border border-white/10">{ticket.createdByName[0]}</div>
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white border border-white/10">
+                  {getDeptIcon()}
+                </div>
                 <div>
                   <p className="text-[#8888aa] text-[8px] font-black uppercase tracking-widest">Originador</p>
                   <p className="text-white text-[10px] font-bold uppercase">{ticket.createdByName}</p>
@@ -227,7 +249,9 @@ export default function TicketDetail() {
                   <div key={msg.id} className={`glass-panel border rounded-[32px] p-6 sm:p-8 relative overflow-hidden transition-all ${msg.isInternal ? 'border-white/20 bg-white/5' : 'border-white/5'}`}>
                     {msg.isInternal && <div className="absolute top-0 right-0 px-4 py-1.5 bg-white/10 text-white text-[8px] font-black uppercase tracking-[3px] rounded-bl-2xl">Sistema</div>}
                     <div className="flex items-start gap-5">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-black font-orbitron" style={{ backgroundColor: msg.authorColor }}>{msg.authorInitials}</div>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white border-white/10 border" style={{ backgroundColor: msg.authorColor }}>
+                         {getDeptIcon()}
+                      </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-3">
                           <span className="text-white text-xs font-bold uppercase tracking-tight">{msg.authorName}</span>
@@ -255,11 +279,31 @@ export default function TicketDetail() {
                   <div className="w-2 h-2 rounded-full bg-white opacity-40 animate-pulse" />
                   Terminal de respuesta
                 </span>
-                {canManage && (
-                   <button type="button" onClick={() => setIsInternal(!isInternal)} className={`text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border transition-all ${isInternal?'bg-white text-[#030014] border-white':'text-[#8888aa] border-white/10'}`}>
-                     {isInternal ? 'MODO: PRIVADO' : 'MODO: PÚBLICO'}
-                   </button>
-                )}
+                <div className="flex items-center gap-3">
+                  {canManage && (
+                     <div className="relative">
+                       <button type="button" onClick={() => setShowSolutionsMenu(!showSolutionsMenu)} className="flex items-center gap-2 text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border border-white/10 text-white bg-white/5 hover:bg-white/10 transition-all">
+                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                         Soluciones
+                       </button>
+                       {showSolutionsMenu && (
+                         <div className="absolute right-0 top-full mt-2 w-64 glass-panel border border-white/10 rounded-2xl p-2 z-50 shadow-2xl">
+                           <p className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] px-3 py-2 mb-1 border-b border-white/5">Clasificación: {ticket.category}</p>
+                           {predefinedSolutions[ticket.category]?.map((sol, idx) => (
+                             <button type="button" key={idx} onClick={() => { setMessage(sol); setShowSolutionsMenu(false); }} className="w-full text-left text-xs font-medium text-white hover:bg-white/10 px-3 py-3 rounded-xl transition-all">
+                               {sol}
+                             </button>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                  )}
+                  {canManage && (
+                     <button type="button" onClick={() => setIsInternal(!isInternal)} className={`text-[9px] font-black tracking-[2px] uppercase px-4 py-1.5 rounded-full border transition-all ${isInternal?'bg-white text-[#030014] border-white':'text-[#8888aa] border-white/10'}`}>
+                       {isInternal ? 'MODO: PRIVADO' : 'MODO: PÚBLICO'}
+                     </button>
+                  )}
+                </div>
               </div>
               <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Escribir respuesta..." rows={4} className="w-full bg-white/2 border border-white/5 rounded-3xl px-6 py-5 text-white placeholder-slate-700 font-rajdhani focus:outline-none focus:border-white/20 transition-all resize-none" />
               {replyPreview && (

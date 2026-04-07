@@ -30,6 +30,7 @@ export interface Message {
 
 export interface Ticket {
   id: string;
+  folio?: number;       // Número de folio consecutivo (generado por trigger en BD)
   title: string;
   description: string;
   status: TicketStatus;
