@@ -80,7 +80,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 const Logo = () => (
-  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] p-[2px] shadow-[0_0_30px_rgba(0,240,255,0.2)] shrink-0 group transform hover:rotate-6 transition-all duration-500">
+  <div className="w-12 h-12 rounded-2xl p-[2px] shadow-[0_0_30px_rgba(59,130,246,0.2)] shrink-0 group transform hover:rotate-6 transition-all duration-500" style={{background:'var(--gradient-brand)'}}>
     <div className="w-full h-full bg-[#030014] rounded-[inherit] flex items-center justify-center overflow-hidden">
       <img src="img/logo_tzompantepec.png" alt="TZ" className="w-8 h-8 object-contain" />
     </div>
@@ -110,19 +110,20 @@ export default function Sidebar() {
         }}
         className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 group relative overflow-hidden ${
           isActive 
-            ? 'bg-gradient-to-r from-[#00f0ff]/10 to-[#7b2fff]/5 text-[#00f0ff] shadow-[inset_0_0_20px_rgba(0,240,255,0.05)] border border-[#00f0ff]/20' 
-            : 'text-[#8888aa] hover:text-white hover:bg-white/5 border border-transparent'
+            ? 'text-blue-400 border border-blue-500/20' 
+            : 'text-[#5a6487] hover:text-white hover:bg-white/5 border border-transparent'
         }`}
+        style={isActive ? {background:'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.06))', boxShadow:'inset 0 0 20px rgba(59,130,246,0.05)'} : {}}
       >
         {isActive && (
-          <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-[#00f0ff] to-[#7b2fff]" />
+          <div className="absolute left-0 top-0 w-1 h-full" style={{background:'var(--gradient-brand)'}} />
         )}
-        <div className={`shrink-0 transition-transform duration-500 group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]' : ''}`}>
+        <div className={`shrink-0 transition-transform duration-500 group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`}>
           {item.icon}
         </div>
-        <span className="text-[10px] font-black uppercase tracking-[3px] font-orbitron truncate">{item.label}</span>
+        <span style={{fontFamily:'var(--font-body)'}} className="text-[10px] font-bold uppercase tracking-[2.5px] truncate">{item.label}</span>
         {item.id === 'tickets' && stats.open > 0 && (
-          <span className="ml-auto w-5 h-5 rounded-full bg-[#ff2d95] text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_15px_rgba(255,45,149,0.5)] animate-pulse">
+          <span className="ml-auto w-5 h-5 rounded-full text-white text-[9px] font-black flex items-center justify-center animate-pulse" style={{background:'var(--accent)',boxShadow:'0 0 15px var(--accent-glow)'}}>
             {stats.open}
           </span>
         )}
@@ -131,26 +132,26 @@ export default function Sidebar() {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#030014] border-r border-white/5 overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col h-full border-r overflow-y-auto" style={{background:'var(--bg-dark)',borderColor:'var(--glass-border)'}}>
       {/* Brand */}
       <div className="p-8 pb-12 flex items-center gap-4">
         <Logo />
         <div>
-          <div className="text-white font-black text-sm tracking-tighter font-orbitron leading-none">C2 SYSTEM</div>
-          <div className="text-[#00f0ff] text-[8px] font-bold tracking-[3px] uppercase mt-1">TZOMPANTEPEC</div>
+          <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-sm tracking-tighter leading-none">C2 SYSTEM</div>
+          <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold tracking-[3px] uppercase mt-1">TZOMPANTEPEC</div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-2">
-        <div className="text-[#8888aa] text-[9px] font-black tracking-[4px] uppercase px-5 mb-4 opacity-50">OPERACIONES</div>
+        <div style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-[9px] font-bold tracking-[4px] uppercase px-5 mb-4 opacity-60">OPERACIONES</div>
         {navItems.map(item => (
           <NavButton key={item.id} item={item} />
         ))}
 
         {isAdmin && (
           <>
-            <div className="text-[#8888aa] text-[9px] font-black tracking-[4px] uppercase px-5 mb-4 mt-12 opacity-50">ADMINISTRACIÓN</div>
+            <div style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-[9px] font-bold tracking-[4px] uppercase px-5 mb-4 mt-12 opacity-60">ADMINISTRACIÓN</div>
             {adminNavItems.map(item => (
               <NavButton key={item.id} item={item} />
             ))}
@@ -160,20 +161,21 @@ export default function Sidebar() {
 
       {/* User info & Logout */}
       <div className="p-4 mt-auto">
-        <div className="glass-panel rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
+        <div className="glass-panel rounded-2xl p-4 relative overflow-hidden group" style={{border:'1px solid rgba(99,102,241,0.12)'}}>
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00f0ff]/20 to-[#7b2fff]/20 flex items-center justify-center text-[#00f0ff] font-black border border-[#00f0ff]/20 shadow-[0_0_15px_rgba(0,240,255,0.1)]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black border" style={{background:'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.15))',color:'var(--primary-light)',borderColor:'rgba(59,130,246,0.25)',boxShadow:'0 0 15px rgba(59,130,246,0.1)'}}>
               {currentUser?.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white text-[10px] font-black uppercase tracking-tight truncate font-orbitron">{currentUser?.name}</div>
-              <div className="text-[#00f0ff] text-[8px] font-bold uppercase tracking-widest">{currentUser?.role}</div>
+              <div style={{fontFamily:'var(--font-body)'}} className="text-white text-[10px] font-bold uppercase tracking-tight truncate">{currentUser?.name}</div>
+              <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold uppercase tracking-widest">{currentUser?.role}</div>
             </div>
           </div>
           
           <button
             onClick={logout}
-            className="w-full mt-4 py-2 text-[9px] font-black text-red-400/70 hover:text-red-400 uppercase tracking-[3px] border border-red-500/10 hover:bg-red-500/5 rounded-lg transition-all duration-300 font-orbitron"
+            className="w-full mt-4 py-2 text-[9px] font-bold text-red-400/70 hover:text-red-400 uppercase tracking-[3px] border border-red-500/10 hover:bg-red-500/5 rounded-lg transition-all duration-300"
+            style={{fontFamily:'var(--font-body)'}}
           >
             Cerrar Sesión
           </button>
@@ -185,17 +187,17 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#030014]/80 backdrop-blur-xl border-b border-white/5 z-50 px-6 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between" style={{background:'rgba(4,6,15,0.88)',borderColor:'var(--glass-border)'}}>
         <div className="flex items-center gap-3">
           <Logo />
           <div>
-            <div className="text-white font-black text-xs tracking-tighter font-orbitron uppercase">C2 SYSTEM</div>
-            <div className="text-[#00f0ff] text-[7px] font-bold tracking-[2px] uppercase opacity-80">TZOMPANTEPEC</div>
+            <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-xs tracking-tighter uppercase">C2 SYSTEM</div>
+            <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[7px] font-semibold tracking-[2px] uppercase opacity-80">TZOMPANTEPEC</div>
           </div>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-[#00f0ff] active:scale-95 transition-transform"
+          className="w-10 h-10 rounded-xl border flex items-center justify-center active:scale-95 transition-transform" style={{background:'rgba(99,102,241,0.08)',color:'var(--primary-light)',borderColor:'rgba(99,102,241,0.2)'}}
         >
           {mobileOpen ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

@@ -4,17 +4,17 @@ import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
 
 const statusColors: Record<TicketStatus, string> = {
-  'Abierto': 'bg-cyan-500/10 text-[#00f0ff] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,240,255,0.1)]',
-  'En Progreso': 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(123,47,255,0.1)]',
-  'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
-  'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
+  'Abierto':    'bg-blue-500/10 text-blue-400 border border-blue-500/25 shadow-[0_0_12px_rgba(59,130,246,0.12)]',
+  'En Progreso':'bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 shadow-[0_0_12px_rgba(99,102,241,0.12)]',
+  'Resuelto':   'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[0_0_12px_rgba(16,185,129,0.1)]',
+  'Cerrado':    'bg-slate-500/10 text-slate-400 border border-slate-500/20',
 };
 
 const priorityColors: Record<string, string> = {
-  'Urgente': 'text-pink-400 border-pink-500/30 bg-pink-500/10 shadow-[0_0_10px_rgba(255,45,149,0.1)]',
-  'Alta': 'text-orange-400 border-orange-500/30 bg-orange-500/10',
-  'Media': 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
-  'Baja': 'text-slate-400 border-slate-500/30 bg-slate-500/10',
+  'Urgente': 'text-violet-400 border-violet-500/30 bg-violet-500/10 shadow-[0_0_10px_rgba(168,85,247,0.12)]',
+  'Alta':    'text-orange-400 border-orange-500/30 bg-orange-500/10',
+  'Media':   'text-blue-400 border-blue-500/30 bg-blue-500/10',
+  'Baja':    'text-slate-400 border-slate-500/30 bg-slate-500/10',
 };
 
 const StatCard = ({ label, value, icon, gradient, sub }: {
@@ -27,8 +27,8 @@ const StatCard = ({ label, value, icon, gradient, sub }: {
     </div>
     <div className="relative z-10">
       <div className="text-2xl sm:text-3xl font-black text-white font-orbitron tracking-tighter">{value}</div>
-      <div className="text-[#8888aa] text-[10px] sm:text-xs font-bold uppercase tracking-[2px] font-rajdhani">{label}</div>
-      {sub && <div className="text-[#ffffff]/40 text-[9px] font-mono mt-1">{sub}</div>}
+      <div style={{fontFamily:'var(--font-body)'}} className="text-[#a0aac8] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em]">{label}</div>
+      {sub && <div className="text-[#ffffff]/30 text-[9px] font-mono mt-1">{sub}</div>}
     </div>
   </div>
 );
@@ -57,9 +57,9 @@ export default function Dashboard() {
   };
 
   const byStatus = [
-    { label: 'Abiertos', count: stats.open, color: '#00f0ff' },
-    { label: 'En Progreso', count: stats.inProgress, color: '#7b2fff' },
-    { label: 'Resueltos', count: stats.resolved, color: '#10b981' },
+    { label: 'Abiertos',    count: stats.open,       color: '#3b82f6' },
+    { label: 'En Progreso', count: stats.inProgress,  color: '#6366f1' },
+    { label: 'Resueltos',   count: stats.resolved,    color: '#10b981' },
   ];
   const maxCount = Math.max(...byStatus.map(s => s.count), 1);
 
@@ -67,15 +67,15 @@ export default function Dashboard() {
   departments.forEach(d => { deptMap[d.id] = d.name; });
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]">
+    <div className="p-6 sm:p-10 space-y-10 max-w-7xl mx-auto min-h-screen bg-[#030014]" style={{fontFamily:'var(--font-body)'}}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2">
             MÓDULO <span className="text-gradient">OPERATIVO</span>
           </h1>
-          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase flex items-center gap-2">
-            CONEXIÓN ESTABLECIDA // <span className="text-[#ffffff] animate-pulse">AGENTE: {currentUser?.name?.toUpperCase()}</span>
+          <p style={{fontFamily:'var(--font-body)'}} className="text-[#a0aac8] text-sm font-medium tracking-wider uppercase flex items-center gap-2">
+            Conexión Establecida · <span className="text-white font-semibold animate-pulse">{currentUser?.name}</span>
           </p>
         </div>
         <button
@@ -94,30 +94,30 @@ export default function Dashboard() {
         <StatCard 
           label="Total Solicitudes" 
           value={stats.total} 
-          gradient="from-[#00f0ff]/20 to-[#7b2fff]/20"
+          gradient="from-blue-600/25 to-indigo-600/20"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>}
-          sub="DATA_SYNC: 100%"
+          sub="Sincronización completa"
         />
         <StatCard 
           label="Soporte Activo" 
           value={stats.open} 
-          gradient="from-[#00f0ff]/20 to-transparent"
+          gradient="from-blue-500/20 to-cyan-500/15"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
-          sub="URGENCIA: DETECTADA"
+          sub="Requieren atención"
         />
         <StatCard 
           label="En Ejecución" 
           value={stats.inProgress} 
-          gradient="from-[#7b2fff]/20 to-transparent"
+          gradient="from-indigo-500/20 to-violet-500/15"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
-          sub="PROCESANDO_STREAMS"
+          sub="En proceso activo"
         />
         <StatCard 
           label="Finalizados" 
           value={stats.resolved} 
-          gradient="from-[#10b981]/20 to-transparent"
+          gradient="from-emerald-500/20 to-teal-500/15"
           icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
-          sub="ESTADO: ÓPTIMO"
+          sub="Estado: Óptimo"
         />
       </div>
 

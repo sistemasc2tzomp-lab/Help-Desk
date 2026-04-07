@@ -1,69 +1,332 @@
 @import "tailwindcss";
 
+/* =====================================================
+   HELP DESK TZOMPANTEPEC — Design System v2.0
+   Paleta: Azure Blue · Deep Indigo · Electric Violet
+   Tipografía: Poppins + Montserrat + Orbitron
+   ===================================================== */
+
 :root {
-  --primary: #00f0ff;
-  --primary-dark: #00a8b5;
-  --secondary: #7b2fff;
-  --accent: #ff2d95;
-  --accent2: #ffaa00;
-  --bg-dark: #030014;
-  --bg-card: rgba(15, 10, 40, 0.6);
-  --text: #e0e0ff;
-  --text-muted: #8888aa;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --gradient-1: linear-gradient(135deg, #00f0ff, #7b2fff);
-  --gradient-2: linear-gradient(135deg, #7b2fff, #ff2d95);
-  --gradient-3: linear-gradient(135deg, #ff2d95, #ffaa00);
-  --shadow-neon: 0 0 30px rgba(0, 240, 255, 0.3);
-  --shadow-purple: 0 0 30px rgba(123, 47, 255, 0.3);
-  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Paleta Principal ── */
+  --primary:        #3b82f6;
+  --primary-light:  #60a5fa;
+  --primary-dark:   #1e40af;
+  --primary-glow:   rgba(59,130,246,0.35);
+
+  --secondary:      #6366f1;
+  --secondary-light:#818cf8;
+  --secondary-glow: rgba(99,102,241,0.3);
+
+  --accent:         #a855f7;
+  --accent-light:   #c084fc;
+  --accent-glow:    rgba(168,85,247,0.35);
+
+  --accent2:        #22d3ee;
+  --accent2-glow:   rgba(34,211,238,0.3);
+
+  --success:        #10b981;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --info:           #3b82f6;
+
+  /* ── Fondos ── */
+  --bg-void:        #04060f;
+  --bg-dark:        #060a17;
+  --bg-surface:     #0b1127;
+  --bg-card:        rgba(11,17,39,0.75);
+  --bg-card-hover:  rgba(17,25,55,0.85);
+
+  /* ── Cristal / Glassmorphism ── */
+  --glass:          rgba(59,130,246,0.04);
+  --glass-border:   rgba(99,102,241,0.12);
+  --glass-border-hover: rgba(99,102,241,0.3);
+
+  /* ── Texto ── */
+  --text:           #e2e8f8;
+  --text-secondary: #a0aac8;
+  --text-muted:     #5a6487;
+  --text-on-primary:#ffffff;
+
+  /* ── Gradientes ── */
+  --gradient-brand:  linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #a855f7 100%);
+  --gradient-brand-r:linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #3b82f6 100%);
+  --gradient-glow:   linear-gradient(135deg, #22d3ee 0%, #3b82f6 50%, #6366f1 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.06));
+  --gradient-hero:   linear-gradient(180deg, #04060f 0%, #080e20 50%, #04060f 100%);
+
+  /* ── Sombras ── */
+  --shadow-primary:  0 0 30px var(--primary-glow);
+  --shadow-accent:   0 0 30px var(--accent-glow);
+  --shadow-card:     0 4px 24px rgba(0,0,0,0.5);
+  --shadow-card-hover: 0 20px 60px rgba(0,0,0,0.6);
+
+  /* ── Tipografía ── */
+  --font-display:   'Orbitron', monospace;
+  --font-heading:   'Montserrat', sans-serif;
+  --font-body:      'Poppins', sans-serif;
+  --font-label:     'Rajdhani', sans-serif;
+  --font-mono:      'JetBrains Mono', monospace;
+
+  /* ── Radios ── */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+
+  /* ── Transiciones ── */
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition:      all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@layer base {
-  body {
-    @apply text-[#e0e0ff] font-sans;
-    background-image: url('/cyber_emerald_infrastructure_bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-color: var(--bg-dark);
-    margin: 0;
-    min-height: 100vh;
-  }
+/* ====================================================
+   BASE STYLES
+   ==================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background-color: var(--bg-dark);
+  background-image: url('/cyber_emerald_infrastructure_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  margin: 0;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+h4, h5, h6 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+p {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--primary-light);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+a:hover { color: var(--accent-light); }
+
+input, textarea, select, button {
+  font-family: var(--font-body);
+}
+
+/* ====================================================
+   UTILITY CLASS OVERRIDES
+   ==================================================== */
 @layer utilities {
   .bg-\[\#030014\] {
-    background-color: rgba(3, 0, 20, 0.75) !important;
+    background-color: rgba(4, 6, 15, 0.8) !important;
   }
 }
 
-@layer components {
-  .glass-panel {
-    @apply bg-[var(--bg-card)] backdrop-blur-2xl border border-[var(--glass-border)];
-  }
-  
-  .btn-futuristic {
-    @apply relative overflow-hidden bg-[var(--gradient-1)] text-white font-black uppercase tracking-widest rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(0,255,157,0.5)] active:scale-[0.98];
-  }
+/* ====================================================
+   COMPONENT CLASSES (sin @apply para compatibilidad)
+   ==================================================== */
 
-  .text-gradient {
-    @apply bg-[var(--gradient-1)] bg-clip-text text-transparent;
-  }
+/* Glass Panel */
+.glass-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+.glass-panel:hover {
+  border-color: var(--glass-border-hover);
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+
+/* Botón primario futurista */
+.btn-futuristic {
+  position: relative;
+  overflow: hidden;
+  background: var(--gradient-brand);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 16px;
+  transition: var(--transition);
+  box-shadow: 0 4px 20px var(--primary-glow);
+  border: none;
+  cursor: pointer;
 }
+
+.btn-futuristic:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 40px var(--primary-glow), 0 0 60px var(--accent-glow);
+}
+
+.btn-futuristic:active { transform: scale(0.98); }
+
+.btn-futuristic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Gradiente de texto */
+.text-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-glow {
+  background: var(--gradient-glow);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Badges */
+.badge-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(59,130,246,0.12);
+  border: 1px solid rgba(59,130,246,0.25);
+  color: var(--primary-light);
+  font-family: var(--font-body);
+}
+
+.badge-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(168,85,247,0.12);
+  border: 1px solid rgba(168,85,247,0.25);
+  color: var(--accent-light);
+  font-family: var(--font-body);
+}
+
+/* Card Glass */
+.card-glass {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px);
+  transition: var(--transition);
+}
+
+.card-glass:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+
+/* Input field */
+.input-field {
+  width: 100%;
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 0.875rem;
+  transition: var(--transition);
+  background: rgba(11,17,39,0.6);
+  border: 1px solid rgba(99,102,241,0.15);
+  color: var(--text);
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.input-field::placeholder { color: var(--text-muted); }
+
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Section tag pill */
+.section-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: var(--secondary-light);
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+}
+
+/* ====================================================
+   SCROLLBAR
+   ==================================================== */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
 ::-webkit-scrollbar-thumb {
-  background: var(--gradient-1);
+  background: var(--gradient-brand);
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+
+/* ====================================================
+   ANIMACIONES GLOBALES
+   ==================================================== */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
 }
+
+@keyframes float-up {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 20px var(--primary-glow); }
+  50%      { box-shadow: 0 0 50px var(--primary-glow), 0 0 80px var(--accent-glow); }
+}
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+.animate-float-up   { animation: float-up 0.7s ease both; }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-spin-slow  { animation: spin-slow 8s linear infinite; }
+
+/* ====================================================
+   FONT UTILITIES (para clases usadas en TSX)
+   ==================================================== */
+.font-orbitron   { font-family: var(--font-display)  !important; }
+.font-montserrat { font-family: var(--font-heading)  !important; }
+.font-poppins    { font-family: var(--font-body)     !important; }
+.font-rajdhani   { font-family: var(--font-label)    !important; }

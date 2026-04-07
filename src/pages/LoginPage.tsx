@@ -34,36 +34,37 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] px-4 py-10 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] px-4 py-10 relative overflow-hidden" style={{fontFamily:'var(--font-body)'}}>
       {/* Animated Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#00f0ff]/5 blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#7b2fff]/5 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[55%] h-[55%] rounded-full bg-blue-600/6 blur-[130px] animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] rounded-full bg-violet-600/5 blur-[130px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-[30%] left-[40%] w-[30%] h-[30%] rounded-full bg-indigo-600/4 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
       
       {/* Logo & Title */}
       <div className="flex flex-col items-center mb-8 relative z-10">
-        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#00f0ff] to-[#7b2fff] p-[2px] mb-6 shadow-[0_0_50px_rgba(0,240,255,0.2)] transform hover:scale-110 transition-all duration-500">
+        <div className="w-24 h-24 rounded-3xl p-[2px] mb-6 shadow-[0_0_50px_rgba(59,130,246,0.25)] transform hover:scale-110 transition-all duration-500" style={{background:'var(--gradient-brand)'}}>
           <div className="w-full h-full bg-[#030014] rounded-[inherit] flex items-center justify-center overflow-hidden">
             <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="w-16 h-16 object-contain" />
           </div>
         </div>
         <h1 className="text-white text-4xl sm:text-5xl font-black tracking-tighter text-center font-orbitron">
-           SOPORTE <span className="text-[#00f0ff]">TÉCNICO</span>
+           SOPORTE <span style={{color:'var(--primary-light)'}}>TÉCNICO</span>
         </h1>
-        <p className="text-[#8888aa] text-[10px] mt-4 font-rajdhani font-black tracking-[6px] uppercase border-y border-white/5 py-2">Dto. Sistemas C2 Tzompantepec</p>
+        <p style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-[10px] mt-4 font-semibold tracking-[5px] uppercase border-y border-white/5 py-2">Dto. Sistemas C2 Tzompantepec</p>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-sm glass-panel rounded-[40px] p-10 shadow-2xl relative z-10">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f0ff]/50 to-transparent" />
+      <div className="w-full max-w-sm glass-panel rounded-[36px] p-10 shadow-2xl relative z-10" style={{border:'1px solid rgba(99,102,241,0.15)'}}>
+        <div className="absolute top-0 left-0 w-full h-1 rounded-t-[36px] opacity-60" style={{background:'var(--gradient-brand)'}} />
         
         <h2 className="text-white text-3xl font-black mb-2 font-orbitron tracking-tight">ACCESO</h2>
-        <p className="text-[#8888aa] text-xs mb-10 font-rajdhani font-bold tracking-wider">Identifícate en la red central TZOMP</p>
+        <p style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-xs mb-10 font-medium tracking-wider">Identifícate en el sistema Help Desk</p>
 
         <form onSubmit={handleLogin} className="space-y-8">
           {/* Email */}
           <div className="space-y-3">
-            <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1 opacity-70">
-              EMAIL DE ACCESO
+            <label style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="block text-[10px] font-semibold uppercase tracking-[4px] ml-1 opacity-80">
+              Email de Acceso
             </label>
             <div className="relative group">
               <input
@@ -72,16 +73,17 @@ export default function LoginPage() {
                 onChange={e => { setEmail(e.target.value); setError(''); }}
                 placeholder="usuario@tzompantepec.gob.mx"
                 autoComplete="email"
-                className="w-full bg-[#0f0a28]/60 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/50 transition-all duration-300 font-mono"
+                style={{fontFamily:'var(--font-body)'}}
+                className="w-full bg-[#0f0a28]/60 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
               />
-              <div className="absolute inset-0 rounded-2xl bg-[#00f0ff]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+              <div className="absolute inset-0 rounded-2xl bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
             </div>
           </div>
 
           {/* Password */}
           <div className="space-y-3">
-            <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[4px] ml-1 opacity-70">
-              CLAVE DE ENCRIPTACIÓN
+            <label style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="block text-[10px] font-semibold uppercase tracking-[4px] ml-1 opacity-80">
+              Contraseña
             </label>
             <div className="relative group">
               <input
@@ -90,7 +92,8 @@ export default function LoginPage() {
                 onChange={e => { setPassword(e.target.value); setError(''); }}
                 placeholder="••••••••"
                 autoComplete="current-password"
-                className="w-full bg-[#0f0a28]/60 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/50 transition-all duration-300 font-mono pr-16"
+                style={{fontFamily:'var(--font-body)'}}
+                className="w-full bg-[#0f0a28]/60 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300 pr-16"
               />
               <button
                 type="button"
