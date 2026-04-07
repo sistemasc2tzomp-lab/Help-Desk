@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { AppSettings, TicketPriority } from '../types';
 
 const DEFAULT_SETTINGS: AppSettings = {
-  companyName: 'Help Desk Tzomp',
+  companyName: 'Sistema Tickets Tzompantepec',
   companyEmail: 'soporte@tzompantepec.gob.mx',
   companyPhone: '+52 (000) 000-0000',
   companyAddress: 'Tzompantepec, Tlaxcala, México',
@@ -346,7 +346,7 @@ export default function SettingsPage() {
               <Toggle
                 checked={settings.notifyOnNewTicket}
                 onChange={v => set('notifyOnNewTicket', v)}
-                label="INYECCIÓN DE NUEVO NODO"
+                label="INYECCIÓN DE NUEVO CLIENTE"
                 description="ALERTA A OPERADORES SOBRE NUEVAS SOLICITUDES DE SOPORTE"
                 onToggleSound={audioAlerts}
               />

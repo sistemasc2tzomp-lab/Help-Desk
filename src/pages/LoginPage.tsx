@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { logoBase64 } from '../utils/logoBase64';
 
 export default function LoginPage() {
   const { loginWithSupabase } = useApp();
@@ -44,7 +45,7 @@ export default function LoginPage() {
       <div className="flex flex-col items-center mb-8 relative z-10">
         <div className="w-24 h-24 rounded-3xl p-[2px] mb-6 shadow-[0_0_50px_rgba(59,130,246,0.25)] transform hover:scale-110 transition-all duration-500" style={{background:'var(--gradient-brand)'}}>
           <div className="w-full h-full bg-[#030014] rounded-[inherit] flex items-center justify-center overflow-hidden">
-            <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="w-16 h-16 object-contain" />
+            <img src={logoBase64} alt="Tzomp Logo" className="w-16 h-16 object-contain" />
           </div>
         </div>
         <h1 className="text-white text-4xl sm:text-5xl font-black tracking-tighter text-center font-orbitron">
@@ -58,7 +59,7 @@ export default function LoginPage() {
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[36px] opacity-60" style={{background:'var(--gradient-brand)'}} />
         
         <h2 className="text-white text-3xl font-black mb-2 font-orbitron tracking-tight">ACCESO</h2>
-        <p style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-xs mb-10 font-medium tracking-wider">Identifícate en el sistema Help Desk</p>
+        <p style={{fontFamily:'var(--font-body)',color:'var(--text-muted)'}} className="text-xs mb-10 font-medium tracking-wider">Identifícate en el sistema de tickets</p>
 
         <form onSubmit={handleLogin} className="space-y-8">
           {/* Email */}

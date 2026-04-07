@@ -117,7 +117,7 @@ export default function TicketDetail() {
     return (
       <div className="flex flex-col items-center justify-center p-20 min-h-[60vh] text-center space-y-6">
         <div className="w-16 h-16 border-4 border-[#00f0ff]/20 border-t-[#00f0ff] rounded-full animate-spin" />
-        <h2 className="text-white font-black font-orbitron tracking-widest text-xl animate-pulse">SINCRONIZANDO NODO...</h2>
+        <h2 className="text-white font-black font-orbitron tracking-widest text-xl animate-pulse">SINCRONIZANDO SISTEMA...</h2>
         <p className="text-[#8888aa] text-[9px] font-black tracking-[4px] uppercase">Estableciendo conexión segura con la central de datos</p>
       </div>
     );
@@ -127,7 +127,7 @@ export default function TicketDetail() {
     return (
       <div className="flex flex-col items-center justify-center p-20 min-h-[60vh] text-center space-y-6">
         <div className="text-6xl animate-bounce">🔍</div>
-        <h2 className="text-white font-black font-orbitron tracking-widest text-xl">ERROR DE ENLACE: NODO NO LOCALIZADO</h2>
+        <h2 className="text-white font-black font-orbitron tracking-widest text-xl">ERROR DE ENLACE: SOLICITUD NO LOCALIZADA</h2>
         <p className="text-[#8888aa] text-xs font-bold tracking-[3px] uppercase max-w-sm">
           LA SOLICITUD <span className="text-[#ffffff]">#{selectedTicketId?.slice(0,8)}</span> NO HA SIDO DETECTADA EN ESTE SEGMENTO DE RED.
         </p>

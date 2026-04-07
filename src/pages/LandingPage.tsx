@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { logoBase64 } from '../utils/logoBase64';
 import './LandingPage.css';
 
 const LandingPage: React.FC = () => {
@@ -323,7 +324,7 @@ const LandingPage: React.FC = () => {
       {/* LOADER */}
       <div className={`loader-screen ${isLoaderHidden ? 'hidden' : ''}`} id="loader">
         <img 
-          src="img/logo_tzompantepec.png" 
+          src={logoBase64} 
           alt="Tzomp Logo" 
           className="loader-logo" 
         />
@@ -342,7 +343,7 @@ const LandingPage: React.FC = () => {
       {/* NAVBAR */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <a href="#inicio" className="nav-brand" onClick={(e) => scrollToSection(e, '#inicio')}>
-          <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="nav-logo" />
+          <img src={logoBase64} alt="Tzomp Logo" className="nav-logo" />
           <span className="nav-title uppercase tracking-tighter">Dto. Sistemas C2</span>
         </a>
 
@@ -371,9 +372,10 @@ const LandingPage: React.FC = () => {
               Sistema activo — v3.0
             </div>
             <h1>
-              <span className="line">Help Desk</span>
-              <span className="line gradient-text">Sistemas C2</span>
-              <span className="line gradient-text-2">Tzompantepec</span>
+              <span className="line">SISTEMA TICKETS</span>
+              <h1 className="text-4xl sm:text-7xl font-black text-white font-orbitron tracking-tighter uppercase leading-none">
+                TZOMPANTEPEC <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">CONTROL</span>
+              </h1>
             </h1>
             <p className="hero-description" style={{ margin: '1.5rem auto', maxWidth: '700px' }}>
               Plataforma institucional para la gestión, mantenimiento y soporte técnico 
@@ -604,7 +606,7 @@ const LandingPage: React.FC = () => {
       <footer className="footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="img/logo_tzompantepec.png" alt="Tzomp Logo" className="nav-logo" />
+            <img src={logoBase64} alt="Tzomp Logo" className="nav-logo" />
             <p>Help Desk Dto. Sistemas C2 — La plataforma institucional de soporte técnico y mantenimiento de infraestructura para el H. Ayuntamiento de Tzompantepec.</p>
             <div className="footer-social">
               {/* Github y redes sociales removidas por motivos de institucionales */}

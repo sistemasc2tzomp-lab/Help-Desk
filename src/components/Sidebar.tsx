@@ -92,11 +92,12 @@ const getRoleDeptIcon = (role?: string, deptName?: string, size = 18) => {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 };
 
-const Logo = () => (
+import { logoBase64 } from '../utils/logoBase64';
 
+const Logo = () => (
   <div className="w-12 h-12 rounded-2xl p-[2px] shadow-[0_0_30px_rgba(59,130,246,0.2)] shrink-0 group transform hover:rotate-6 transition-all duration-500" style={{background:'var(--gradient-brand)'}}>
     <div className="w-full h-full bg-[#030014] rounded-[inherit] flex items-center justify-center overflow-hidden">
-      <img src="img/logo_tzompantepec.png" alt="TZ" className="w-8 h-8 object-contain" />
+      <img src={logoBase64} alt="TZ" className="w-8 h-8 object-contain" />
     </div>
   </div>
 );

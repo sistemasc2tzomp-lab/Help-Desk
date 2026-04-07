@@ -5,6 +5,7 @@ import { formatDate } from '../utils/date';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { logoBase64 } from '../utils/logoBase64';
 
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
 const STATUSES: TicketStatus[] = ['Abierto', 'En Progreso', 'Resuelto', 'Cerrado'];
@@ -133,43 +134,46 @@ const PDF_TABLE_STYLES: Parameters<typeof autoTable>[1] = {
 function addPdfHeader(doc: jsPDF, title: string, subtitle?: string) {
   const pw = doc.internal.pageSize.getWidth();
 
-  // === FONDO SUAVE SUPERIOR (Gris Azulado muy claro / Soft Emerald tint) ===
-  doc.setFillColor(248, 250, 252); // Much softer gray-blue
+  // === FONDO SUAVE SUPERIOR (Soft Tint) ===
+  doc.setFillColor(245, 250, 248); // Very light emerald/mint tint
   doc.rect(0, 0, pw, 40, 'F');
 
   // Franja de acento institucional sutil
-  doc.setFillColor(...PDF_COLORS.accent);
+  doc.setFillColor(16, 185, 129); // Emerald accent
   doc.rect(0, 39, pw, 1, 'F');
 
-  // === ICONOS INSTITUCIONALES / LOGOS ===
-  // Izquierda: Nodo TI / Escudo (Placeholder visual avanzado)
-  doc.setFillColor(30, 41, 59, 0.05);
-  doc.roundedRect(12, 10, 20, 20, 4, 4, 'F');
-  doc.setDrawColor(...PDF_COLORS.accent);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(12, 10, 20, 20, 4, 4, 'S');
-  doc.setFontSize(14);
-  doc.text('🛡️', 16, 24); 
+  // === ICONOS INSTITUCIONALES (LOGOS) ===
+  // Izquierda: Logo Principal
+  try {
+    doc.addImage(logoBase64, 'PNG', 12, 10, 20, 20);
+  } catch (e) {
+    // Fallback if image fails
+    doc.setFillColor(30, 41, 59, 0.05);
+    doc.roundedRect(12, 10, 20, 20, 4, 4, 'F');
+  }
 
-  // Derecha: Nodo de Datos / QR Placeholder
-  doc.setFillColor(30, 41, 59, 0.05);
-  doc.roundedRect(pw - 32, 10, 20, 20, 4, 4, 'F');
-  doc.roundedRect(pw - 32, 10, 20, 20, 4, 4, 'S');
-  doc.text('📊', pw - 28, 24);
+  // Derecha: Logo Secundario (Simétrico para balance visual)
+  try {
+    doc.addImage(logoBase64, 'PNG', pw - 32, 10, 20, 20);
+  } catch (e) {
+    doc.setFillColor(30, 41, 59, 0.05);
+    doc.roundedRect(pw - 32, 10, 20, 20, 4, 4, 'F');
+  }
 
   // === LOGO / NOMBRE INSTITUCIONAL ===
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(...PDF_COLORS.primary);
+  doc.setFontSize(10);
+  doc.setTextColor(30, 41, 59);
   doc.text('H. AYUNTAMIENTO DE TZOMPANTEPEC', pw / 2, 16, { align: 'center' });
-  doc.setFontSize(14);
-  doc.setTextColor(...PDF_COLORS.accentDark);
-  doc.text('HELP DESK — CENTRO DE SOPORTE', pw / 2, 24, { align: 'center' });
+  doc.setFontSize(13);
+  doc.setTextColor(5, 150, 105); // Darker emerald for text
+  doc.text('SISTEMA TICKETS — TZOMPANTEPEC', pw / 2, 24, { align: 'center' });
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...PDF_COLORS.muted);
-  doc.text('UNIDAD DE TI Y COMUNICACIONES INSTITUCIONALES', pw / 2, 30, { align: 'center' });
+  doc.setTextColor(100, 116, 139);
+  doc.text('UNIDAD DE TECNOLOGÍAS DE LA INFORMACIÓN Y COMUNICACIÓN', pw / 2, 30, { align: 'center' });
+
 
   // === TÍTULO DEL REPORTE ===
   if (title) {
@@ -215,7 +219,7 @@ function addPdfFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text('SISTEMA HELP DESK TZOMP — DOCUMENTO OFICIAL GENERADO AUTOMÁTICAMENTE — CONFIDENCIAL', 14, ph - 8);
+  doc.text('SISTEMA TICKETS TZOMPANTEPEC — DOCUMENTO OFICIAL GENERADO AUTOMÁTICAMENTE — CONFIDENCIAL', 14, ph - 8);
   const pageLabel = totalPages ? `${pageNum} / ${totalPages}` : String(pageNum);
   doc.text(`PÁGINA ${pageLabel}`, pw - 14, ph - 8, { align: 'right' });
 }
