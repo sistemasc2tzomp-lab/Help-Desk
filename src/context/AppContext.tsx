@@ -98,12 +98,12 @@ interface AppContextType {
   updateTicketPriority: (ticketId: string, priority: TicketPriority) => Promise<void>;
   assignTicket: (ticketId: string, userId: string) => Promise<void>;
   autoAssignAdminOnOpen: (ticketId: string) => Promise<void>;
-  addMessage: (ticketId: string, content: string, isInternal?: boolean, imageUrl?: string) => Promise<void>;
+  addMessage: (ticketId: string, content: string, isInternal?: boolean, file?: File, tipo?: Message['tipo']) => Promise<void>;
   getTicketById: (id: string) => Ticket | undefined;
   addDepartment: (dept: Omit<Department, 'id' | 'createdAt'>) => Promise<void>;
   updateDepartment: (id: string, dept: Partial<Department>) => Promise<void>;
   deleteDepartment: (id: string) => Promise<void>;
-  refreshData: () => Promise<void>;
+  refreshData: (silent?: boolean) => Promise<void>;
   offlineTickets: any[];
   syncOfflineTickets: () => Promise<void>;
   page: string;
@@ -189,13 +189,21 @@ function rowToUser(r: Record<string, unknown>): User {
 }
 
 // Maps tabla "ticket_comentarios": id, ticket_id, autor_id, mensaje, es_interno, created
-function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User> = {}): Message {
-  const userId = String(r.autor_id || '');
+function rowToMessage(r: any, usersMap: Record<string, User> = {}): Message {
+  const userId = String(r.usuario_id || r.autor_id || '');
   const author = usersMap[userId];
   const authorName = author?.name || 'Usuario';
   
   const content = String(r.mensaje || '');
   const timestamp = String(r.created || new Date().toISOString());
+
+  // Generate URLs for attachments
+  const adjuntosLocal: string[] = [];
+  if (r.adjuntos && Array.isArray(r.adjuntos)) {
+    r.adjuntos.forEach((fname: string) => {
+      adjuntosLocal.push(pb.files.getURL(r, fname));
+    });
+  }
 
   return {
     id: String(r.id),
@@ -208,7 +216,9 @@ function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User>
     content,
     timestamp,
     isInternal: Boolean(r.es_interno),
-    imageUrl: undefined, // En PB se maneja vía campos de archivo si es necesario
+    imageUrl: adjuntosLocal[0], // Compatibilidad con UI existente
+    adjuntos: adjuntosLocal,
+    tipo: r.tipo as any || 'Mensaje'
   };
 }
 
@@ -355,8 +365,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
   // ── fetch all data ──────────────────────────────────────────────────────
-  const refreshData = useCallback(async () => {
-    setLoading(true);
+  const refreshData = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       // 1. Usuarios
       const usersList = await pb.collection('users').getFullList();
@@ -390,7 +400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Error loading data:', err);
       addLog(`Error de carga: ${err.message}`, 'error');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [addLog]);
 
@@ -412,11 +422,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Real-time con PocketBase
     pb.collection('tickets').subscribe('*', () => {
       playNotificationSound('update');
-      refreshData();
+      refreshData(true);
     });
     pb.collection('ticket_comentarios').subscribe('*', () => {
       playNotificationSound('update');
-      refreshData();
+      refreshData(true);
     });
 
     return () => {
@@ -587,38 +597,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentUser, tickets]);
 
-  const addMessage = useCallback(async (ticketId: string, content: string, isInternal = false, imageUrl?: string) => {
+  const addMessage = useCallback(async (ticketId: string, content: string, isInternal = false, file?: File, tipo: Message['tipo'] = 'Mensaje') => {
     if (!currentUser) return;
-    const now = new Date().toISOString();
-    const message: Message = {
-      id: `msg-temp-${Date.now()}`,
-      ticketId,
-      authorId: currentUser.id,
-      authorName: currentUser.name,
-      authorInitials: currentUser.initials,
-      authorColor: currentUser.avatarColor,
-      authorRole: currentUser.role,
-      content,
-      timestamp: now,
-      isInternal,
-      imageUrl,
-    };
     
-    // Optimistic update
-    setTickets(prev => prev.map(t =>
-      t.id === ticketId
-        ? { ...t, messages: [...t.messages, message], updatedAt: now }
-        : t
-    ));
-
     try {
-      addLog(`Enviando mensaje para ticket ${ticketId}`, 'info');
-      await pb.collection('ticket_comentarios').create({
-        ticket_id: ticketId,
-        autor_id: currentUser.id,
-        mensaje: content,
-        es_interno: isInternal,
-      });
+      addLog(`Enviando mensaje (${tipo}) para ticket ${ticketId}`, 'info');
+      
+      const formData = new FormData();
+      formData.append('ticket_id', ticketId);
+      formData.append('usuario_id', currentUser.id);
+      formData.append('mensaje', content);
+      formData.append('es_interno', String(isInternal));
+      formData.append('tipo', tipo);
+      if (file) {
+        formData.append('adjuntos', file);
+      }
+
+      await pb.collection('ticket_comentarios').create(formData);
       addLog(`Mensaje sincronizado para ticket ${ticketId}`, 'success');
       await refreshData();
     } catch (err: any) {

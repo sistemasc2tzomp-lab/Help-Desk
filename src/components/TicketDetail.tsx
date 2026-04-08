@@ -145,6 +145,7 @@ export default function TicketDetail() {
     );
   }
 
+  const isAdmin = currentUser?.role === 'Admin';
   const canManage = currentUser?.role === 'Admin' || currentUser?.role === 'Agente';
   const agents = users.filter(u => u.role === 'Admin' || u.role === 'Agente');
   const dept = departments.find(d => d.id === ticket.departmentId);
@@ -158,24 +159,13 @@ export default function TicketDetail() {
     setReplyImage(file);
   };
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = ev => resolve(ev.target?.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() && !replyImage) return;
     setSending(true);
     try {
-      let imageUrl: string | undefined;
-      if (replyImage) {
-        imageUrl = await fileToBase64(replyImage);
-      }
-      await addMessage(ticket.id, message.trim(), isInternal, imageUrl);
+      await addMessage(ticket.id, message.trim(), isInternal, replyImage || undefined);
       setMessage('');
       setIsInternal(false);
       setReplyImage(null);
@@ -190,7 +180,14 @@ export default function TicketDetail() {
     if (!pendingStatus || !statusComment.trim()) return;
     setIsSubmittingStatus(true);
     try {
-      await addMessage(ticket.id, `CAMBIO DE ESTADO A [${pendingStatus.toUpperCase()}]: ${statusComment.trim()}`, false);
+      // Justificación se guarda como mensaje de tipo 'Justicicacion'
+      await addMessage(
+        ticket.id, 
+        `CAMBIO DE ESTADO A [${pendingStatus.toUpperCase()}]: ${statusComment.trim()}`, 
+        false, 
+        undefined, 
+        'Justicicacion'
+      );
       await updateTicketStatus(ticket.id, pendingStatus);
       setStatusComment('');
       setShowStatusModal(false);
@@ -260,8 +257,9 @@ export default function TicketDetail() {
               {ticket.messages.map((msg) => {
                 if (msg.isInternal && currentUser?.role === 'Cliente') return null;
                 return (
-                  <div key={msg.id} className={`glass-panel border rounded-[32px] p-6 sm:p-8 relative overflow-hidden transition-all ${msg.isInternal ? 'border-white/20 bg-white/5' : 'border-white/5'}`}>
-                    {msg.isInternal && <div className="absolute top-0 right-0 px-4 py-1.5 bg-white/10 text-white text-[8px] font-black uppercase tracking-[3px] rounded-bl-2xl">Sistema</div>}
+                  <div key={msg.id} className={`glass-panel border rounded-[32px] p-6 sm:p-8 relative overflow-hidden transition-all ${msg.isInternal ? 'border-white/20 bg-white/5' : msg.tipo === 'Justicicacion' ? 'border-amber-500/30 bg-amber-500/5' : 'border-white/5'}`}>
+                    {msg.isInternal && <div className="absolute top-0 right-0 px-4 py-1.5 bg-white/10 text-white text-[8px] font-black uppercase tracking-[3px] rounded-bl-2xl">Interno</div>}
+                    {msg.tipo === 'Justicicacion' && <div className="absolute top-0 right-0 px-4 py-1.5 bg-amber-500 text-black text-[8px] font-black uppercase tracking-[3px] rounded-bl-2xl">Justificación Admin</div>}
                     <div className="flex items-start gap-5">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white border-white/10 border" style={{ backgroundColor: msg.authorColor }}>
                          {getDeptIcon(ticket.category, 18)}
@@ -272,10 +270,15 @@ export default function TicketDetail() {
                           <span className="text-[#8888aa] text-[9px] font-mono">{formatDate(msg.timestamp).toUpperCase()}</span>
                         </div>
                         <p className="text-[#8888aa] text-[15px] font-medium leading-relaxed">{msg.content}</p>
-                        {msg.imageUrl && (
-                           <div className="mt-4 rounded-2xl overflow-hidden border border-white/10 max-w-xs cursor-pointer group" onClick={() => setLightboxUrl(msg.imageUrl!)}>
-                             <img src={msg.imageUrl} alt="Adjunto" className="w-full h-40 object-cover group-hover:scale-105 transition-transform" />
-                           </div>
+                        
+                        {(msg.adjuntos || (msg.imageUrl ? [msg.imageUrl] : [])).length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            {(msg.adjuntos || (msg.imageUrl ? [msg.imageUrl] : [])).map((url, idx) => (
+                              <div key={idx} className="rounded-2xl overflow-hidden border border-white/10 w-24 h-24 sm:w-32 sm:h-32 cursor-pointer group flex-shrink-0" onClick={() => setLightboxUrl(url)}>
+                                <img src={url} alt={`Adjunto ${idx}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -363,12 +366,18 @@ export default function TicketDetail() {
               <div className="space-y-4">
                 <div>
                   <label className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] ml-1 mb-1 block">Estado</label>
-                  <select value={ticket.status} onChange={e => { setPendingStatus(e.target.value as TicketStatus); setShowStatusModal(true); }} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-[10px] font-black font-mono focus:outline-none cursor-pointer">
+                  <select 
+                    value={ticket.status} 
+                    disabled={!isAdmin}
+                    onChange={e => { setPendingStatus(e.target.value as TicketStatus); setShowStatusModal(true); }} 
+                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-[10px] font-black font-mono focus:outline-none ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'}`}
+                  >
                     <option value="Abierto">Abierto</option>
                     <option value="En Progreso">En Progreso</option>
                     <option value="Resuelto">Resuelto</option>
                     <option value="Cerrado">Cerrado</option>
                   </select>
+                  {!isAdmin && <p className="text-[7px] text-pink-500/60 font-black mt-1 uppercase tracking-tighter">Nivel de autorización insuficiente para control de estado</p>}
                 </div>
                 <div>
                   <label className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] ml-1 mb-1 block">Prioridad</label>

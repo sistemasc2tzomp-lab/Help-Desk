@@ -26,6 +26,8 @@ export interface Message {
   timestamp: string;
   isInternal?: boolean;
   imageUrl?: string;
+  adjuntos?: string[];
+  tipo?: 'Mensaje' | 'Sistema' | 'Justicicacion';
 }
 
 export interface Ticket {
