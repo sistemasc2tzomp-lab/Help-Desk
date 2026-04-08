@@ -291,6 +291,7 @@ export default function Dashboard() {
              <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">DISTRIBUCION_STATUS</h2>
                 <div style={{ width: '100%', height: 240 }}>
+                  {isHydrated && (
                    <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                          <PieComponent
@@ -312,6 +313,7 @@ export default function Dashboard() {
                          <Tooltip />
                       </PieChart>
                    </ResponsiveContainer>
+                  )}
                 </div>
              </div>
 
@@ -319,6 +321,7 @@ export default function Dashboard() {
              <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">CARGA_DEPARTAMENTOS</h2>
                 <div style={{ width: '100%', height: 240 }}>
+                  {isHydrated && (
                    <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
                          <PolarGrid stroke="#ffffff05" />
@@ -326,6 +329,7 @@ export default function Dashboard() {
                          <Radar name="Tickets" dataKey="A" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
                       </RadarChart>
                    </ResponsiveContainer>
+                  )}
                 </div>
              </div>
           </div>

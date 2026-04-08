@@ -374,7 +374,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!silent) setLoading(true);
     try {
       // 1. Usuarios
-      const usersList = await pb.collection('users').getFullList();
+      const usersList = await pb.collection('users').getFullList({ requestKey: null });
       const freshUsers = usersList.map(rowToUser);
       setUsers(freshUsers);
 
@@ -393,20 +393,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUserActivity(activityMap);
 
       // 2. Departamentos
-      const deptsList = await pb.collection('departamentos').getFullList({ sort: 'nombre' });
+      const deptsList = await pb.collection('departamentos').getFullList({ sort: 'nombre', requestKey: null });
       setDepartments(deptsList.map(rowToDept));
 
-      // 3. Comentarios
-      const msgsByTicket: Record<string, Message[]> = {};
-      const comentariosList = await pb.collection('ticket_comentarios').getFullList({ sort: 'created' });
-      comentariosList.forEach(r => {
-        const m = rowToMessage(r as any, freshUMap);
-        if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
-        msgsByTicket[m.ticketId].push(m);
-      });
+      // 3. Tickets
+      const ticketsList = await pb.collection('tickets').getFullList({ sort: '-created', requestKey: null });
 
-      // 4. Tickets
-      const ticketsList = await pb.collection('tickets').getFullList({ sort: '-created' });
+      // 4. Comentarios — isolated so a 400/403 on this collection doesn't break the rest
+      const msgsByTicket: Record<string, Message[]> = {};
+      try {
+        const comentariosList = await pb.collection('ticket_comentarios').getFullList({
+          sort: 'created',
+          requestKey: null,
+        });
+        comentariosList.forEach(r => {
+          const m = rowToMessage(r as any, freshUMap);
+          if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
+          msgsByTicket[m.ticketId].push(m);
+        });
+      } catch (commentErr: any) {
+        // Non-fatal: comentarios may require specific filters in some PB rule configs
+        console.warn('ticket_comentarios load skipped:', commentErr?.message);
+      }
+
       setTickets(ticketsList.map(r =>
         rowToTicket(r as any, msgsByTicket[String(r.id)] || [], freshUMap)
       ));
