@@ -123,7 +123,8 @@ interface AppContextType {
   toggleTheme: () => void;
   resetSystem: () => Promise<void>;
   perfiles: any[];
-  onlineUsers: Record<string, boolean>;
+  userActivity: Record<string, string>;
+  onlineUsers: Record<string, string>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -224,8 +225,8 @@ function rowToMessage(r: any, usersMap: Record<string, User> = {}): Message {
 
 // Maps tabla "tickets": id, titulo, descripcion, estado, prioridad, departamento_id, creado_por_id...
 function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap: Record<string, User> = {}): Ticket {
-  const creatorId = String(r.creado_por_id || '');
-  const assigneeId = r.asignado_a_id ? String(r.asignado_a_id) : undefined;
+  const creatorId = String(r.cliente_id || r.creado_por_id || '');
+  const assigneeId = r.agente_id ? String(r.agente_id) : (r.asignado_a_id ? String(r.asignado_a_id) : undefined);
   const creator = usersMap[creatorId];
   const assignee = assigneeId ? usersMap[assigneeId] : undefined;
 
@@ -239,7 +240,7 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
     description: String(r.descripcion || ''),
     status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,
     priority: (priority.charAt(0).toUpperCase() + priority.slice(1)) as TicketPriority,
-    category: 'General',
+    category: String(r.categoria || 'General') as any,
     departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
     createdById: creatorId,
     createdByName: creator?.name || 'Solicitante',
@@ -258,8 +259,9 @@ function rowToDept(r: Record<string, unknown>): Department {
     id: String(r.id),
     name: String(r.nombre || ''),
     description: String(r.descripcion || ''),
-    color: String(r.background_color || '#7C3AED'),
+    color: String(r.color || r.background_color || '#7C3AED'),
     createdAt: String(r.created || new Date().toISOString()),
+    jefe: r.jefe ? String(r.jefe) : undefined,
   };
 }
 
@@ -283,6 +285,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [lastPing, setLastPing] = useState<string | null>(null);
   const [systemLogs, setSystemLogs] = useState<{t: number, m: string, type: 'info'|'warn'|'error'|'success'}[]>([]);
+  const [userActivity, setUserActivity] = useState<Record<string, string>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('app-theme');
@@ -367,6 +370,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ── fetch all data ──────────────────────────────────────────────────────
   const refreshData = useCallback(async (silent = false) => {
+    if (!pb.authStore.isValid) return;
     if (!silent) setLoading(true);
     try {
       // 1. Usuarios
@@ -375,7 +379,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUsers(freshUsers);
 
       const freshUMap: Record<string, User> = {};
-      freshUsers.forEach(u => { freshUMap[u.id] = u; });
+      const activityMap: Record<string, string> = {};
+      
+      freshUsers.forEach(u => { 
+        freshUMap[u.id] = u; 
+      });
+      
+      usersList.forEach(r => {
+        if (r.updated) {
+          activityMap[r.id] = String(r.updated);
+        }
+      });
+      setUserActivity(activityMap);
 
       // 2. Departamentos
       const deptsList = await pb.collection('departamentos').getFullList({ sort: 'nombre' });
@@ -448,11 +463,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             await pb.collection('tickets').create({
                 titulo: t.title,
                 descripcion: t.description,
-                creado_por_id: t.createdById,
+                cliente_id: t.createdById,
                 estado: 'Abierto',
                 prioridad: t.priority,
                 departamento_id: t.departmentId || null,
-                asignado_a_id: t.assignedToId || null,
+                agente_id: t.assignedToId || null,
             });
         } catch (err) {
             console.error("Error sincronizando ticket offline:", err);
@@ -504,14 +519,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     try {
       const pbTicket = await pb.collection('tickets').create({
-        folio: nextFolio,
+        folio: String(nextFolio), // Schema says text
         titulo: ticket.title,
         descripcion: ticket.description,
-        creado_por_id: currentUser.id,
+        cliente_id: currentUser.id,
         estado: 'Abierto',
         prioridad: ticket.priority,
         departamento_id: ticket.departmentId || null,
-        asignado_a_id: ticket.assignedToId || null,
+        agente_id: ticket.assignedToId || null,
       });
 
       const t = rowToTicket(pbTicket as any, [], { [currentUser.id]: currentUser });
@@ -574,7 +589,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     try {
       await pb.collection('tickets').update(ticketId, {
-        asignado_a_id: userId || null,
+        agente_id: userId || null,
       });
     } catch (err: any) {
       addLog(`Error al asignar ticket: ${err.message}`, 'error');
@@ -596,7 +611,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
     try {
       await pb.collection('tickets').update(ticketId, {
-        asignado_a_id: currentUser.id,
+        agente_id: currentUser.id,
       });
     } catch (err: any) {
       console.error('autoAssign error:', err);
@@ -636,9 +651,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const data = await pb.collection('departamentos').create({
         nombre: dept.name,
         descripcion: dept.description,
-        background_color: dept.color,
-        text_color: '#ffffff',
-        icon: 'Building',
+        color: dept.color,
+        activo: true,
+        icono: 'Building',
       });
       setDepartments(prev => [...prev, rowToDept(data as any)]);
     } catch (err: any) {
@@ -652,7 +667,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await pb.collection('departamentos').update(id, {
         nombre: dept.name,
         descripcion: dept.description,
-        background_color: dept.color,
+        color: dept.color,
       });
     } catch (err: any) {
       addLog(`Error al actualizar departamento: ${err.message}`, 'error');
@@ -730,6 +745,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       triggerSync,
       systemLogs,
       addLog,
+      userActivity,
+      onlineUsers: userActivity,
       theme,
       toggleTheme,
       perfiles: users.map(u => ({
@@ -738,7 +755,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         correo: u.email,
         rol: u.role.toLowerCase()
       })),
-      onlineUsers: {}, // Fixed later or removed if not needed
       resetSystem: async () => {
         setLoading(true);
         addLog('INICIANDO_PROTOCOLO_REINICIO_MAESTRO...', 'warn');
@@ -753,14 +769,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // 3. Departamentos base
           const depts = [
-            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', background_color: '#06b6d4', text_color: '#ffffff', icon: 'Building' },
-            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', background_color: '#ec4899', text_color: '#ffffff', icon: 'Building' },
-            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', background_color: '#f97316', text_color: '#ffffff', icon: 'Shield' },
-            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', background_color: '#10b981', text_color: '#ffffff', icon: 'Cpu' },
-            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', background_color: '#3b82f6', text_color: '#ffffff', icon: 'Coins' },
-            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', background_color: '#6366f1', text_color: '#ffffff', icon: 'Droplets' },
-            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', background_color: '#f59e0b', text_color: '#ffffff', icon: 'Hammer' },
-            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', background_color: '#ef4444', text_color: '#ffffff', icon: 'Siren' }
+            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', color: '#06b6d4', activo: true, icono: 'Building' },
+            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', color: '#ec4899', activo: true, icono: 'Building' },
+            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', color: '#f97316', activo: true, icono: 'Shield' },
+            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', color: '#10b981', activo: true, icono: 'Cpu' },
+            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', color: '#3b82f6', activo: true, icono: 'Coins' },
+            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', color: '#6366f1', activo: true, icono: 'Droplets' },
+            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', color: '#f59e0b', activo: true, icono: 'Hammer' },
+            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', color: '#ef4444', activo: true, icono: 'Siren' }
           ];
 
           for (const d of depts) {
