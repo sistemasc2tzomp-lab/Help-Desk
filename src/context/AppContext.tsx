@@ -234,6 +234,7 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
 
   return {
     id: String(r.id),
+    folio: r.folio ? Number(r.folio) : undefined,
     title: String(r.titulo || ''),
     description: String(r.descripcion || ''),
     status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,
@@ -420,12 +421,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     // Real-time con PocketBase
-    pb.collection('tickets').subscribe('*', () => {
-      playNotificationSound('update');
+    pb.collection('tickets').subscribe('*', (e) => {
+      playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
       refreshData(true);
     });
-    pb.collection('ticket_comentarios').subscribe('*', () => {
-      playNotificationSound('update');
+    pb.collection('ticket_comentarios').subscribe('*', (e) => {
+      playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
       refreshData(true);
     });
 
@@ -498,8 +499,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTicket = useCallback(async (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages' | 'createdByName' | 'assignedToName'>) => {
     if (!currentUser) throw new Error('Debes iniciar sesión para crear un ticket.');
 
+    const maxFolio = tickets.length > 0 ? Math.max(...tickets.map(t => t.folio || 0)) : 0;
+    const nextFolio = maxFolio + 1;
+
     try {
       const pbTicket = await pb.collection('tickets').create({
+        folio: nextFolio,
         titulo: ticket.title,
         descripcion: ticket.description,
         creado_por_id: currentUser.id,
@@ -521,6 +526,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const tempTicket: Ticket = {
               ...ticket,
               id: tempId,
+              folio: nextFolio,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               messages: [],

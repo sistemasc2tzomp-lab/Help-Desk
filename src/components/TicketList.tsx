@@ -179,7 +179,7 @@ export default function TicketList() {
                     </div>
                     
                     <div className="text-[var(--text-muted)] text-[10px] font-mono flex flex-wrap gap-x-4 gap-y-2 mb-6">
-                      <span className="text-[var(--text-secondary)] py-1 px-2 bg-[var(--glass)] rounded border border-[var(--glass-border)] font-bold">FOL: {ticket.folio || ticket.id.slice(0, 8)}</span>
+                      <span className="text-[var(--text-secondary)] py-1 px-2 bg-[var(--glass)] rounded border border-[var(--glass-border)] font-bold">FOL: {ticket.folio ? `TZH-${String(ticket.folio).padStart(4, '0')}` : ticket.id.slice(0, 8)}</span>
                       <span className={`font-bold tracking-widest uppercase ${priorityColors[ticket.priority].split(' ')[0]}`}>{ticket.priority}</span>
                       <span className="text-[var(--text-muted)] truncate max-w-[150px]">{ticket.category.toUpperCase()}</span>
                     </div>

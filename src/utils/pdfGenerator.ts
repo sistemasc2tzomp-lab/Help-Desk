@@ -117,13 +117,13 @@ export const generateProfessionalTicketReport = (doc: jsPDF, ticket: Ticket, dep
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(headerTextColor[0], headerTextColor[1], headerTextColor[2]);
-  doc.text('FIRMA DE CONFORMIDAD SOLICITANTE', col1X, signY + 5, { align: 'center' });
-  doc.text('AUTORIZACIÓN / ÁREA TÉCNICA', col2X, signY + 5, { align: 'center' });
+  doc.text('FIRMA DEL USUARIO (SOLICITANTE)', col1X, signY + 5, { align: 'center' });
+  doc.text('FIRMA DEL ADMINISTRADOR (SISTEMA)', col2X, signY + 5, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.text(ticket.createdByName.toUpperCase(), col1X, signY + 9, { align: 'center' });
-  doc.text('SISTEMA DE GESTIÓN IT - TZOMPANTEPEC', col2X, signY + 9, { align: 'center' });
+  doc.text((ticket.assignedToName && ticket.assignedToName !== 'En espera' ? ticket.assignedToName : 'ADMINISTRADOR DEL SISTEMA').toUpperCase(), col2X, signY + 9, { align: 'center' });
   
   // Institutional Footer
   doc.setFontSize(6.5);

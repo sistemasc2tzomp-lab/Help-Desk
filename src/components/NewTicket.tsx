@@ -99,8 +99,10 @@ export default function NewTicket() {
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase">SOLICITUD ENVIADA</h2>
-        <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase animate-fade-in">Redirigiendo al núcleo de control...</p>
+        <h2 className="text-white text-3xl font-black font-orbitron tracking-widest mb-4 uppercase text-center">SOLICITUD ENVIADA</h2>
+        <p className="text-[#8888aa] text-sm font-bold tracking-[3px] uppercase animate-fade-in text-center max-w-lg">
+          El ticket se creó correctamente y ha sido asignado al administrador. Pasará para su pronta solución.
+        </p>
       </div>
     );
   }
@@ -198,31 +200,12 @@ export default function NewTicket() {
             <div className="w-full bg-[#0f0a28]/50 border border-[#ffffff]/30 rounded-2xl px-5 py-4 flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-white text-xs font-black uppercase tracking-widest font-mono">{autoDetectedDept.name}</span>
-              <span className="text-[#8888aa] text-[9px] font-bold uppercase tracking-[2px] ml-auto">Auto-detectado</span>
+              <span className="text-[#8888aa] text-[9px] font-bold uppercase tracking-[2px] ml-auto">Auto-detectado (Sólo lectura)</span>
             </div>
           ) : (
             <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-amber-400 text-xs font-black uppercase tracking-widest font-mono">
               ⚠️ Sin departamento asignado — Contacta al administrador
             </div>
-          )}
-          {/* Campo oculto por si se necesita seleccionar manualmente */}
-          {departments.length > 1 && (
-            <details className="mt-2">
-              <summary className="text-[9px] text-[#8888aa] cursor-pointer hover:text-white transition-colors uppercase tracking-[2px] font-bold">
-                ▸ Cambiar departamento manualmente
-              </summary>
-              <select
-                value={departmentId}
-                onChange={e => setDepartmentId(e.target.value)}
-                required
-                className="mt-2 w-full bg-[#0f0a28]/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-xs font-black focus:outline-none focus:border-[#ffffff]/50 transition-all cursor-pointer uppercase tracking-widest font-mono"
-              >
-                <option value="" disabled>SELECCIONAR DEPARTAMENTO</option>
-                {departments.map(d => (
-                  <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>
-                ))}
-              </select>
-            </details>
           )}
         </div>
 

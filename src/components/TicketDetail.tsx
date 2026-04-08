@@ -218,7 +218,7 @@ export default function TicketDetail() {
           <div className="glass-panel rounded-[40px] border border-white/5 p-8 sm:p-12 relative overflow-hidden">
             <div className="flex flex-wrap items-center gap-4 mb-8">
               <span className="text-[#8888aa] text-[9px] font-black tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/10 uppercase">
-                {ticket.folio ? `FOLIO_${ticket.folio.toString().padStart(6, '0')}` : `REF_${ticket.id.slice(0,8).toUpperCase()}`}
+                {ticket.folio ? `TZH-${ticket.folio.toString().padStart(4, '0')}` : `REF_${ticket.id.slice(0,8).toUpperCase()}`}
               </span>
               <span className={`text-[9px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest ${statusColors[ticket.status]}`}>{ticket.status}</span>
               <span className={`text-[9px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest border ${priorityColors[ticket.priority as string]}`}>{ticket.priority}</span>
