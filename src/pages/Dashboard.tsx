@@ -177,7 +177,7 @@ export default function Dashboard() {
              </div>
              <div>
                 <h1 className="text-4xl sm:text-7xl font-black text-white font-orbitron tracking-tighter uppercase leading-none">
-                  CLIENTE <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">CONTROL</span>
+                  ADMIN <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">CONTROL</span>
                 </h1>
                 <p className="text-[#8888aa] text-[10px] font-black tracking-[5px] uppercase mt-1">SISTEMA TICKETS TZOMPANTEPEC</p>
              </div>

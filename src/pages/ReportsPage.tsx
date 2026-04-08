@@ -307,6 +307,31 @@ export default function ReportsPage() {
   const resolved = filtered.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
   const resolutionRate = pct(resolved, total);
 
+  // --- NUEVAS MÉTRICAS ANALÍTICAS ---
+  const byDay = useMemo(() => {
+    const days: Record<string, number> = {};
+    filtered.forEach(t => {
+      const d = t.createdAt.split('T')[0];
+      days[d] = (days[d] || 0) + 1;
+    });
+    return Object.entries(days).sort().slice(-15); // Últimos 15 días activos
+  }, [filtered]);
+
+  const byMonth = useMemo(() => {
+    const months: Record<string, number> = {};
+    filtered.forEach(t => {
+      const m = t.createdAt.substring(0, 7); // YYYY-MM
+      months[m] = (months[m] || 0) + 1;
+    });
+    return Object.entries(months).sort();
+  }, [filtered]);
+
+  const topProblems = useMemo(() => {
+    const counts: Record<string, number> = {};
+    filtered.forEach(t => { counts[t.category] = (counts[t.category] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [filtered]);
+
   const agentStats = agents.map(a => {
     const assigned = filtered.filter(t => t.assignedToId === a.id);
     const resolvedByAgent = assigned.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
@@ -321,7 +346,7 @@ export default function ReportsPage() {
       const pw = doc.internal.pageSize.getWidth();
       const startY = 50;
 
-      addPdfHeader(doc, 'Reporte Ejecutivo Operativo', 'Resumen de métricas de desempeño');
+      addPdfHeader(doc, 'Reporte Maestro ADMIN CONTROL', 'Inteligencia de Datos e Incidencias');
 
       // ── BLOQUE DE MÉTRICAS KPI ──
       let y = startY;
@@ -329,40 +354,69 @@ export default function ReportsPage() {
       const kpis = [
         { label: 'Total Solicitudes',   value: String(total),           color: PDF_COLORS.accentDark },
         { label: 'Tasa Resolución',    value: `${resolutionRate}%`,    color: PDF_COLORS.success },
-        { label: 'Abiertos',           value: String(byStatus[0].n),   color: PDF_COLORS.warning },
-        { label: 'En Progreso',        value: String(byStatus[1].n),   color: PDF_COLORS.danger },
+        { label: 'Pendientes',         value: String(byStatus[0].n),   color: PDF_COLORS.warning },
+        { label: 'En Proceso',        value: String(byStatus[1].n),   color: PDF_COLORS.danger },
       ];
       kpis.forEach((k, i) => addMetricBox(doc, 14 + i * (boxW + 3), y, boxW, k.label, k.value, k.color));
       y += 30;
 
-      // ── SECCIÓN: DISTRIBUCIÓN POR ESTADO ──
-      y = addSectionLabel(doc, 'Distribución por Estado del Sistema', y);
+      // ── SECCIÓN: PROBLEMAS PRINCIPALES (CATEGORÍAS) ──
+      y = addSectionLabel(doc, 'Jerarquía de Incidencias (Clasificación)', y);
       autoTable(doc, {
         ...PDF_TABLE_STYLES,
         startY: y,
-        head: [['ESTADO', 'CANTIDAD', 'PORCENTAJE', 'TENDENCIA']],
-        body: byStatus.map(({ s, n }) => [
-          s,
-          n,
-          `${pct(n, total)}%`,
-          n === 0 ? 'Sin actividad' : n > total * 0.5 ? '▲ Alta carga' : 'Normal ◆',
-        ]),
+        head: [['CATEGORÍA DE PROBLEMA', 'INCIDENCIAS DETECTADAS', 'IMPACTO %']],
+        body: topProblems.map(([c, n]) => [c, n, `${pct(n, total)}%`]),
         columnStyles: {
           0: { fontStyle: 'bold' },
           1: { halign: 'center' },
-          2: { halign: 'center', fontStyle: 'bold' },
-          3: { halign: 'center', textColor: PDF_COLORS.muted },
+          2: { halign: 'center', fontStyle: 'bold', textColor: PDF_COLORS.accent },
         },
       });
-
       y = (doc as any).lastAutoTable.finalY + 10;
 
-      // ── SECCIÓN: DISTRIBUCIÓN POR PRIORIDAD ──
-      y = addSectionLabel(doc, 'Distribución por Nivel de Prioridad', y);
+      // ── SECCIÓN: IMPACTO POR DEPARTAMENTO ──
+      y = addSectionLabel(doc, 'Demanda Institucional por Departamento', y);
+      const sortedDepts = [...byDept].sort((a, b) => b.n - a.n).slice(0, 10);
       autoTable(doc, {
         ...PDF_TABLE_STYLES,
         startY: y,
-        head: [['PRIORIDAD', 'CANTIDAD', 'PORCENTAJE']],
+        head: [['DEPARTAMENTO', 'SOLICITUDES', 'PORCENTAJE DE CARGA']],
+        body: sortedDepts.map(({ d, n }) => [d.name, n, `${pct(n, total)}%`]),
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          1: { halign: 'center' },
+          2: { halign: 'center' },
+        },
+      });
+      y = (doc as any).lastAutoTable.finalY + 15;
+
+      // Nueva Página para Gráficos de Tiempo y Prioridad
+      doc.addPage();
+      addPdfHeader(doc, 'Reporte Maestro ADMIN CONTROL', 'Análisis Temporal y Priorización');
+      y = 55;
+
+      // ── SECCIÓN: TENDENCIA POR DÍA ──
+      y = addSectionLabel(doc, 'Dinámica de Incidencias por Día (Últimos 15 días)', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['FECHA', 'TICKETS GENERADOS', 'OBSERVACIÓN']],
+        body: byDay.map(([fecha, n]) => [
+          fecha, 
+          n, 
+          n > (total/15) * 1.5 ? 'PICO DE DEMANDA' : 'ESTABLE'
+        ]),
+        columnStyles: { 0: { fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' } },
+      });
+      y = (doc as any).lastAutoTable.finalY + 10;
+
+      // ── SECCIÓN: DISTRIBUCIÓN POR PRIORIDAD ──
+      y = addSectionLabel(doc, 'Niveles críticos de Priorización', y);
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['NIVEL DE PRIORIDAD', 'CANTIDAD', 'RELEVANCIA %']],
         body: byPriority.map(({ p, n }) => [p, n, `${pct(n, total)}%`]),
         columnStyles: {
           0: { fontStyle: 'bold' },
@@ -389,27 +443,28 @@ export default function ReportsPage() {
         ...PDF_TABLE_STYLES,
         startY: 55,
         head: [['FOLIO', 'ASUNTO', 'SOLICITANTE', 'DEPTO', 'CATEGORÍA', 'PRIORIDAD', 'ESTADO', 'FECHA']],
-        body: filtered.slice(0, 25).map(t => [ // Limit for single page preview if too many
-          t.id.slice(0, 8).toUpperCase(),
-          t.title.substring(0, 35),
+        body: filtered.map(t => [
+          t.folio ? `TKT-${String(t.folio).padStart(4, '0')}` : t.id.slice(0, 8).toUpperCase(),
+          t.title,
           t.createdByName.split(' ')[0],
-          departments.find(d => d.id === t.departmentId)?.name.substring(0, 12) ?? '—',
+          departments.find(d => d.id === t.departmentId)?.name ?? '—',
           t.category,
           t.priority,
           t.status,
           formatDate(t.createdAt).split(' ')[0],
         ]),
         columnStyles: {
-          0: { cellWidth: 18, fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
-          1: { cellWidth: 40 },
-          2: { cellWidth: 20 },
-          3: { cellWidth: 25 },
+          0: { cellWidth: 25, fontStyle: 'bold', textColor: PDF_COLORS.accentDark },
+          1: { cellWidth: 70, overflow: 'linebreak' },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 35 },
           4: { cellWidth: 35 },
-          5: { cellWidth: 20 },
-          6: { cellWidth: 20 },
-          7: { cellWidth: 22 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 25 },
+          7: { cellWidth: 24 },
         },
-        margin: { bottom: 60 }, // Leave space for signatures
+        styles: { ...PDF_TABLE_STYLES.styles, fontSize: 8 },
+        margin: { bottom: 60, left: 14, right: 14 },
         didDrawPage: (d) => {
           addPdfFooter(doc, d.pageNumber);
         },
@@ -519,11 +574,54 @@ export default function ReportsPage() {
     }
   };
 
-  const exportGeneralExcel = () => {
-    downloadExcel([
-      { name: 'SISTEMA_DUMP', data: [['Métrica', 'Valor'], ['Total', total], ['Tasa Res.', resolutionRate]] },
-      { name: 'ESTADOS', data: [['Estado', 'Q'], ...byStatus.map(s=>[s.s, s.n])] }
-    ], `database-dump-${new Date().getTime()}.xlsx`);
+  const exportAdoptionPDF = () => {
+    setExportLoading('adoption-pdf');
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+      addPdfHeader(doc, 'Reporte de Adopción y Uso', 'Métricas de interacción institucional');
+
+      let y = 55;
+      const sortedUsers = [...users].sort((a,b) => {
+        const cB = tickets.filter(t=>t.createdById===b.id).length;
+        const cA = tickets.filter(t=>t.createdById===a.id).length;
+        return cB - cA;
+      });
+
+      autoTable(doc, {
+        ...PDF_TABLE_STYLES,
+        startY: y,
+        head: [['USUARIO', 'DEPARTAMENTO', 'TICKETS', 'ENGAGEMENT', 'ESTADO']],
+        body: sortedUsers.map(u => {
+          const count = tickets.filter(t => t.createdById === u.id).length;
+          const lastSeen = userActivity[u.id];
+          const isOnline = lastSeen && (Date.now() - new Date(lastSeen).getTime() < 300000);
+          let engagement = count > 5 ? 'ALTO' : count > 0 ? 'MEDIO' : 'BAJO';
+          return [u.name, departments.find(d=>d.id===u.departmentId)?.name || 'SISTEMAS', count, engagement, isOnline ? 'ONLINE' : 'OFFLINE'];
+        }),
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          1: { cellWidth: 45 },
+          2: { halign: 'center' },
+          3: { halign: 'center', fontStyle: 'bold' },
+          4: { halign: 'center' },
+        },
+        didDrawPage: (d) => addPdfFooter(doc, d.pageNumber),
+      });
+
+      doc.save(`REPORTE-ADOPCION-${Date.now()}.pdf`);
+    } finally {
+      setExportLoading(null);
+    }
+  };
+
+  const exportAdoptionExcel = () => {
+    const data = [['Usuario', 'Departamento', 'Tickets Creados', 'Engagement', 'Estado Conexión']];
+    users.forEach(u => {
+      const count = tickets.filter(t => t.createdById === u.id).length;
+      const lastSeen = userActivity[u.id];
+      data.push([u.name, departments.find(d=>d.id===u.departmentId)?.name || 'S/D', String(count), count > 5 ? 'ALTO' : 'MEDIO', lastSeen ? 'ACTIVO' : 'INACTIVO']);
+    });
+    downloadExcel([{ name: 'Adopcion', data }], `engagement-usuarios-${Date.now()}.xlsx`);
   };
 
   const exportTicketsExcel = () => {
@@ -975,7 +1073,9 @@ export default function ReportsPage() {
             title="Adopción y Compromiso"
             subtitle="ANÁLISIS DE INTERACCIÓN POR DEPARTAMENTO"
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>}
-          />
+          >
+            <ExportMenu onPDF={exportAdoptionPDF} onExcel={exportAdoptionExcel} id="adoption" />
+          </SectionHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[ 
