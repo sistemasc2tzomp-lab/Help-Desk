@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { AppSettings, TicketPriority } from '../types';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -131,7 +132,7 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
-  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, addLog } = useApp();
+  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
@@ -177,6 +178,7 @@ export default function SettingsPage() {
     { id: 'appearance', label: 'Matriz Visual', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg> },
     { id: 'supabase', label: 'Estructura DB', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
     { id: 'logs', label: 'Bitácora Núcleo', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> },
+    { id: 'maintenance', label: 'Protocolo Limpieza', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> },
   ];
 
   return (
@@ -196,6 +198,18 @@ export default function SettingsPage() {
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
             RESTABLECER
+          </button>
+          <button
+            onClick={() => {
+              if (confirm('⚠️ ADVERTENCIA CRÍTICA: Se eliminarán todas las credenciales y configuraciones locales. El sistema volverá al estado de instalación inicial. ¿Continuar?')) {
+                localStorage.clear();
+                window.location.reload();
+              }
+            }}
+            className="flex items-center gap-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all border border-red-500/30"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            REINICIAR_SISTEMA
           </button>
           <button
             onClick={handleSave}
@@ -543,6 +557,64 @@ export default function SettingsPage() {
                     className="text-[9px] font-black text-[#8888aa] hover:text-white uppercase tracking-[3px] transition-colors"
                   >
                     LIMPIAR_MEMORIA (SIM)
+                  </button>
+                </div>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* ── MAINTENANCE ── */}
+          {activeSection === 'maintenance' && (
+            <SectionCard
+              title="PROTOCOLO DE REINICIO TOTAL"
+              description="RESTAURACIÓN DEL SISTEMA A ESTADO INICIAL (PUNTO CERO)"
+              icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>}
+            >
+              <div className="space-y-10">
+                <div className="p-8 rounded-[32px] bg-red-500/5 border border-red-500/20 space-y-4">
+                   <div className="flex items-center gap-4 text-red-400">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      <span className="text-xs font-black font-orbitron tracking-[2px] uppercase">ADVERTENCIA CRÍTICA</span>
+                   </div>
+                   <p className="text-[#8888aa] text-[11px] font-bold uppercase leading-relaxed tracking-wider">
+                     Esta acción eliminará de forma permanente todos los tickets, comentarios y registros actuales del sistema. La configuración volverá a sus valores predeterminados y el núcleo entrará en estado limpio para nuevas operaciones.
+                   </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿CONFIRMAR DESTRUCCIÓN TOTAL DE DATOS? Esta acción no se puede deshacer.')) return;
+                      if (!confirm('SEGUNDA CONFIRMACIÓN REQUERIDA: ¿Está 100% seguro de reiniciar el sistema?')) return;
+                      
+                      try {
+                        if (isSupabaseConfigured()) {
+                          const sb = getSupabase();
+                          // Delete communications first due to FK
+                          await sb.from('ticket_comentarios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                          // Delete tickets
+                          await sb.from('tickets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                        }
+                        
+                        setSettings(DEFAULT_SETTINGS);
+                        saveSettings(DEFAULT_SETTINGS);
+                        triggerSync();
+                        alert('SISTEMA REINICIADO: El núcleo ha sido limpiado satisfactoriamente.');
+                        window.location.reload();
+                      } catch (err: any) {
+                        alert('FALLO EN EL PROTOCOLO: ' + (err.message || 'Error desconocido'));
+                      }
+                    }}
+                    className="flex-1 px-8 py-5 rounded-[24px] bg-red-600 hover:bg-red-500 text-white text-[10px] font-black font-orbitron tracking-[4px] uppercase transition-all shadow-[0_0_30px_rgba(220,38,38,0.2)] hover:shadow-[0_0_50px_rgba(220,38,38,0.4)] active:scale-95"
+                  >
+                    EJECUTAR_LIMPIEZA_TOTAL
+                  </button>
+
+                  <button
+                    onClick={() => handleReset()}
+                    className="flex-1 px-8 py-5 rounded-[24px] bg-white/5 hover:bg-white/10 border border-white/10 text-[#8888aa] hover:text-white text-[10px] font-black font-orbitron tracking-[4px] uppercase transition-all"
+                  >
+                    Solo Resetear Configuración
                   </button>
                 </div>
               </div>

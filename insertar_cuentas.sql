@@ -16,23 +16,25 @@ BEGIN
     FOR r IN (
         SELECT * FROM (
             VALUES 
-                ('Industria y Comercio', 'industria@helpdesk.tzomp', 'Industri@2026'),
-                ('Registro Civil', 'registrocivil@helpdesk.tzomp', 'RegC1vil2026'),
-                ('Obras Públicas', 'obras@helpdesk.tzomp', 'Obras.2026'),
-                ('Secretaría', 'secretaria@helpdesk.tzomp', 'Secr3taria2026'),
-                ('Juez Municipal', 'juzgado@helpdesk.tzomp', 'Juzg@do2026'),
-                ('Sindicatura', 'sindicatura@helpdesk.tzomp', 'Sindic@tura2026'),
-                ('Cajas', 'cajas@helpdesk.tzomp', 'Caj@s2026'),
-                ('Oficialía de Partes', 'oficialia@helpdesk.tzomp', 'Ofic1alia2026'),
-                ('Tesorería', 'tesoreria@helpdesk.tzomp', 'Tesoreri@2026'),
-                ('Regiduría', 'regiduria@helpdesk.tzomp', 'R3giduria2026'),
-                ('Salud', 'salud@helpdesk.tzomp', 'Salud.2026$'),
-                ('Ecología', 'ecologia@helpdesk.tzomp', 'Ecolog1a2026'),
-                ('Gestión Social', 'gestionsocial@helpdesk.tzomp', 'GestSoc1al2026'),
-                ('Educación, C y T', 'educacion@helpdesk.tzomp', 'Educ@cion2026'),
-                ('Deportes', 'deportes@helpdesk.tzomp', 'D3portes2026'),
-                ('Fomento A', 'agropecuario@helpdesk.tzomp', 'Agropecu@rio2026'),
-                ('Dirección de P', 'planeacion@helpdesk.tzomp', 'Plan3acion2026')
+                ('DIF', 'dif@helpdesk.tzomp', 'DIF@Tzomp2024'),
+                ('Seguridad Pública', 'segpub@helpdesk.tzomp', 'SegPub@Tzomp2024'),
+                ('Industria y Comercio', 'industria@helpdesk.tzomp', 'Industria@Tzomp2024'),
+                ('Registro Civil', 'registrocivil@helpdesk.tzomp', 'RegCivil@Tzomp2024'),
+                ('Obras Públicas', 'obras@helpdesk.tzomp', 'Obras@Tzomp2024'),
+                ('Secretaría', 'secretaria@helpdesk.tzomp', 'Secretaria@Tzomp2024'),
+                ('Juez Municipal', 'juzgado@helpdesk.tzomp', 'Juzgado@Tzomp2024'),
+                ('Sindicatura', 'sindicatura@helpdesk.tzomp', 'Sindicatura@Tzomp2024'),
+                ('Cajas', 'cajas@helpdesk.tzomp', 'Cajas@Tzomp2024'),
+                ('Oficialía de Partes', 'oficialia@helpdesk.tzomp', 'Oficialia@Tzomp2024'),
+                ('Tesorería', 'tesoreria@helpdesk.tzomp', 'Tesoreria@Tzomp2024'),
+                ('Regiduría', 'regiduria@helpdesk.tzomp', 'Regiduria@Tzomp2024'),
+                ('Salud', 'salud@helpdesk.tzomp', 'Salud@Tzomp2024'),
+                ('Ecología', 'ecologia@helpdesk.tzomp', 'Ecologia@Tzomp2024'),
+                ('Gestión Social', 'gestionsocial@helpdesk.tzomp', 'GestionSocial@Tzomp2024'),
+                ('Educación, Cultura y Turismo', 'educacion@helpdesk.tzomp', 'Educacion@Tzomp2024'),
+                ('Deportes', 'deportes@helpdesk.tzomp', 'Deportes@Tzomp2024'),
+                ('Fomento Agropecuario', 'agropecuario@helpdesk.tzomp', 'Agropecuario@Tzomp2024'),
+                ('Dirección de Planeación', 'planeacion@helpdesk.tzomp', 'Planeacion@Tzomp2024')
         ) AS tabla(nombre_depto, email, password)
     )
     LOOP

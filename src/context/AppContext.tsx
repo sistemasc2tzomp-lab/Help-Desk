@@ -569,7 +569,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.log("EJECUTANDO_SINCRONIZACIÓN_DE_RESPALDO...");
       addLog("Sincronización de respaldo iniciada", 'info');
       refreshData();
-    }, 20000);
+    }, 10000);
 
     return () => {
       sb.removeChannel(channel);
