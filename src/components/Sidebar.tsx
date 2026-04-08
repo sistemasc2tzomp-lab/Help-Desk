@@ -189,7 +189,7 @@ export default function Sidebar() {
       <div className="p-8 pb-12 flex items-center gap-4">
         <Logo />
         <div>
-          <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-sm tracking-tighter leading-none">
+          <div style={{fontFamily:'var(--font-display)'}} className="text-[var(--text)] font-black text-sm tracking-tighter leading-none">
             {isAdmin ? 'ADMIN CONTROL' : 'USER CONTROL'}
           </div>
           <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold tracking-[3px] uppercase mt-1">TZOMPANTEPEC</div>
@@ -233,7 +233,7 @@ export default function Sidebar() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div style={{fontFamily:'var(--font-body)'}} className="text-white text-[10px] font-bold uppercase tracking-tight truncate">{currentUser?.name}</div>
+              <div style={{fontFamily:'var(--font-body)'}} className="text-[var(--text)] text-[10px] font-bold uppercase tracking-tight truncate">{currentUser?.name}</div>
               <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold uppercase tracking-widest">{currentUser?.role}</div>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-3">
           <Logo />
           <div>
-            <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-xs tracking-tighter uppercase">C2 SYSTEM</div>
+            <div style={{fontFamily:'var(--font-display)'}} className="text-[var(--text)] font-black text-xs tracking-tighter uppercase">C2 SYSTEM</div>
             <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[7px] font-semibold tracking-[2px] uppercase opacity-80">TZOMPANTEPEC</div>
           </div>
         </div>

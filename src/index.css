@@ -35,6 +35,8 @@
   --bg-surface:     #0b1127;
   --bg-card:        rgba(11,17,39,0.75);
   --bg-card-hover:  rgba(17,25,55,0.85);
+  --input-bg:       rgba(11,17,39,0.6);
+  --input-border:   rgba(99,102,241,0.15);
 
   /* ── Cristal / Glassmorphism ── */
   --glass:          rgba(59,130,246,0.04);
@@ -80,15 +82,17 @@
 }
 
 [data-theme='light'] {
-  --bg-void:        #f3f7f9;
-  --bg-dark:        #fcfdfe;
+  --bg-void:        #ffffff;
+  --bg-dark:        #f8fafc;
   --bg-surface:     #ffffff;
-  --bg-card:        rgba(255,255,255,0.7);
-  --bg-card-hover:  rgba(255,255,255,0.9);
+  --bg-card:        rgba(255,255,255,0.95);
+  --bg-card-hover:  #ffffff;
+  --input-bg:       #ffffff;
+  --input-border:   rgba(15, 23, 42, 0.15);
 
   --text:           #0f172a;
-  --text-secondary: #475569;
-  --text-muted:     #94a3b8;
+  --text-secondary: #334155;
+  --text-muted:     #64748b;
 
   --glass:          rgba(15, 23, 42, 0.05);
   --glass-border:   rgba(15, 23, 42, 0.1);
@@ -102,9 +106,8 @@
 }
 
 body[data-theme='light'] {
-  background-image: radial-gradient(circle at 0% 0%, rgba(59,130,246,0.05) 0%, transparent 40%),
-                    radial-gradient(circle at 100% 100%, rgba(16,185,129,0.05) 0%, transparent 40%);
-  background-color: var(--bg-void);
+  background-image: none;
+  background-color: var(--bg-dark);
   color: var(--text);
 }
 
@@ -286,8 +289,8 @@ input, textarea, select, button {
   padding: 16px 20px;
   font-size: 0.875rem;
   transition: var(--transition);
-  background: rgba(11,17,39,0.6);
-  border: 1px solid rgba(99,102,241,0.15);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   color: var(--text);
   font-family: var(--font-body);
   outline: none;

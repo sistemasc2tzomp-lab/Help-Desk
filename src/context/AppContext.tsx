@@ -3,32 +3,15 @@ import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory,
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 
 // ── Sound Notification System ─────────────────────────────────────
-// Shared AudioContext — se crea una vez y se reutiliza
+// Shared AudioContext — se crea SOLO tras la primera interacción del usuario
 let _sharedAudioCtx: AudioContext | null = null;
 let _userInteracted = false;
 
-// Activar audio tras primera interacción del usuario (política del navegador)
+// Registrar que el usuario ha interactuado (política autoplay del navegador)
 if (typeof window !== 'undefined') {
   const activateAudio = () => {
     _userInteracted = true;
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextClass && !_sharedAudioCtx) {
-        _sharedAudioCtx = new AudioContextClass();
-      }
-      if (_sharedAudioCtx?.state === 'suspended') {
-        _sharedAudioCtx.resume();
-      }
-      // Play a tiny silent buffer to "prime" the audio engine
-      const silentBuffer = _sharedAudioCtx?.createBuffer(1, 1, 22050);
-      const node = _sharedAudioCtx?.createBufferSource();
-      if (node && silentBuffer) {
-        node.buffer = silentBuffer;
-        node.connect(_sharedAudioCtx!.destination);
-        node.start(0);
-      }
-    } catch {}
-    // Remover listeners después de la primera activación
+    // NO crear AudioContext aquí — se creará cuando se necesite en playNotificationSound
     document.removeEventListener('click', activateAudio);
     document.removeEventListener('keydown', activateAudio);
     document.removeEventListener('touchstart', activateAudio);
@@ -45,7 +28,7 @@ function playNotificationSound(type: 'new_ticket' | 'update') {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
     
-    // Reusar el contexto compartido o crear uno nuevo
+    // Crear el contexto LAZILY — solo cuando realmente se necesita y ya hubo interacción
     if (!_sharedAudioCtx) {
       _sharedAudioCtx = new AudioContextClass();
     }
@@ -141,6 +124,8 @@ interface AppContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   resetSystem: () => Promise<void>;
+  perfiles: any[];
+  onlineUsers: Record<string, boolean>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -364,8 +349,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     const updatePresence = async () => {
       try {
-        await sb.from('perfiles').update({ ultima_conexion: new Date().toISOString() }).eq('id', currentUser.id);
-      } catch (err) { console.warn('Presence update failed', err); }
+        // Intentar actualizar presencia — columna puede ser ultima_conexion o updated_at
+        const { error } = await sb.from('perfiles').update({ updated_at: new Date().toISOString() }).eq('id', currentUser.id);
+        if (error) {
+          // Silenciosamente ignorar si la columna no existe
+        }
+      } catch { /* Presence update no es crítico */ }
     };
 
     updatePresence();
@@ -466,16 +455,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
       try {
-        const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
-        if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
+        // Intentar ordenar por creado_en (nombre real de la columna en BD)
+        let deptsResult = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
+        // Si falla (columna no existe), intentar sin orden
+        if (deptsResult.error) {
+          deptsResult = await sb.from('departamentos').select('*');
+        }
+        if (deptsResult.data) setDepartments((deptsResult.data as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
 
       // 2.1 Presencia de usuarios
       try {
-        const { data: presenceData } = await sb.from('perfiles').select('id, ultima_conexion');
-        if (presenceData) {
+        // We will try to fetch all perfiles for presence monitoring
+        const { data: fullPresence } = await sb.from('perfiles').select('*');
+        if (fullPresence) {
           const pMap: Record<string, string> = {};
-          presenceData.forEach((r: any) => { if (r.ultima_conexion) pMap[r.id] = r.ultima_conexion; });
+          fullPresence.forEach((r: any) => { 
+            const activity = r.ultima_conexion || r.last_sign_in || r.updated_at || r.created_at;
+            if (activity) pMap[r.id] = String(activity); 
+          });
           setUserActivity(pMap);
         }
       } catch { /* ignore presence fetch error */ }
@@ -483,12 +481,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // 3. Comentarios — ahora usa el mapa fresco
       const msgsByTicket: Record<string, Message[]> = {};
       try {
-        const { data: comentariosData } = await sb
+        let comentariosResult = await sb
           .from('ticket_comentarios')
           .select('*')
           .order('creado_en', { ascending: true });
-        if (comentariosData) {
-          (comentariosData as Record<string, unknown>[]).forEach(r => {
+        // Fallback si la columna se llama diferente
+        if (comentariosResult.error) {
+          comentariosResult = await sb.from('ticket_comentarios').select('*');
+        }
+        if (comentariosResult.data) {
+          (comentariosResult.data as Record<string, unknown>[]).forEach(r => {
             const m = rowToMessage(r, freshUMap);
             if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
             msgsByTicket[m.ticketId].push(m);
@@ -498,12 +500,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 4. Tickets — ahora usa el mapa fresco
       try {
-        const { data: tktData } = await sb
+        let tktResult = await sb
           .from('tickets')
           .select('*')
           .order('creado_en', { ascending: false });
-        if (tktData) {
-          setTickets((tktData as Record<string, unknown>[]).map(r =>
+        // Fallback si la columna se llama diferente
+        if (tktResult.error) {
+          tktResult = await sb.from('tickets').select('*');
+        }
+        if (tktResult.data) {
+          setTickets((tktResult.data as Record<string, unknown>[]).map(r =>
             rowToTicket(r, msgsByTicket[String(r.id)] || [], freshUMap)
           ));
         }
@@ -586,11 +592,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log(`ESTADO_DEL_CANAL_DE_DATOS: ${status.toUpperCase()}`);
       });
 
-    // Fallback Polling (Cada 5 segundos para máxima fluidez operativa)
+    // Fallback Polling — Solo como respaldo del canal Realtime (cada 60s)
     const fallbackId = setInterval(() => {
-      console.log("EJECUTANDO_SINCRONIZACIÓN_DE_RESPALDO...");
       refreshData();
-    }, 5000);
+    }, 60000);
 
     return () => {
       sb.removeChannel(channel);
@@ -1089,6 +1094,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userActivity,
       theme,
       toggleTheme,
+      perfiles: users.map(u => ({
+        id: u.id,
+        nombre: u.name,
+        correo: u.email,
+        rol: u.role.toLowerCase()
+      })),
+      onlineUsers: (() => {
+        const online: Record<string, boolean> = {};
+        const now = Date.now();
+        Object.entries(userActivity).forEach(([uid, last]) => {
+          const lastTs = new Date(last).getTime();
+          if (now - lastTs < 300000) online[uid] = true;
+        });
+        return online;
+      })(),
       resetSystem: async () => {
         if (!isSupabaseConfigured()) return;
         const sb = getSupabase();
@@ -1102,20 +1122,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           // 2. Limpiar comentarios
           await sb.from('ticket_comentarios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-          // 3. Departamentos base
+          // 3. Departamentos base (Expansion plan)
           const depts = [
-            { nombre: 'Servicios Públicos', descripcion: 'Mantenimiento y servicios urbanos', color: '#3b82f6', jefe: 'Ing. Servipubli' },
-            { nombre: 'Contraloría Interna', descripcion: 'Auditoría y control gubernamental', color: '#8b5cf6', jefe: 'Lic. Contraloría' },
-            { nombre: 'Protección Civil', descripcion: 'Atención a emergencias y riesgos', color: '#ef4444', jefe: 'Cmdte. PC' },
-            { nombre: 'Sistemas / TI', descripcion: 'Soporte técnico y redes', color: '#10b981', jefe: 'Ing. Sistemas' },
-            { nombre: 'Tesorería', descripcion: 'Gestión financiera', color: '#f59e0b', jefe: 'C.P. Tesorería' }
+            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', color: '#06b6d4' },
+            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', color: '#ec4899' },
+            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', color: '#f97316' },
+            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', color: '#10b981' },
+            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', color: '#3b82f6' },
+            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', color: '#6366f1' },
+            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', color: '#f59e0b' },
+            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', color: '#ef4444' }
           ];
 
           for (const d of depts) {
             await sb.from('departamentos').upsert(d, { onConflict: 'nombre' });
           }
 
-          addLog('PROTOCOL_RESET_COMPLETED: El sistema está limpio y operativo.', 'success');
+          addLog(`PROTOCOL_RESET_COMPLETED: ${depts.length} departamentos configurados.`, 'success');
           await refreshData();
         } catch (err: any) {
           addLog(`FALLO_PROTOCOLO_REINICIO: ${err.message}`, 'error');

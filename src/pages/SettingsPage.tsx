@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { AppSettings, TicketPriority } from '../types';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -132,7 +132,7 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
-  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, theme, toggleTheme } = useApp();
+  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, theme, toggleTheme, resetSystem } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
@@ -187,7 +187,7 @@ export default function SettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            SISTEMA <span className="text-white">AJUSTES</span>
+            ADMIN <span className="text-white">CONTROL</span>
           </h1>
           <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">CONFIGURACIÓN DE NÚCLEO Y PROTOCOLOS</p>
         </div>
@@ -598,16 +598,11 @@ export default function SettingsPage() {
                       
                       try {
                         if (isSupabaseConfigured()) {
-                          const sb = getSupabase();
-                          // Delete communications first due to FK
-                          await sb.from('ticket_comentarios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                          // Delete tickets
-                          await sb.from('tickets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                          await resetSystem(); 
                         }
                         
                         setSettings(DEFAULT_SETTINGS);
                         saveSettings(DEFAULT_SETTINGS);
-                        triggerSync();
                         alert('SISTEMA REINICIADO: El núcleo ha sido limpiado satisfactoriamente.');
                         window.location.reload();
                       } catch (err: any) {

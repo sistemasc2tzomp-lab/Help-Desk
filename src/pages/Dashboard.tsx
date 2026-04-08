@@ -25,19 +25,19 @@ const statusColors: Record<TicketStatus, string> = {
 const StatCard = ({ label, value, icon: Icon, sub, color, shadow, gradient }: {
   label: string; value: string | number; icon: any; gradient?: string; sub?: string; color: string; shadow: string;
 }) => (
-  <div className={`glass-panel p-6 rounded-[2rem] border-white/5 relative overflow-hidden group hover:border-white/20 transition-all duration-500 ${shadow} hover:shadow-2xl bg-[#0a0520]/40`}>
+  <div className={`glass-panel p-6 rounded-[2rem] border-[var(--glass-border)] relative overflow-hidden group hover:border-[var(--glass-border-hover)] transition-all duration-500 ${shadow} hover:shadow-2xl bg-[var(--bg-card)]`}>
     <div className={`absolute -right-4 -bottom-4 p-8 opacity-[0.03] group-hover:opacity-10 transition-opacity transform group-hover:scale-125 duration-700 ${color}`}>
       <Icon className="w-24 h-24" />
     </div>
     <div className="relative z-10 space-y-4">
       <div className="flex items-center gap-2">
-        <div className={`p-2 rounded-xl bg-white/5 ${color} border border-white/5`}>
+        <div className={`p-2 rounded-xl bg-[var(--glass)] ${color} border border-[var(--glass-border)]`}>
           <Icon className="w-5 h-5" />
         </div>
-        <span className="text-[10px] font-black text-[#8888aa] tracking-[3px] uppercase">{label}</span>
+        <span className="text-[10px] font-black text-[var(--text-muted)] tracking-[3px] uppercase">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <div className="text-4xl font-black text-white font-orbitron tracking-tight">{value}</div>
+        <div className="text-4xl font-black text-[var(--text)] font-orbitron tracking-tight">{value}</div>
         {sub && <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
           <TrendingUp size={8} /> {sub}
         </div>}
@@ -154,9 +154,19 @@ export default function Dashboard() {
   }, [filteredTickets, departments]);
 
   const timeData = useMemo(() => {
-    const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    return days.map(d => ({ name: d, tickets: Math.floor(Math.random() * 15) + 5, peak: Math.floor(Math.random() * 20) + 10 }));
-  }, []);
+    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const data = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const dayName = days[d.getDay()];
+      const count = filteredTickets.filter(t => {
+        const tDate = new Date(t.createdAt);
+        return tDate.getDate() === d.getDate() && tDate.getMonth() === d.getMonth();
+      }).length;
+      return { name: dayName, tickets: count, peak: Math.max(0, count + Math.floor(Math.random() * 3)) };
+    });
+    return data;
+  }, [filteredTickets]);
 
   const handleTicketClick = (ticket: Ticket) => {
     setSelectedTicketId(ticket.id);
@@ -166,39 +176,39 @@ export default function Dashboard() {
   const PieComponent = Pie as any;
 
   return (
-    <div className="p-4 sm:p-10 space-y-10 bg-[#030014] min-h-screen text-slate-300 font-rajdhani">
+    <div className="p-4 sm:p-10 space-y-10 bg-[var(--bg-void)] min-h-screen text-[var(--text-secondary)] font-rajdhani">
       {/* Header Section Premium */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative overflow-hidden group">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-[var(--glass-border)] relative overflow-hidden group">
         <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-80 transition-opacity duration-1000" />
         <div className="space-y-4 relative z-10">
           <div className="flex items-center gap-3">
-             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg transform rotate-3">
+             <div className="w-12 h-12 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] flex items-center justify-center shadow-lg transform rotate-3">
                 <ActivityIcon className="text-emerald-400 w-6 h-6 animate-pulse" />
              </div>
              <div>
-                <h1 className="text-4xl sm:text-7xl font-black text-white font-orbitron tracking-tighter uppercase leading-none">
+                <h1 className="text-4xl sm:text-7xl font-black text-[var(--text)] font-orbitron tracking-tighter uppercase leading-none">
                   ADMIN <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">CONTROL</span>
                 </h1>
-                <p className="text-[#8888aa] text-[10px] font-black tracking-[5px] uppercase mt-1">SISTEMA TICKETS TZOMPANTEPEC</p>
+                <p className="text-[var(--text-muted)] text-[10px] font-black tracking-[5px] uppercase mt-1">SISTEMA TICKETS TZOMPANTEPEC</p>
              </div>
           </div>
         </div>
         
         <div className="flex flex-wrap gap-4 items-center relative z-10">
-          <div className="flex items-center gap-8 px-8 py-4 bg-white/2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+          <div className="flex items-center gap-8 px-8 py-4 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--glass-border)] backdrop-blur-md">
              <div className="text-center">
-                <div className="text-[8px] font-black text-[#8888aa] uppercase tracking-[3px]">TIEMPO REAL</div>
-                <div className="text-lg font-black text-white font-orbitron">{new Date().toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-[3px]">TIEMPO REAL</div>
+                <div className="text-lg font-black text-[var(--text)] font-orbitron">{new Date().toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
              </div>
-             <div className="w-px h-8 bg-white/10" />
+             <div className="w-px h-8 bg-[var(--glass-border)]" />
              <div className="text-center">
-                <div className="text-[8px] font-black text-[#8888aa] uppercase tracking-[3px]">FECHA ACTUAL</div>
-                <div className="text-lg font-black text-white font-orbitron">{new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}</div>
+                <div className="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-[3px]">FECHA ACTUAL</div>
+                <div className="text-lg font-black text-[var(--text)] font-orbitron">{new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}</div>
              </div>
           </div>
           <button
             onClick={() => setPage('reports')}
-            className="px-8 py-4 rounded-[2rem] bg-white text-[#030014] text-[10px] font-black tracking-[4px] hover:scale-105 transition-all uppercase flex items-center gap-3 shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+            className="px-8 py-4 rounded-[2rem] bg-[var(--primary)] text-white text-[10px] font-black tracking-[4px] hover:scale-105 transition-all uppercase flex items-center gap-3 shadow-[0_0_30px_rgba(59,130,246,0.15)]"
           >
             <FileText size={18} /> GENERAR REPORTE
           </button>
@@ -251,11 +261,11 @@ export default function Dashboard() {
            { label: 'NETWORK', val: 'Stable', icon: Globe, color: 'text-cyan-400' },
            { label: 'UPTIME', val: '24d 12h', icon: Server, color: 'text-emerald-400' }
          ].map((r, i) => (
-           <div key={i} className="glass-panel p-4 rounded-3xl border-white/5 flex items-center gap-4 bg-[#0a0520]/20 hover:bg-white/5 transition-colors">
-              <div className={`p-2 rounded-lg bg-white/5 ${r.color}`}><r.icon size={16} /></div>
+           <div key={i} className="glass-panel p-4 rounded-3xl border-[var(--glass-border)] flex items-center gap-4 bg-[var(--bg-card)] hover:border-[var(--glass-border-hover)] transition-colors">
+              <div className={`p-2 rounded-lg bg-[var(--glass)] ${r.color}`}><r.icon size={16} /></div>
               <div>
-                 <div className="text-[7px] font-black text-[#8888aa] uppercase tracking-[2px]">{r.label}</div>
-                 <div className="text-xs font-black text-white font-orbitron">{r.val}</div>
+                 <div className="text-[7px] font-black text-[var(--text-muted)] uppercase tracking-[2px]">{r.label}</div>
+                 <div className="text-xs font-black text-[var(--text)] font-orbitron">{r.val}</div>
               </div>
            </div>
          ))}
@@ -264,16 +274,16 @@ export default function Dashboard() {
       {/* Main Analysis Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Status Distribution 3D-effect */}
-        <div className="lg:col-span-1 glass-panel p-10 rounded-[3rem] border-white/5 bg-[#0a0520]/40 relative overflow-hidden group">
+        <div className="lg:col-span-1 glass-panel p-10 rounded-[3rem] border-[var(--glass-border)] bg-[var(--bg-card)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-10 opacity-[0.02] transform rotate-12"><PieChartIcon size={120} /></div>
           <div className="w-full mb-10 flex justify-between items-center">
-            <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] border-l-2 border-blue-400 pl-4">DISTRIBUCIÓN_VITAL</h2>
+            <h2 className="text-[10px] font-black text-[var(--text)] uppercase tracking-[5px] border-l-2 border-blue-400 pl-4">DISTRIBUCIÓN_VITAL</h2>
             <div className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[8px] font-black tracking-widest border border-blue-500/20">LIVE_SYNC</div>
           </div>
           
-          <div className="w-full h-80 flex justify-center">
+          <div className="w-full h-80 flex justify-center" style={{ minHeight: 320 }}>
             {isHydrated && (
-              <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <PieComponent
                     activeIndex={activeIndex}
@@ -303,28 +313,28 @@ export default function Dashboard() {
 
           <div className="w-full grid grid-cols-3 gap-4 mt-10">
             {statusData.map((stat, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/2 border border-white/5 group/stat hover:bg-white/5 transition-all">
-                <span className="text-[8px] font-bold text-[#8888aa] uppercase tracking-widest">{stat.name}</span>
-                <div className="text-2xl font-black text-white font-orbitron tracking-tighter group-hover:scale-110 transition-transform" style={{ color: stat.color }}>{stat.value}</div>
+              <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] group/stat hover:bg-[var(--glass-border)] transition-all">
+                <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{stat.name}</span>
+                <div className="text-2xl font-black text-[var(--text)] font-orbitron tracking-tighter group-hover:scale-110 transition-transform" style={{ color: stat.color }}>{stat.value}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Operational Flow Area Chart */}
-        <div className="lg:col-span-2 glass-panel p-10 rounded-[3rem] border-white/5 bg-[#0a0520]/40 relative overflow-hidden">
+        <div className="lg:col-span-2 glass-panel p-10 rounded-[3rem] border-[var(--glass-border)] bg-[var(--bg-card)] relative overflow-hidden">
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-500/5 blur-[120px] rounded-full translate-x-1/2 translate-y-1/2" />
           <div className="w-full mb-10 flex justify-between items-center">
             <div className="space-y-1">
-              <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] border-l-2 border-emerald-400 pl-4">FLUJO_OPERATIVO_7D</h2>
-              <p className="text-[9px] font-bold text-[#8888aa] uppercase tracking-widest ml-4">MÉTRICA DE CARGA SEMANAL</p>
+              <h2 className="text-[10px] font-black text-[var(--text)] uppercase tracking-[5px] border-l-2 border-emerald-400 pl-4">FLUJO_OPERATIVO_7D</h2>
+              <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest ml-4">MÉTRICA DE CARGA SEMANAL</p>
             </div>
               {/* System title removed from chart area as per user request */}
           </div>
 
-          <div className="w-full h-80">
+          <div className="w-full h-80" style={{ minHeight: 320 }}>
             {isHydrated && (
-              <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+              <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={timeData}>
                   <defs>
                     <linearGradient id="colorTks" x1="0" y1="0" x2="0" y2="1">
@@ -375,11 +385,11 @@ export default function Dashboard() {
           <div className="flex gap-10 mt-10 ml-4">
              <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">Solicitudes_Base</span>
+                <span className="text-[9px] font-black text-[var(--text)] uppercase tracking-widest">Solicitudes_Base</span>
              </div>
              <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] border border-dashed" />
-                <span className="text-[9px] font-black text-[#8888aa] uppercase tracking-widest">Picos_Máximos</span>
+                <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Picos_Máximos</span>
              </div>
           </div>
         </div>
@@ -388,17 +398,17 @@ export default function Dashboard() {
       {/* Analysis Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Radar Map for Departments */}
-        <div className="glass-panel p-10 rounded-[3rem] border-white/5 bg-[#0a0520]/40 relative group">
+        <div className="glass-panel p-10 rounded-[3rem] border-[var(--glass-border)] bg-[var(--bg-card)] relative group">
            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] border-l-2 border-purple-400 pl-4">DEMANDA_DEPARTAMENTAL</h2>
+              <h2 className="text-[10px] font-black text-[var(--text)] uppercase tracking-[5px] border-l-2 border-purple-400 pl-4">DEMANDA_DEPARTAMENTAL</h2>
               <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 group-hover:rotate-45 transition-transform">
                  <BarChart3 size={20} />
               </div>
            </div>
            
-           <div className="w-full h-80 flex justify-center">
+           <div className="w-full h-80 flex justify-center" style={{ minHeight: 320 }}>
               {isHydrated && (
-                <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                <ResponsiveContainer width="100%" height={320}>
                   <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
                     <PolarGrid stroke="rgba(255,255,255,0.05)" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }} />
@@ -418,12 +428,12 @@ export default function Dashboard() {
         </div>
 
         {/* Critical Movements (Recent Activity) */}
-        <div className="glass-panel p-10 rounded-[3rem] border-white/5 bg-[#0a0520]/40">
+        <div className="glass-panel p-10 rounded-[3rem] border-[var(--glass-border)] bg-[var(--bg-card)]">
            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] border-l-2 border-amber-400 pl-4">MOVIMIENTOS_CRÍTICOS</h2>
+              <h2 className="text-[10px] font-black text-[var(--text)] uppercase tracking-[5px] border-l-2 border-amber-400 pl-4">MOVIMIENTOS_CRÍTICOS</h2>
               <button 
                 onClick={() => setPage('tickets')} 
-                className="flex items-center gap-2 text-[9px] font-black text-blue-400 hover:text-white transition-all uppercase tracking-[4px] bg-blue-400/5 px-4 py-2 rounded-full border border-blue-400/10 group"
+                className="flex items-center gap-2 text-[9px] font-black text-blue-400 hover:text-[var(--text)] transition-all uppercase tracking-[4px] bg-blue-400/5 px-4 py-2 rounded-full border border-blue-400/10 group"
               >
                 ACCEDER_REGISTRO <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
               </button>
@@ -431,7 +441,7 @@ export default function Dashboard() {
            
            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-4 custom-scrollbar">
               {recentTickets.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-[#8888aa] border-2 border-dashed border-white/5 rounded-[2rem]">
+                <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)] border-2 border-dashed border-[var(--glass-border)] rounded-[2rem]">
                    <AlertTriangle className="mb-4 opacity-20" size={40} />
                    <p className="text-[9px] font-black uppercase tracking-[4px]">Sin actividad reciente</p>
                 </div>
@@ -439,20 +449,20 @@ export default function Dashboard() {
                 <div 
                   key={i} 
                   onClick={() => handleTicketClick(t)} 
-                  className="flex items-center gap-5 p-5 rounded-[2rem] bg-white/2 border border-white/5 hover:border-emerald-500/40 hover:bg-white/5 transition-all cursor-pointer group animate-fade-up"
+                  className="flex items-center gap-5 p-5 rounded-[2rem] bg-[var(--glass)] border border-[var(--glass-border)] hover:border-emerald-500/40 hover:bg-[var(--glass-border)] transition-all cursor-pointer group animate-fade-up"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                   <div className="w-12 h-12 rounded-2xl bg-[#0f0a28] flex items-center justify-center shrink-0 border border-white/5 group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all">
+                   <div className="w-12 h-12 rounded-2xl bg-[var(--bg-surface)] flex items-center justify-center shrink-0 border border-[var(--glass-border)] group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition-all">
                       <Zap size={22} className="text-emerald-400 group-hover:scale-110 transition-transform"/>
                    </div>
                    <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-black text-white uppercase tracking-widest truncate group-hover:text-emerald-400 transition-colors">{t.title}</div>
+                      <div className="text-[12px] font-black text-[var(--text)] uppercase tracking-widest truncate group-hover:text-emerald-400 transition-colors">{t.title}</div>
                       <div className="flex items-center gap-4 mt-1">
                          <div className="flex items-center gap-1">
-                            <Users size={10} className="text-slate-500" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{t.createdByName.split(' ')[0]}</span>
+                            <Users size={10} className="text-[var(--text-secondary)]" />
+                            <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-tight">{t.createdByName.split(' ')[0]}</span>
                          </div>
-                         <div className="w-1 h-1 rounded-full bg-white/10" />
+                         <div className="w-1 h-1 rounded-full bg-[var(--glass-border)]" />
                          <span className="text-[10px] font-black text-blue-400 uppercase tracking-tighter">{formatDistanceToNow(t.updatedAt)}</span>
                       </div>
                    </div>
@@ -466,14 +476,14 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Infrastructure Footer */}
-      <div className="pt-10 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-8">
+      <div className="pt-10 border-t border-[var(--glass-border)] flex flex-col lg:flex-row justify-between items-center gap-8">
         <div className="flex items-center gap-5 group">
           <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 group-hover:bg-emerald-500/20 transition-colors">
             <Shield className="w-6 h-6 text-emerald-400 animate-pulse" />
           </div>
           <div>
-            <h4 className="text-md font-black text-white uppercase tracking-[4px] font-orbitron">SISTEMA TICKETS TZOMPANTEPEC</h4>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">INFRAESTRUCTURA DE DATOS INSTITUCIONAL ACTIVA EN CLÚSTER SEGURO</p>
+            <h4 className="text-md font-black text-[var(--text)] uppercase tracking-[4px] font-orbitron">SISTEMA TICKETS TZOMPANTEPEC</h4>
+            <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">INFRAESTRUCTURA DE DATOS INSTITUCIONAL ACTIVA EN CLÚSTER SEGURO</p>
           </div>
         </div>
         
@@ -485,7 +495,7 @@ export default function Dashboard() {
              { l: 'THREATS', v: '0_MITIGATED', c: 'text-emerald-400' }
            ].map((f, i) => (
              <div key={i} className="text-right sm:text-center px-4">
-                <div className="text-[10px] font-black text-[#8888aa] uppercase tracking-[3px] mb-1">{f.l}</div>
+                <div className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[3px] mb-1">{f.l}</div>
                 <div className={`text-sm font-black font-orbitron tracking-tight ${f.c}`}>{f.v}</div>
              </div>
            ))}
