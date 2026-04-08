@@ -426,30 +426,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addLog('Sincronización manual completada con éxito.', 'info');
   }, [refreshData, addLog]);
 
+  // ── Init: restore session from localStorage ──────────────────────────────
   useEffect(() => {
-    if (pb.authStore.model) {
+    if (pb.authStore.isValid && pb.authStore.model) {
       setCurrentUser(rowToUser(pb.authStore.model as any));
       setPage('dashboard');
+      refreshData();
     }
-    refreshData();
   }, [refreshData]);
 
+  // ── Real-time subscriptions (only when authenticated) ─────────────────────
   useEffect(() => {
-    // Real-time con PocketBase
-    pb.collection('tickets').subscribe('*', (e) => {
-      playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
-      refreshData(true);
-    });
-    pb.collection('ticket_comentarios').subscribe('*', (e) => {
-      playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
-      refreshData(true);
-    });
+    if (!currentUser) return; // No suscribirse si no hay sesión activa
+
+    let mounted = true;
+
+    const subscribeToCollections = async () => {
+      try {
+        await pb.collection('tickets').subscribe('*', (e) => {
+          if (!mounted) return;
+          playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
+          refreshData(true);
+        });
+      } catch { /* ignorar errores de suscripción */ }
+
+      try {
+        await pb.collection('ticket_comentarios').subscribe('*', (e) => {
+          if (!mounted) return;
+          playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
+          refreshData(true);
+        });
+      } catch { /* ignorar errores de suscripción */ }
+    };
+
+    subscribeToCollections();
 
     return () => {
-      pb.collection('tickets').unsubscribe('*');
-      pb.collection('ticket_comentarios').unsubscribe('*');
+      mounted = false;
+      pb.collection('tickets').unsubscribe('*').catch(() => {});
+      pb.collection('ticket_comentarios').unsubscribe('*').catch(() => {});
     };
-  }, [refreshData]);
+  }, [currentUser, refreshData]);
 
   // Sync tickets offline when back online
   const syncOfflineTickets = useCallback(async () => {

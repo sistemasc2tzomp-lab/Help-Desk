@@ -254,7 +254,7 @@ export default function Dashboard() {
               <Activity className="text-blue-500/50 w-6 h-6" />
             </div>
             {isHydrated && (
-              <div className="w-full h-full pb-8">
+              <div style={{ width: '100%', height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={timeData}>
                     <defs>
@@ -290,7 +290,7 @@ export default function Dashboard() {
              {/* Status Distribution */}
              <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">DISTRIBUCION_STATUS</h2>
-                <div className="w-full h-full pb-10">
+                <div style={{ width: '100%', height: 240 }}>
                    <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                          <PieComponent
@@ -318,7 +318,7 @@ export default function Dashboard() {
              {/* Dept Load */}
              <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">CARGA_DEPARTAMENTOS</h2>
-                <div className="w-full h-full pb-10">
+                <div style={{ width: '100%', height: 240 }}>
                    <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
                          <PolarGrid stroke="#ffffff05" />
