@@ -807,11 +807,76 @@
         "required": true,
         "system": true,
         "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text982552870",
+        "max": 0,
+        "min": 0,
+        "name": "nombre",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text2687119104",
+        "max": 0,
+        "min": 0,
+        "name": "descripcion",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text510331953",
+        "max": 0,
+        "min": 0,
+        "name": "icono",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1716930793",
+        "max": 0,
+        "min": 0,
+        "name": "color",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "bool2882213148",
+        "name": "activo",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
       }
     ],
     "indexes": [],
     "created": "2026-04-08 08:02:01.060Z",
-    "updated": "2026-04-08 09:08:22.152Z",
+    "updated": "2026-04-08 18:36:25.340Z",
     "system": false
   },
   {
@@ -837,11 +902,146 @@
         "required": true,
         "system": true,
         "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text2615807174",
+        "max": 0,
+        "min": 0,
+        "name": "folio",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text393297498",
+        "max": 0,
+        "min": 0,
+        "name": "titulo",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "convertURLs": false,
+        "hidden": false,
+        "id": "editor2687119104",
+        "maxSize": 0,
+        "name": "descripcion",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "editor"
+      },
+      {
+        "hidden": false,
+        "id": "select2743624274",
+        "maxSelect": 0,
+        "name": "prioridad",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "Baja",
+          "Media",
+          "Alta",
+          "Urgente"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "select643686883",
+        "maxSelect": 0,
+        "name": "estado",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "Abierto",
+          "En Proceso",
+          "Resuelto",
+          "Cerrado"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text1309676077",
+        "max": 0,
+        "min": 0,
+        "name": "categoria",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation3732098641",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "cliente_id",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation98924703",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "agente_id",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_departamentos",
+        "hidden": false,
+        "id": "relation1519501453",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "departamento_id",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "hidden": false,
+        "id": "date3636000448",
+        "max": "",
+        "min": "",
+        "name": "fecha_resolucion",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
       }
     ],
     "indexes": [],
     "created": "2026-04-08 08:02:01.062Z",
-    "updated": "2026-04-08 09:08:22.156Z",
+    "updated": "2026-04-08 18:37:48.681Z",
     "system": false
   },
   {
@@ -867,11 +1067,57 @@
         "required": true,
         "system": true,
         "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_tickets",
+        "hidden": false,
+        "id": "relation1879066578",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "ticket_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation3677897630",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "usuario_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "convertURLs": false,
+        "hidden": false,
+        "id": "editor2606963969",
+        "maxSize": 0,
+        "name": "mensaje",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "editor"
+      },
+      {
+        "hidden": false,
+        "id": "bool3423607236",
+        "name": "es_interno",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "bool"
       }
     ],
     "indexes": [],
     "created": "2026-04-08 08:02:01.064Z",
-    "updated": "2026-04-08 09:08:22.158Z",
+    "updated": "2026-04-08 18:37:49.247Z",
     "system": false
   }
 ]
