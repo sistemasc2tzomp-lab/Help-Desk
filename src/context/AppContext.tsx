@@ -349,10 +349,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     const updatePresence = async () => {
       try {
-        // Intentar actualizar presencia — columna puede ser ultima_conexion o updated_at
-        const { error } = await sb.from('perfiles').update({ updated_at: new Date().toISOString() }).eq('id', currentUser.id);
+        // Intentar actualizar presencia — usar solo campos que probablemente existan
+        const { error } = await sb.from('perfiles').update({ activo: true }).eq('id', currentUser.id);
         if (error) {
-          // Silenciosamente ignorar si la columna no existe
+          // Silenciosamente ignorar
         }
       } catch { /* Presence update no es crítico */ }
     };
@@ -455,13 +455,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
       try {
-        // Intentar ordenar por creado_en (nombre real de la columna en BD)
-        let deptsResult = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
-        // Si falla (columna no existe), intentar sin orden
-        if (deptsResult.error) {
-          deptsResult = await sb.from('departamentos').select('*');
-        }
-        if (deptsResult.data) setDepartments((deptsResult.data as Record<string, unknown>[]).map(rowToDept));
+        const { data: deptsData } = await sb.from('departamentos').select('*');
+        if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
 
       // 2.1 Presencia de usuarios
@@ -481,16 +476,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // 3. Comentarios — ahora usa el mapa fresco
       const msgsByTicket: Record<string, Message[]> = {};
       try {
-        let comentariosResult = await sb
+        const { data: comentariosData } = await sb
           .from('ticket_comentarios')
-          .select('*')
-          .order('creado_en', { ascending: true });
-        // Fallback si la columna se llama diferente
-        if (comentariosResult.error) {
-          comentariosResult = await sb.from('ticket_comentarios').select('*');
-        }
-        if (comentariosResult.data) {
-          (comentariosResult.data as Record<string, unknown>[]).forEach(r => {
+          .select('*');
+        if (comentariosData) {
+          (comentariosData as Record<string, unknown>[]).forEach(r => {
             const m = rowToMessage(r, freshUMap);
             if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
             msgsByTicket[m.ticketId].push(m);
@@ -500,16 +490,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 4. Tickets — ahora usa el mapa fresco
       try {
-        let tktResult = await sb
+        const { data: tktData } = await sb
           .from('tickets')
-          .select('*')
-          .order('creado_en', { ascending: false });
-        // Fallback si la columna se llama diferente
-        if (tktResult.error) {
-          tktResult = await sb.from('tickets').select('*');
-        }
-        if (tktResult.data) {
-          setTickets((tktResult.data as Record<string, unknown>[]).map(r =>
+          .select('*');
+        if (tktData) {
+          setTickets((tktData as Record<string, unknown>[]).map(r =>
             rowToTicket(r, msgsByTicket[String(r.id)] || [], freshUMap)
           ));
         }
@@ -570,27 +555,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
     const sb = getSupabase();
-    console.log("INICIANDO_SISTEMA_DE_SINCRONIZACIÓN_BITÁCORA...");
 
-    const channel = sb.channel('public_schema_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, (payload) => {
-        console.log("NUEVA_SOLICITUD_DETECTADA", payload);
-        playNotificationSound('new_ticket');
-        refreshData();
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, (payload) => {
-        console.log("ACTUALIZACIÓN_DE_SOLICITUD_RECIBIDA", payload);
-        playNotificationSound('update');
-        refreshData();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, (payload) => {
-        console.log("NUEVO_MENSAJE_EN_FRECUENCIA", payload);
-        playNotificationSound('update');
-        refreshData();
-      })
-      .subscribe((status) => {
-        console.log(`ESTADO_DEL_CANAL_DE_DATOS: ${status.toUpperCase()}`);
-      });
+    let channel: ReturnType<typeof sb.channel> | null = null;
+    try {
+      channel = sb.channel('public_schema_changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, () => {
+          playNotificationSound('new_ticket');
+          refreshData();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, () => {
+          playNotificationSound('update');
+          refreshData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, () => {
+          playNotificationSound('update');
+          refreshData();
+        })
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.warn(`Canal Realtime: ${status} — usando polling como respaldo`);
+          }
+        });
+    } catch {
+      console.warn('No se pudo inicializar el canal Realtime');
+    }
 
     // Fallback Polling — Solo como respaldo del canal Realtime (cada 60s)
     const fallbackId = setInterval(() => {
@@ -598,7 +586,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 60000);
 
     return () => {
-      sb.removeChannel(channel);
+      if (channel) sb.removeChannel(channel);
       clearInterval(fallbackId);
     };
   }, [refreshData]);
