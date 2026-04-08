@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Ticket, TicketStatus } from '../types';
 import { formatDistanceToNow } from '../utils/date';
@@ -49,17 +49,7 @@ const StatCard = ({ label, value, icon: Icon, sub, color, shadow, gradient }: {
 
 // Componente para sectores de Pie con efecto de relieve "3D"
 function RenderActiveShape(props: any) {
-  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
-  const RADIAN = Math.PI / 180;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
-  const textAnchor = cos >= 0 ? 'start' : 'end';
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
 
   return (
     <g>
@@ -76,9 +66,7 @@ function RenderActiveShape(props: any) {
           </feMerge>
         </filter>
       </defs>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill="#fff" style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Orbitron' }}>
-        {payload.name}
-      </text>
+      {/* Central label removed as per user request */}
       <Sector
         cx={cx}
         cy={cy}
@@ -99,12 +87,7 @@ function RenderActiveShape(props: any) {
         fill={fill}
         opacity={0.3}
       />
-      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" strokeWidth={2} />
-      <circle cx={ex} cy={ey} r={3} fill={fill} stroke="none" />
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#fff" fontSize={12} fontWeight="900" fontStyle="Orbitron">{`${value} UNIDADES`}</text>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#4ade80" fontSize={10} fontWeight="bold">
-        {`(${(percent * 100).toFixed(1)}% COBERTURA)`}
-      </text>
+      {/* Sector labels removed as per user request */}
     </g>
   );
 }
@@ -112,6 +95,11 @@ function RenderActiveShape(props: any) {
 export default function Dashboard() {
   const { tickets, users, currentUser, setPage, setSelectedTicketId, departments } = useApp();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
@@ -284,31 +272,33 @@ export default function Dashboard() {
           </div>
           
           <div className="w-full h-80 flex justify-center">
-            <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
-              <PieChart>
-                <PieComponent
-                  activeIndex={activeIndex}
-                  activeShape={RenderActiveShape}
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={110}
-                  dataKey="value"
-                  onMouseEnter={onPieEnter}
-                  paddingAngle={10}
-                  stroke="none"
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
-                      className="hover:opacity-80 transition-all duration-500"
-                    />
-                  ))}
-                </PieComponent>
-              </PieChart>
-            </ResponsiveContainer>
+            {isHydrated && (
+              <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                <PieChart>
+                  <PieComponent
+                    activeIndex={activeIndex}
+                    activeShape={RenderActiveShape}
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={110}
+                    dataKey="value"
+                    onMouseEnter={onPieEnter}
+                    paddingAngle={10}
+                    stroke="none"
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        className="hover:opacity-80 transition-all duration-500"
+                      />
+                    ))}
+                  </PieComponent>
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className="w-full grid grid-cols-3 gap-4 mt-10">
@@ -329,58 +319,57 @@ export default function Dashboard() {
               <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] border-l-2 border-emerald-400 pl-4">FLUJO_OPERATIVO_7D</h2>
               <p className="text-[9px] font-bold text-[#8888aa] uppercase tracking-widest ml-4">MÉTRICA DE CARGA SEMANAL</p>
             </div>
-              <h2 className="text-emerald-400 font-orbitron text-xs font-black tracking-[4px] uppercase flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                SISTEMA TICKETS TZOMPANTEPEC
-              </h2>
+              {/* System title removed from chart area as per user request */}
           </div>
 
           <div className="w-full h-80">
-            <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
-              <AreaChart data={timeData}>
-                <defs>
-                  <linearGradient id="colorTks" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorPeak" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="rgba(255,255,255,0.03)" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }}
-                  dy={10}
-                />
-                <YAxis hide domain={[0, 'dataMax + 5']} />
-                <Tooltip 
-                   contentStyle={{ backgroundColor: 'rgba(3, 0, 20, 0.98)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="tickets" 
-                  stroke="#10b981" 
-                  strokeWidth={4}
-                  fillOpacity={1} 
-                  fill="url(#colorTks)" 
-                  animationDuration={2000}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="peak" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  fillOpacity={1} 
-                  fill="url(#colorPeak)" 
-                  animationDuration={3000}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {isHydrated && (
+              <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                <AreaChart data={timeData}>
+                  <defs>
+                    <linearGradient id="colorTks" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorPeak" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }}
+                    dy={10}
+                  />
+                  <YAxis hide domain={[0, 'dataMax + 5']} />
+                  <Tooltip 
+                     contentStyle={{ backgroundColor: 'rgba(3, 0, 20, 0.98)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="tickets" 
+                    stroke="#10b981" 
+                    strokeWidth={4}
+                    fillOpacity={1} 
+                    fill="url(#colorTks)" 
+                    animationDuration={2000}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="peak" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fillOpacity={1} 
+                    fill="url(#colorPeak)" 
+                    animationDuration={3000}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className="flex gap-10 mt-10 ml-4">
@@ -408,21 +397,23 @@ export default function Dashboard() {
            </div>
            
            <div className="w-full h-80 flex justify-center">
-              <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
-                  <PolarGrid stroke="rgba(255,255,255,0.05)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }} />
-                  <PolarRadiusAxis hide />
-                  <Radar
-                    name="Solicitudes"
-                    dataKey="A"
-                    stroke="#8b5cf6"
-                    fill="#8b5cf6"
-                    fillOpacity={0.3}
-                  />
-                  <Tooltip contentStyle={{ backgroundColor: 'rgba(3, 0, 20, 0.95)', border: 'none', borderRadius: '15px' }} />
-                </RadarChart>
-              </ResponsiveContainer>
+              {isHydrated && (
+                <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
+                    <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#8888aa', fontSize: 10, fontWeight: 900 }} />
+                    <PolarRadiusAxis hide />
+                    <Radar
+                      name="Solicitudes"
+                      dataKey="A"
+                      stroke="#8b5cf6"
+                      fill="#8b5cf6"
+                      fillOpacity={0.3}
+                    />
+                    <Tooltip contentStyle={{ backgroundColor: 'rgba(3, 0, 20, 0.95)', border: 'none', borderRadius: '15px' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              )}
            </div>
         </div>
 

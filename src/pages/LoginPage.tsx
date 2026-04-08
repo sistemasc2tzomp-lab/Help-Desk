@@ -34,6 +34,12 @@ export default function LoginPage() {
     }
   };
 
+  const [nodeId, setNodeId] = useState('00000000');
+  
+  React.useEffect(() => {
+    setNodeId(Math.random().toString(16).slice(2, 10).toUpperCase());
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] px-4 py-10 relative overflow-hidden" style={{fontFamily:'var(--font-body)'}}>
       {/* Animated Background Elements */}
@@ -156,7 +162,7 @@ export default function LoginPage() {
         
         {/* Security notice */}
         <div className="px-6 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] text-white/30 font-mono tracking-widest uppercase">
-          SECURE_PROTOCOL: TLS_1.3 | AES_256_GCM | NODE: {Math.random().toString(16).slice(2, 10).toUpperCase()}
+          SECURE_PROTOCOL: TLS_1.3 | AES_256_GCM | NODE: {nodeId}
         </div>
       </div>
     </div>

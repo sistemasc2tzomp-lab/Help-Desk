@@ -184,7 +184,7 @@ export default function TicketDetail() {
     if (!pendingStatus || !statusComment.trim()) return;
     setIsSubmittingStatus(true);
     try {
-      await addMessage(ticket.id, `CAMBIO DE ESTADO A [${pendingStatus.toUpperCase()}]: ${statusComment.trim()}`, true);
+      await addMessage(ticket.id, `CAMBIO DE ESTADO A [${pendingStatus.toUpperCase()}]: ${statusComment.trim()}`, false);
       await updateTicketStatus(ticket.id, pendingStatus);
       setStatusComment('');
       setShowStatusModal(false);
