@@ -132,7 +132,7 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
-  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs } = useApp();
+  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, theme, toggleTheme } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
@@ -385,10 +385,34 @@ export default function SettingsPage() {
           {/* ── APPEARANCE ── */}
           {activeSection === 'appearance' && (
             <SectionCard
-              title="MATRIZ DE APARIENCIA"
-              description="PERSONALIZACIÓN DE LA INTERFAZ DE USUARIO"
-              icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>}
+              title="MATRIZ VISUAL Y TEMAS"
+              description="CONFIGURACIÓN DEL ENTORNO DE TRABAJO"
+              icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v2"/><path d="M12 20v2"/></svg>}
             >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <button
+                  onClick={() => { if(theme !== 'light') toggleTheme(); if(audioAlerts) playBeep(); }}
+                  className={`p-8 rounded-[32px] border-2 transition-all text-left group ${theme === 'light' ? 'bg-white border-blue-500 shadow-2xl scale-[1.02]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-white/10 text-[#8888aa]'}`}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                  </div>
+                  <h4 className={`text-sm font-black font-orbitron tracking-widest uppercase mb-1 ${theme === 'light' ? 'text-blue-900' : 'text-white'}`}>MODO DÍA</h4>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'light' ? 'text-blue-600/70' : 'text-[#8888aa]'}`}>Entorno de alta claridad operacional</p>
+                </button>
+
+                <button
+                  onClick={() => { if(theme !== 'dark') toggleTheme(); if(audioAlerts) playBeep(); }}
+                  className={`p-8 rounded-[32px] border-2 transition-all text-left group ${theme === 'dark' ? 'bg-[#0f0a28]/50 border-white/40 shadow-2xl scale-[1.02]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-white text-[#030014]' : 'bg-white/10 text-[#8888aa]'}`}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  </div>
+                  <h4 className="text-sm font-black font-orbitron tracking-widest uppercase mb-1 text-white">MODO NOCHE</h4>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#8888aa]">Interfaz de alta concentración táctica</p>
+                </button>
+              </div>
+
               <Field label="CÓDIGO DE COLOR MAESTRO" hint="Color de acento que inundará la infraestructura visual">
                 <div className="flex flex-wrap gap-4 mb-6 mt-3">
                   {PRESET_COLORS.map(c => (
@@ -401,28 +425,13 @@ export default function SettingsPage() {
                       className={`w-12 h-12 rounded-2xl transition-all hover:scale-110 border-4 border-transparent shadow-xl ${settings.primaryColor === c ? 'scale-110' : 'opacity-40'}`}
                       style={{
                         backgroundColor: c,
-                        borderColor: settings.primaryColor === c ? 'white' : 'transparent',
+                        borderColor: settings.primaryColor === c ? (theme === 'dark' ? 'white' : '#030014') : 'transparent',
                         boxShadow: settings.primaryColor === c ? `0 0 30px ${c}66` : 'none'
                       }}
                     />
                   ))}
                 </div>
               </Field>
-
-              {/* Preview Deck */}
-              <div className="bg-[#030014] border-2 border-dashed border-white/5 rounded-[40px] p-10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 blur-3xl opacity-10 rounded-full" style={{ backgroundColor: settings.primaryColor }} />
-                <p className="text-[#8888aa] text-[9px] font-black uppercase tracking-[3px] mb-8 border-b border-white/5 pb-4">SIMULACIÓN_DE_ENTORNO</p>
-                <div className="flex items-center gap-6 mb-10">
-                  <div className="w-16 h-16 rounded-[24px] flex items-center justify-center shadow-2xl transition-all duration-700" style={{ backgroundColor: settings.primaryColor, boxShadow: `0 0 40px ${settings.primaryColor}44` }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                  </div>
-                  <div>
-                    <h5 className="text-white font-black font-orbitron tracking-widest uppercase text-xl">{settings.companyName}</h5>
-                    <div className="text-[10px] font-black uppercase tracking-[4px] mt-1" style={{ color: settings.primaryColor }}>CENTRAL_DATOS_ACTIVA</div>
-                  </div>
-                </div>
-              </div>
             </SectionCard>
           )}
 

@@ -70,4 +70,5 @@ export interface AppSettings {
   maxAttachmentMB: number;
   defaultPriority: TicketPriority;
   autoCloseResolvedDays: number;
+  theme: 'dark' | 'light';
 }

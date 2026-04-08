@@ -10,7 +10,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'PANEL DE CONTROL',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
   },
   {
     id: 'tickets',
-    label: 'HISTORICO SOLICITUDES',
+    label: 'GESTIÓN DE TICKETS',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
@@ -56,7 +56,7 @@ const adminNavItems: NavItem[] = [
   },
   {
     id: 'reports',
-    label: 'Análisis de Red',
+    label: 'ESTADÍSTICAS DEL SISTEMA',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
@@ -95,7 +95,7 @@ const getRoleDeptIcon = (role?: string, deptName?: string, size = 18) => {
   const d = (deptName || '').toLowerCase();
   
   // High-Quality SVG Mapping for Departments
-  if (d.includes('segur') || d.includes('civil') || d.includes('juzgado')) 
+  if (d.includes('segur') || d.includes('protec') || d.includes('civil') || d.includes('juzgado')) 
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
   
   if (d.includes('teso')) 
@@ -107,8 +107,14 @@ const getRoleDeptIcon = (role?: string, deptName?: string, size = 18) => {
   if (d.includes('salud') || d.includes('dif')) 
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>;
   
-  if (d.includes('rural')) 
+  if (d.includes('rural') || d.includes('agro')) 
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C11 14.5 13 13 13 13"/></svg>;
+  
+  if (d.includes('publi')) 
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
+
+  if (d.includes('control')) 
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>;
   
   if (d.includes('presi') || d.includes('secre')) 
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18"/><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M9 7h1"/><path d="M9 11h1"/><path d="M9 15h1"/><path d="M14 7h1"/><path d="M14 11h1"/><path d="M14 15h1"/></svg>;
@@ -134,7 +140,7 @@ const Logo = () => (
 );
 
 export default function Sidebar() {
-  const { currentUser, page, setPage, logout, tickets, departments } = useApp();
+  const { currentUser, page, setPage, logout, tickets, departments, theme, toggleTheme } = useApp();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const stats = {
@@ -183,9 +189,22 @@ export default function Sidebar() {
       <div className="p-8 pb-12 flex items-center gap-4">
         <Logo />
         <div>
-          <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-sm tracking-tighter leading-none">C2 SYSTEM</div>
+          <div style={{fontFamily:'var(--font-display)'}} className="text-white font-black text-sm tracking-tighter leading-none">
+            {isAdmin ? 'ADMIN CONTROL' : 'USER CONTROL'}
+          </div>
           <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold tracking-[3px] uppercase mt-1">TZOMPANTEPEC</div>
         </div>
+        <button 
+          onClick={toggleTheme}
+          className="ml-auto w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all border-none"
+          title="Cambiar Tema"
+        >
+          {theme === 'dark' ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          )}
+        </button>
       </div>
 
       {/* Navigation */}

@@ -9,14 +9,14 @@ import TicketList from './components/TicketList';
 import TicketDetail from './components/TicketDetail';
 import NewTicket from './components/NewTicket';
 import UsersPage from './pages/UsersPage';
-import ReportsPage from './pages/ReportsPage';
+import ReportsRepository from './pages/ReportsRepository';
 import DepartmentsPage from './pages/DepartmentsPage';
 import SettingsPage from './pages/SettingsPage';
 import SetupPage from './pages/SetupPage';
 import { isSupabaseConfigured } from './lib/supabase';
 
 function AppContent() {
-  const { currentUser, page, loading } = useApp();
+  const { currentUser, page, loading, theme } = useApp();
   const [configured, setConfigured] = useState(isSupabaseConfigured());
 
   if (!configured) {
@@ -43,14 +43,14 @@ function AppContent() {
       case 'new-ticket':    return <NewTicket />;
       case 'users':         return <UsersPage />;
       case 'departments':   return <DepartmentsPage />;
-      case 'reports':       return <ReportsPage />;
+      case 'reports':       return <ReportsRepository />;
       case 'settings':      return <SettingsPage />;
       default:              return <Dashboard />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#030014]">
+    <div className={`flex min-h-screen ${theme === 'dark' ? 'bg-[#030014]' : 'bg-[#f4f7f6]'}`} data-theme={theme || 'dark'}>
       <Sidebar />
       <main className="flex-1 overflow-y-auto relative pt-16 lg:pt-0">
         {loading && (

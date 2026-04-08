@@ -79,6 +79,35 @@
   --transition-slow: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+[data-theme='light'] {
+  --bg-void:        #f3f7f9;
+  --bg-dark:        #fcfdfe;
+  --bg-surface:     #ffffff;
+  --bg-card:        rgba(255,255,255,0.7);
+  --bg-card-hover:  rgba(255,255,255,0.9);
+
+  --text:           #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+
+  --glass:          rgba(15, 23, 42, 0.05);
+  --glass-border:   rgba(15, 23, 42, 0.1);
+  --glass-border-hover: rgba(15, 23, 42, 0.2);
+
+  --shadow-card:     0 4px 20px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 15px 45px rgba(15, 23, 42, 0.1);
+  
+  --primary-glow:   rgba(59,130,246,0.15);
+  --accent-glow:    rgba(168,85,247,0.15);
+}
+
+body[data-theme='light'] {
+  background-image: radial-gradient(circle at 0% 0%, rgba(59,130,246,0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 100% 100%, rgba(16,185,129,0.05) 0%, transparent 40%);
+  background-color: var(--bg-void);
+  color: var(--text);
+}
+
 /* ====================================================
    BASE STYLES
    ==================================================== */

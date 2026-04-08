@@ -34,7 +34,10 @@ BEGIN
                 ('Educación, Cultura y Turismo', 'educacion@helpdesk.tzomp', 'Educacion@Tzomp2024'),
                 ('Deportes', 'deportes@helpdesk.tzomp', 'Deportes@Tzomp2024'),
                 ('Fomento Agropecuario', 'agropecuario@helpdesk.tzomp', 'Agropecuario@Tzomp2024'),
-                ('Dirección de Planeación', 'planeacion@helpdesk.tzomp', 'Planeacion@Tzomp2024')
+                ('Dirección de Planeación', 'planeacion@helpdesk.tzomp', 'Planeacion@Tzomp2024'),
+                ('Servicios Públicos', 'servipubli@helpdesk.tzomp', 'S3rvic1Op26'),
+                ('Contraloria Interna', 'controlintern@helpdesk.tzomp', 'Controltzomp@26'),
+                ('Proteccion Civil', 'pcivil@helpdesk.tzomp', 'Pc1v1l2026')
         ) AS tabla(nombre_depto, email, password)
     )
     LOOP

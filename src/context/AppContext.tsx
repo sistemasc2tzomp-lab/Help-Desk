@@ -138,6 +138,9 @@ interface AppContextType {
   systemLogs: {t: number, m: string, type: 'info'|'warn'|'error'|'success'}[];
   addLog: (message: string, type?: 'info'|'warn'|'error'|'success' | 'warning') => void;
   userActivity: Record<string, string>; // userId -> ISO date
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+  resetSystem: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -329,6 +332,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [lastPing, setLastPing] = useState<string | null>(null);
   const [systemLogs, setSystemLogs] = useState<{t: number, m: string, type: 'info'|'warn'|'error'|'success'}[]>([]);
   const [userActivity, setUserActivity] = useState<Record<string, string>>({});
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('app-theme');
+      return (saved as 'light' | 'dark') || 'dark';
+    }
+    return 'dark';
+  });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('app-theme', next);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   const addLog = useCallback((message: string, type: 'info'|'warn'|'error'|'success'|'warning' = 'info') => {
     const logType = type === 'warning' ? 'warn' : type;
@@ -564,12 +586,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log(`ESTADO_DEL_CANAL_DE_DATOS: ${status.toUpperCase()}`);
       });
 
-    // Fallback Polling (Cada 20 segundos para mayor fluidez)
+    // Fallback Polling (Cada 5 segundos para máxima fluidez operativa)
     const fallbackId = setInterval(() => {
       console.log("EJECUTANDO_SINCRONIZACIÓN_DE_RESPALDO...");
-      addLog("Sincronización de respaldo iniciada", 'info');
       refreshData();
-    }, 10000);
+    }, 5000);
 
     return () => {
       sb.removeChannel(channel);
@@ -1066,6 +1087,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       systemLogs,
       addLog,
       userActivity,
+      theme,
+      toggleTheme,
+      resetSystem: async () => {
+        if (!isSupabaseConfigured()) return;
+        const sb = getSupabase();
+        setLoading(true);
+        addLog('INICIANDO_PROTOCOLO_REINICIO_MAESTRO...', 'warn');
+        try {
+          // 1. Limpiar tickets
+          const { error: tErr } = await sb.from('tickets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          if (tErr) throw tErr;
+          
+          // 2. Limpiar comentarios
+          await sb.from('ticket_comentarios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+          // 3. Departamentos base
+          const depts = [
+            { nombre: 'Servicios Públicos', descripcion: 'Mantenimiento y servicios urbanos', color: '#3b82f6', jefe: 'Ing. Servipubli' },
+            { nombre: 'Contraloría Interna', descripcion: 'Auditoría y control gubernamental', color: '#8b5cf6', jefe: 'Lic. Contraloría' },
+            { nombre: 'Protección Civil', descripcion: 'Atención a emergencias y riesgos', color: '#ef4444', jefe: 'Cmdte. PC' },
+            { nombre: 'Sistemas / TI', descripcion: 'Soporte técnico y redes', color: '#10b981', jefe: 'Ing. Sistemas' },
+            { nombre: 'Tesorería', descripcion: 'Gestión financiera', color: '#f59e0b', jefe: 'C.P. Tesorería' }
+          ];
+
+          for (const d of depts) {
+            await sb.from('departamentos').upsert(d, { onConflict: 'nombre' });
+          }
+
+          addLog('PROTOCOL_RESET_COMPLETED: El sistema está limpio y operativo.', 'success');
+          await refreshData();
+        } catch (err: any) {
+          addLog(`FALLO_PROTOCOLO_REINICIO: ${err.message}`, 'error');
+        } finally {
+          setLoading(false);
+        }
+      }
     }}>
       {children}
     </AppContext.Provider>
