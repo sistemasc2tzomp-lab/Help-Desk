@@ -134,6 +134,10 @@ interface AppContextType {
   logout: () => Promise<void>;
   createUser: (data: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
   deleteUser: (id: string) => Promise<void>;
+  triggerSync: () => Promise<void>;
+  systemLogs: {t: number, m: string, type: 'info'|'warn'|'error'|'success'}[];
+  addLog: (message: string, type?: 'info'|'warn'|'error'|'success' | 'warning') => void;
+  userActivity: Record<string, string>; // userId -> ISO date
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -323,6 +327,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [];
   });
   const [lastPing, setLastPing] = useState<string | null>(null);
+  const [systemLogs, setSystemLogs] = useState<{t: number, m: string, type: 'info'|'warn'|'error'|'success'}[]>([]);
+  const [userActivity, setUserActivity] = useState<Record<string, string>>({});
+
+  const addLog = useCallback((message: string, type: 'info'|'warn'|'error'|'success'|'warning' = 'info') => {
+    const logType = type === 'warning' ? 'warn' : type;
+    setSystemLogs(prev => [{ t: Date.now(), m: message, type: logType as any }, ...prev].slice(0, 100));
+  }, []);
+
+  // Update online presence
+  useEffect(() => {
+    if (!currentUser || !isSupabaseConfigured()) return;
+    const sb = getSupabase();
+    
+    const updatePresence = async () => {
+      try {
+        await sb.from('perfiles').update({ ultima_conexion: new Date().toISOString() }).eq('id', currentUser.id);
+      } catch (err) { console.warn('Presence update failed', err); }
+    };
+
+    updatePresence();
+    const id = setInterval(updatePresence, 300000); // 5 min
+    return () => clearInterval(id);
+  }, [currentUser]);
 
   useEffect(() => {
     localStorage.setItem('helpdesk_offline_tickets', JSON.stringify(offlineTickets));
@@ -416,12 +443,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const freshUMap: Record<string, User> = {};
       freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
-      // 2. Departamentos
-      // 2. Departamentos
       try {
         const { data: deptsData } = await sb.from('departamentos').select('*').order('creado_en', { ascending: true });
         if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
       } catch (e) { console.error('refreshData: departments error', e); }
+
+      // 2.1 Presencia de usuarios
+      try {
+        const { data: presenceData } = await sb.from('perfiles').select('id, ultima_conexion');
+        if (presenceData) {
+          const pMap: Record<string, string> = {};
+          presenceData.forEach((r: any) => { if (r.ultima_conexion) pMap[r.id] = r.ultima_conexion; });
+          setUserActivity(pMap);
+        }
+      } catch { /* ignore presence fetch error */ }
 
       // 3. Comentarios — ahora usa el mapa fresco
       const msgsByTicket: Record<string, Message[]> = {};
@@ -451,12 +486,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ));
         }
       } catch (e) { console.error('refreshData: tickets error', e); }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading data:', err);
+      addLog(`Error crítico de carga: ${err.message || 'Sin mensaje'}`, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [addLog]);
+
+  const triggerSync = useCallback(async () => {
+    addLog('Iniciando sincronización manual...', 'info');
+    await refreshData();
+    addLog('Sincronización manual completada con éxito.', 'info');
+  }, [refreshData, addLog]);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -522,11 +564,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log(`ESTADO_DEL_CANAL_DE_DATOS: ${status.toUpperCase()}`);
       });
 
-    // Fallback Polling (Cada 45 segundos por seguridad si falla el websocket)
+    // Fallback Polling (Cada 20 segundos para mayor fluidez)
     const fallbackId = setInterval(() => {
       console.log("EJECUTANDO_SINCRONIZACIÓN_DE_RESPALDO...");
+      addLog("Sincronización de respaldo iniciada", 'info');
       refreshData();
-    }, 45000);
+    }, 20000);
 
     return () => {
       sb.removeChannel(channel);
@@ -734,9 +777,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     try {
+      addLog(`Enviando ticket: ${ticketData.title}`, 'info');
       const { data, error } = await sb.from('tickets').insert(insertData).select().single();
       if (error || !data) {
         console.error('addTicket DB error:', error);
+        addLog(`Error DB al crear ticket: ${error?.message || 'Error desconocido'}`, 'error');
         // Si el error es de RLS, dar mensaje claro
         if (error?.code === '42501' || error?.message?.includes('row-level security')) {
           throw new Error('Permiso denegado: Tu usuario no tiene permisos para crear tickets. Contacta al administrador para que ejecute el script SQL de permisos.');
@@ -748,9 +793,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       users.forEach(u => { uMap[u.id] = u; });
       const t = rowToTicket(data as Record<string, unknown>, [], uMap);
       setTickets(prev => [t, ...prev]);
+      addLog(`Ticket creado exitosamente: ${t.id}`, 'success');
       return t;
     } catch (err: any) {
       console.error('addTicket failure:', err);
+      addLog(`Excepción al crear ticket: ${err.message}`, 'error');
       throw new Error(`${err.message || 'Error de red. Verifica tu conexión.'}`);
     }
   }, [users]);
@@ -758,6 +805,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
     if (isSupabaseConfigured()) {
+      addLog(`Actualizando estado ticket ${ticketId} a ${status}`, 'info');
       const sb = getSupabase();
       // Try lowercase first (constraint), fallback to capitalized
       const { error } = await sb.from('tickets').update({ 
@@ -765,10 +813,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         actualizado_en: new Date().toISOString() 
       }).eq('id', ticketId);
       if (error) {
-        await sb.from('tickets').update({ 
+        addLog(`Reintentando actualización de estado para ${ticketId}`, 'warning');
+        const { error: error2 } = await sb.from('tickets').update({ 
           estado: status,
           actualizado_en: new Date().toISOString() 
         }).eq('id', ticketId);
+        if (error2) addLog(`Fallo al actualizar estado ticket ${ticketId}: ${error2.message}`, 'error');
+      } else {
+        addLog(`Estado de ticket ${ticketId} sincronizado: ${status}`, 'success');
       }
     }
   }, []);
@@ -855,6 +907,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         : t
     ));
     if (isSupabaseConfigured()) {
+      addLog(`Enviando mensaje para ticket ${ticketId}`, 'info');
       const sb = getSupabase();
       // Guardamos imagen en campo imagenes (jsonb array) para que ambos lados la vean
       const commentPayload: Record<string, unknown> = {
@@ -868,14 +921,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const { error: commentErr } = await sb.from('ticket_comentarios').insert(commentPayload);
       if (!commentErr) {
+        addLog(`Mensaje sincronizado para ticket ${ticketId}`, 'success');
         await sb.from('tickets').update({ actualizado_en: now }).eq('id', ticketId);
         // Refrescar para sincronizar nombres/roles reales desde la BD
         await refreshData();
       } else {
         console.error('addMessage error:', commentErr);
+        addLog(`Error al enviar mensaje ticket ${ticketId}: ${commentErr.message}`, 'error');
       }
     }
-  }, [currentUser, refreshData]);
+  }, [currentUser, refreshData, addLog]);
 
   const getTicketById = useCallback((id: string) => tickets.find(t => t.id === id), [tickets]);
 
@@ -1007,6 +1062,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logout,
       createUser,
       deleteUser,
+      triggerSync,
+      systemLogs,
+      addLog,
+      userActivity,
     }}>
       {children}
     </AppContext.Provider>

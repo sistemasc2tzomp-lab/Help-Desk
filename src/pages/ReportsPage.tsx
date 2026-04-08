@@ -267,8 +267,8 @@ function downloadExcel(sheets: { name: string; data: unknown[][] }[], filename: 
 }
 
 export default function ReportsPage() {
-  const { currentUser, tickets, users, departments } = useApp();
-  const [activeTab, setActiveTab] = useState<'general' | 'tickets' | 'agents' | 'departments'>('general');
+  const { currentUser, tickets, users, departments, userActivity } = useApp();
+  const [activeTab, setActiveTab] = useState<'general' | 'tickets' | 'agents' | 'departments' | 'adoption'>('general');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [exportLoading, setExportLoading] = useState<string | null>(null);
@@ -543,7 +543,7 @@ export default function ReportsPage() {
   const exportAgentsExcel = () => {
     const data = [['Agente', 'Rol', 'Total Asignados', 'Resueltos', 'Eficiencia %', 'Mensajes']];
     agentStats.forEach(as => {
-      data.push([as.agent.name, as.agent.role, as.total, as.resolved, as.rate, as.msgs]);
+      data.push([as.agent.name, as.agent.role, String(as.total), String(as.resolved), String(as.rate), String(as.msgs)]);
     });
     downloadExcel([{ name: 'Agentes', data }], `rendimiento-agentes-${Date.now()}.xlsx`);
   };
@@ -555,7 +555,7 @@ export default function ReportsPage() {
       const open = dt.filter(t => t.status === 'Abierto').length;
       const ip = dt.filter(t => t.status === 'En Progreso').length;
       const res = dt.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
-      data.push([d.name, n, open, ip, res, pct(n, total)]);
+      data.push([d.name, String(n), String(open), String(ip), String(res), String(pct(n, total))]);
     });
     downloadExcel([{ name: 'Departamentos', data }], `analisis-depts-${Date.now()}.xlsx`);
   };
@@ -587,6 +587,7 @@ export default function ReportsPage() {
     { id: 'tickets', label: 'BASE_SOLICITUDES', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg> },
     { id: 'agents', label: 'RED_AGENTES', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
     { id: 'departments', label: 'ESTRUCTURA_DEPT', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> },
+    { id: 'adoption', label: 'ADOPCIÓN_USO', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> },
   ] as const;
 
   return (
@@ -963,6 +964,100 @@ export default function ReportsPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════ TAB: ADOPTION ═══════════ */}
+      {activeTab === 'adoption' && (
+        <div className="space-y-12 animate-fade-in">
+          <SectionHeader
+            title="Adopción y Compromiso"
+            subtitle="ANÁLISIS DE INTERACCIÓN POR DEPARTAMENTO"
+            icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[ 
+              { label: 'EMBAJADORES (100%)', count: users.filter(u => tickets.filter(t => t.createdById === u.id).length > 5).length, color: '#ffffff', desc: 'Uso Intensivo' },
+              { label: 'ACTIVOS', count: users.filter(u => { const c = tickets.filter(t => t.createdById === u.id).length; return c > 0 && c <= 5; }).length, color: '#cccccc', desc: 'Uso Frecuente' },
+              { label: 'POCO USO', count: users.filter(u => { const c = tickets.filter(t => t.createdById === u.id).length; return c === 0 && userActivity[u.id]; }).length, color: '#aaaaaa', desc: 'Conexión esporádica' },
+              { label: 'NUNCA', count: users.filter(u => !userActivity[u.id]).length, color: '#666666', desc: 'Sin registro de acceso' }
+            ].map((stat, i) => (
+              <div key={i} className="glass-panel p-6 border border-white/5 rounded-3xl text-center">
+                <div className="text-3xl font-black font-orbitron mb-2" style={{ color: stat.color }}>{stat.count}</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-white/80">{stat.label}</div>
+                <div className="text-[7px] font-medium uppercase tracking-tight text-[#8888aa] mt-1">{stat.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="glass-panel border border-white/5 rounded-[40px] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white/2">
+                    <th className="px-8 py-6 text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">Usuario / Depto</th>
+                    <th className="px-8 py-6 text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">Engagement</th>
+                    <th className="px-8 py-6 text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">Conexión</th>
+                    <th className="px-8 py-6 text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">Tickets</th>
+                    <th className="px-8 py-6 text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">Última Vez</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {users.sort((a,b) => {
+                    const cB = tickets.filter(t=>t.createdById===b.id).length;
+                    const cA = tickets.filter(t=>t.createdById===a.id).length;
+                    return cB - cA;
+                  }).map(u => {
+                    const userTicketsCount = tickets.filter(t => t.createdById === u.id).length;
+                    const lastSeen = userActivity[u.id];
+                    const isOnline = lastSeen && (Date.now() - new Date(lastSeen).getTime() < 300000); // 5 mins
+                    
+                    let level = 'NUNCA';
+                    let levelColor = '#444444';
+                    if (userTicketsCount > 5) { level = '100% (ALTO)'; levelColor = '#ffffff'; }
+                    else if (userTicketsCount > 0) { level = 'MEDIO'; levelColor = '#cccccc'; }
+                    else if (lastSeen) { level = 'BAJO'; levelColor = '#8888aa'; }
+
+                    return (
+                      <tr key={u.id} className="hover:bg-white/5 transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white shadow-lg" style={{ backgroundColor: u.avatarColor }}>{u.initials}</div>
+                            <div>
+                               <div className="text-white font-black font-orbitron tracking-tight text-xs uppercase">{u.name}</div>
+                               <div className="text-[#8888aa] text-[8px] font-bold uppercase tracking-widest">{departments.find(d=>d.id===u.departmentId)?.name || 'SISTEMAS'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                           <div className="flex items-center gap-3">
+                              <span className="text-[9px] font-black font-orbitron" style={{ color: levelColor }}>{level}</span>
+                           </div>
+                        </td>
+                        <td className="px-8 py-6">
+                           <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-red-500/30'}`} />
+                              <span className={`text-[8px] font-black uppercase tracking-widest ${isOnline ? 'text-emerald-400' : 'text-white/20'}`}>
+                                {isOnline ? 'CONECTADO' : 'OFFLINE'}
+                              </span>
+                           </div>
+                        </td>
+                        <td className="px-8 py-6">
+                           <span className="text-white font-black font-orbitron text-xs">{userTicketsCount}</span>
+                        </td>
+                        <td className="px-8 py-6">
+                           <span className="text-[#8888aa] text-[9px] font-mono uppercase">
+                             {lastSeen ? new Date(lastSeen).toLocaleString('es-MX', { hour12: false, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'SIN REGISTRO'}
+                           </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

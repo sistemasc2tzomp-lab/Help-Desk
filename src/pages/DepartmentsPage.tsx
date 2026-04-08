@@ -31,7 +31,7 @@ function StatCard({ label, value, color, icon }: { label: string; value: number;
 }
 
 export default function DepartmentsPage() {
-  const { currentUser, departments, addDepartment, updateDepartment, deleteDepartment, tickets, users } = useApp();
+  const { currentUser, departments, addDepartment, updateDepartment, deleteDepartment, tickets, users, userActivity } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<DeptFormData>(defaultForm);
@@ -106,9 +106,9 @@ export default function DepartmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black text-white font-orbitron tracking-tighter mb-2 uppercase">
-            ESTACIÓN <span className="text-white">DEPARTAMENTOS</span>
+            REPOSITORIO <span className="text-white">DEPARTAMENTAL</span>
           </h1>
-          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">GESTIÓN DE DEPARTAMENTOS Y RECURSOS</p>
+          <p className="text-[#8888aa] text-sm font-rajdhani font-semibold tracking-[4px] uppercase">INVENTARIO OPERATIVO Y CONEXIÓN DE NODOS</p>
         </div>
         <button
           onClick={openCreate}
@@ -157,6 +157,7 @@ export default function DepartmentsPage() {
             const inProgress = deptTickets.filter(t => t.status === 'En Progreso').length;
             const resolved = deptTickets.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length;
             const total = deptTickets.length;
+            const onlineCount = deptUsers.filter(u => userActivity[u.id] && (Date.now() - new Date(userActivity[u.id]).getTime() < 300000)).length;
 
             return (
               <div key={dept.id} className="glass-panel border border-white/5 rounded-[40px] overflow-hidden group hover:border-[#ffffff]/20 transition-all duration-500 shadow-2xl relative">
@@ -174,9 +175,13 @@ export default function DepartmentsPage() {
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-white font-black font-orbitron tracking-tight text-xl uppercase group-hover:text-[#ffffff] transition-colors">{dept.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                           <span className="text-[#8888aa] text-[9px] font-black uppercase tracking-[2px]">Encargado:</span>
-                           <span className="text-[#ffffff] text-[10px] font-bold font-rajdhani uppercase tracking-tighter truncate max-w-[120px]">{dept.jefe || 'POR_ASIGNAR'}</span>
+                        <div className="flex items-center gap-3 mt-1">
+                           <div className="flex items-center gap-1.5">
+                              <div className={`w-1.5 h-1.5 rounded-full ${onlineCount > 0 ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-gray-600'}`} />
+                              <span className="text-[#8888aa] text-[9px] font-black uppercase tracking-[1px]">{onlineCount} ONLINE</span>
+                           </div>
+                           <span className="text-white/10">|</span>
+                           <span className="text-[#ffffff]/60 text-[10px] font-bold font-rajdhani uppercase tracking-tighter truncate max-w-[100px]">{dept.jefe || 'SIN_JEFE'}</span>
                         </div>
                       </div>
                     </div>

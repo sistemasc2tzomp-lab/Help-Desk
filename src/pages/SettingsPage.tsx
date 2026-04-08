@@ -131,7 +131,7 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
-  const { currentUser, sbStatus, lastPing } = useApp();
+  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, addLog } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
@@ -176,6 +176,7 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Red Alertas', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> },
     { id: 'appearance', label: 'Matriz Visual', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg> },
     { id: 'supabase', label: 'Estructura DB', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
+    { id: 'logs', label: 'Bitácora Núcleo', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> },
   ];
 
   return (
@@ -466,8 +467,84 @@ export default function SettingsPage() {
                   CONSEJO DE SEGURIDAD OPERATIVA
                 </div>
                 <p className="text-[#8888aa] text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                  EL SISTEMA REALIZA UNA VERIFICACIÓN DEL LATIDO CADA 30 SEGUNDOS PARA ASEGURAR LA INTEGRIDAD DE LOS DATOS.
+                  EL SISTEMA REALIZA UNA VERIFICACIÓN DEL LATIDO CADA 20 SEGUNDOS PARA ASEGURAR LA INTEGRIDAD DE LOS DATOS.
                 </p>
+              </div>
+
+              <div className="pt-8 border-t border-white/5">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-10 rounded-[40px] bg-gradient-to-br from-white/[0.03] to-transparent border border-white/10 shadow-2xl overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <h4 className="text-white font-black font-orbitron tracking-widest text-lg uppercase mb-2">CONTROLADOR DE RED</h4>
+                    <p className="text-[#8888aa] text-[10px] font-bold uppercase tracking-[3px]">SINCRONIZACIÓN FORZADA DEL NEXO DE DATOS</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      triggerSync();
+                      if (audioAlerts) playBeep();
+                    }}
+                    className="relative btn-futuristic px-10 py-5 text-[10px] font-black uppercase tracking-[4px] shadow-[0_0_50px_rgba(255,255,255,0.05)] hover:shadow-[0_0_80px_rgba(255,255,255,0.1)] active:scale-95 transition-all"
+                  >
+                    DISPARAR SINCRONIZACIÓN
+                  </button>
+                </div>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* ── LOGS ── */}
+          {activeSection === 'logs' && (
+            <SectionCard
+              title="BITÁCORA DEL NÚCLEO"
+              description="FLUJO DE EVENTOS Y ERRORES EN TIEMPO REAL"
+              icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>}
+            >
+              <div className="bg-[#030014] rounded-[32px] border border-white/5 overflow-hidden shadow-inner flex flex-col min-h-[500px]">
+                <div className="px-8 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                  <span className="text-[9px] font-black text-[#8888aa] uppercase tracking-[3px]">TRANSMISIÓN DE DATOS v4.2</span>
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-[#ffffff] animate-pulse shadow-[0_0_10px_white]" />
+                    <span className="text-[9px] font-black text-white uppercase tracking-[2px]">STREAMING</span>
+                  </div>
+                </div>
+                
+                <div className="flex-1 p-8 space-y-4 font-mono text-[11px] overflow-y-auto max-h-[600px] no-scrollbar">
+                  {systemLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 opacity-20 scale-90 grayscale">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mb-4"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                      <div className="font-black uppercase tracking-[4px]">Esperando_Señal...</div>
+                    </div>
+                  ) : (
+                    systemLogs.map((log, i) => (
+                      <div key={i} className={`flex gap-6 animate-slide-in p-3 rounded-xl border border-transparent transition-all hover:bg-white/[0.02] hover:border-white/5`}>
+                        <span className="text-[#8888aa] shrink-0 font-bold opacity-60">
+                          {new Date(log.t).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}:
+                        </span>
+                        <span className={`font-bold tracking-tight ${
+                          log.type === 'error' ? 'text-red-400' :
+                          log.type === 'warn' ? 'text-yellow-400' :
+                          log.type === 'success' ? 'text-emerald-400' :
+                          'text-white'
+                        }`}>
+                          {log.type === 'error' ? '[FAILURE_CORE] ' : 
+                           log.type === 'warn' ? '[ALERTA_ESTRUCT] ' : 
+                           log.type === 'success' ? '[SYNK_SUCCESS] ' : 
+                           '[OK_LINK] '}
+                          {log.m}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="p-6 border-t border-white/5 bg-white/[0.02] flex justify-end">
+                   <button
+                    onClick={() => triggerSync()}
+                    className="text-[9px] font-black text-[#8888aa] hover:text-white uppercase tracking-[3px] transition-colors"
+                  >
+                    LIMPIAR_MEMORIA (SIM)
+                  </button>
+                </div>
               </div>
             </SectionCard>
           )}
