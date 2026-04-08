@@ -82,8 +82,8 @@
       }
     ],
     "indexes": [],
-    "listRule": "",
-    "viewRule": "",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
     "createRule": "",
     "updateRule": "id = @request.auth.id",
     "deleteRule": "id = @request.auth.id",
@@ -177,8 +177,8 @@
       }
     ],
     "indexes": [],
-    "listRule": "",
-    "viewRule": "",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
@@ -226,7 +226,7 @@
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "values": ["Abierto", "En Progreso", "Cerrado"]
+          "values": ["Abierto", "En Progreso", "Resuelto", "Cerrado"]
         }
       },
       {
@@ -239,7 +239,7 @@
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "values": ["Bajo", "Medio", "Alto", "Urgente"]
+          "values": ["Baja", "Media", "Alta", "Urgente"]
         }
       },
       {
@@ -304,7 +304,7 @@
       }
     ],
     "indexes": [],
-    "listRule": "",
+    "listRule": "@request.auth.id != \"\"",
     "viewRule": "",
     "createRule": "",
     "updateRule": "",
@@ -373,10 +373,10 @@
       }
     ],
     "indexes": [],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "",
-    "updateRule": "",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
     "deleteRule": null,
     "options": {}
   }
