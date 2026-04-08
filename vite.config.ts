@@ -18,9 +18,24 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: [/core-js/],
       output: {
-        manualChunks: undefined
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('jspdf') || id.includes('canvg') || id.includes('html2canvas')) {
+              return 'vendor-pdf';
+            }
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('pocketbase')) {
+              return 'vendor-db';
+            }
+            return 'vendor';
+          }
+        }
       }
     }
   },

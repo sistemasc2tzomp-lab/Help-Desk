@@ -11,7 +11,7 @@
   "dependencies": {
     "canvg": "^4.0.3",
     "clsx": "2.1.1",
-    "core-js": "^3.49.0",
+    "core-js": "^3.33.0",
     "dompurify": "^3.3.3",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",

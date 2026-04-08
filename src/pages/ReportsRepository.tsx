@@ -193,6 +193,27 @@ export default function ReportsRepository() {
         headStyles: { fillColor: [16, 185, 129] }
       });
 
+      // Section 6: Signatures
+      doc.addPage();
+      doc.setFontSize(16);
+      doc.text('6. VALIDACIÓN INSTITUCIONAL', 15, 20);
+      
+      const sigLineY = 100;
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      
+      // Signature lines
+      doc.line(40, sigLineY, 120, sigLineY);
+      doc.line(pageWidth - 120, sigLineY, pageWidth - 40, sigLineY);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FIRMA COORDINACIÓN TÉCNICA', 80, sigLineY + 10, { align: 'center' });
+      doc.text('ADMINISTRADOR DE SISTEMAS', 80, sigLineY + 15, { align: 'center' });
+      
+      doc.text('DIRECCIÓN DE INFRAESTRUCTURA', pageWidth - 80, sigLineY + 10, { align: 'center' });
+      doc.text('CONTROL DE CALIDAD C2', pageWidth - 80, sigLineY + 15, { align: 'center' });
+
       doc.save(`REPORTE_TZOMPANTEPEC_MASTER_${Date.now()}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -389,8 +410,8 @@ export default function ReportsRepository() {
               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               Saturación de Unidades Administrativas
             </h3>
-            <div className="h-80" style={{ minHeight: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={deptData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartColors.grid} />
                   <XAxis 
@@ -417,8 +438,8 @@ export default function ReportsRepository() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="glass-panel p-8 rounded-[2rem] border border-[var(--glass-border)]">
               <h3 className="text-xs font-black text-[var(--text)] tracking-[4px] uppercase mb-8">Estado Operativo</h3>
-              <div className="h-64" style={{ minHeight: 256 }}>
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height={256}>
                   <PieChart>
                     <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
                       {statusData.map((entry, index) => (
@@ -432,8 +453,8 @@ export default function ReportsRepository() {
             </div>
             <div className="glass-panel p-8 rounded-[2rem] border border-[var(--glass-border)]">
               <h3 className="text-xs font-black text-[var(--text)] tracking-[4px] uppercase mb-8">Nivel de Alerta</h3>
-              <div className="h-64" style={{ minHeight: 256 }}>
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height={256}>
                   <PieChart>
                     <Pie data={priorityData} cx="50%" cy="50%" outerRadius={80} dataKey="value">
                       {priorityData.map((entry, index) => (
