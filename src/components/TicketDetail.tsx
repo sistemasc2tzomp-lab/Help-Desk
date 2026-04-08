@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketStatus, TicketPriority, TicketCategory } from '../types';
 import { formatDate } from '../utils/date';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { pb } from '../lib/pocketbase';
 import jsPDF from 'jspdf';
 import { generateProfessionalTicketReport } from '../utils/pdfGenerator';
 
@@ -93,24 +93,30 @@ export default function TicketDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTicketId]);
 
-  // ── Supabase Realtime subscription for live chat ──────────────────────────
+  // ── PocketBase Realtime subscription for live updates ──────────────────────
   useEffect(() => {
-    if (!selectedTicketId || !isSupabaseConfigured()) return;
-    const sb = getSupabase();
-    const channel = sb
-      .channel(`ticket-messages-${selectedTicketId}`)
-      .on(
-        'postgres_changes',
-        { event: '*',  schema: 'public', table: 'ticket_comentarios', filter: `ticket_id=eq.${selectedTicketId}` },
-        () => { refreshData(); }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tickets', filter: `id=eq.${selectedTicketId}` },
-        () => { refreshData(); }
-      )
-      .subscribe();
-    return () => { sb.removeChannel(channel); };
+    if (!selectedTicketId) return;
+    
+    const subscribe = async () => {
+      // Subscribe to ticket record changes
+      await pb.collection('tickets').subscribe(selectedTicketId, () => {
+        refreshData();
+      });
+
+      // Subscribe to all new comments and filter for this ticket
+      await pb.collection('ticket_comentarios').subscribe('*', (e) => {
+        if (e.record.ticket_id === selectedTicketId) {
+          refreshData();
+        }
+      });
+    };
+
+    subscribe();
+
+    return () => {
+      pb.collection('tickets').unsubscribe(selectedTicketId);
+      pb.collection('ticket_comentarios').unsubscribe('*');
+    };
   }, [selectedTicketId, refreshData]);
 
   if (loading && !ticket) {

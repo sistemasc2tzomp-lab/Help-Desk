@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { pb } from '../lib/pocketbase';
 import { User } from '../types';
 
 const roleColors: Record<string, string> = {
@@ -70,25 +70,19 @@ export default function UsersPage() {
   };
 
   const saveRole = async () => {
-    if (!editingUser || !isSupabaseConfigured()) return;
+    if (!editingUser) return;
     setSaving(true);
     setSaveMsg('');
     try {
-      const sb = getSupabase();
-      const { error } = await sb
-        .from('perfiles')
-        .update({ rol: newRole })
-        .eq('id', editingUser.id);
-      if (error) {
-        setSaveMsg('❌ ERROR_ID: ' + error.message);
-      } else {
-        setSaveMsg('✅ ENCRIPTACIÓN DE ROL COMPLETADA');
-        await refreshData();
-        setTimeout(() => {
-          setEditingUser(null);
-          setSaveMsg('');
-        }, 1200);
-      }
+      await pb.collection('users').update(editingUser.id, { rol: newRole });
+      setSaveMsg('✅ ENCRIPTACIÓN DE ROL COMPLETADA');
+      await refreshData();
+      setTimeout(() => {
+        setEditingUser(null);
+        setSaveMsg('');
+      }, 1200);
+    } catch (err: any) {
+      setSaveMsg('❌ ERROR_ID: ' + (err.message || 'Fallo de red'));
     } finally {
       setSaving(false);
     }
@@ -290,7 +284,7 @@ export default function UsersPage() {
             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
               <div>
                 <h3 className="text-white font-black font-orbitron tracking-tighter uppercase text-xl">NUEVO <span className="text-white">OPERADOR</span></h3>
-                <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase mt-1">Sincronización Supabase V4</p>
+                <p className="text-[#8888aa] text-[10px] font-bold tracking-[3px] uppercase mt-1">Sincronización PocketBase V1</p>
               </div>
               <button 
                 onClick={() => setShowCreateModal(false)}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isPocketBaseConfigured } from '../lib/pocketbase';
 import { AppSettings, TicketPriority } from '../types';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   maxAttachmentMB: 10,
   defaultPriority: 'Media',
   autoCloseResolvedDays: 5,
+  theme: 'dark',
 };
 
 const STORAGE_KEY = 'help_desk_tzomp_settings';
@@ -132,7 +133,7 @@ const PRIORITY_OPTIONS: TicketPriority[] = ['Baja', 'Media', 'Alta', 'Urgente'];
 const PRESET_COLORS = ['#ffffff', '#eeeeee', '#dddddd', '#cccccc', '#bbbbbb', '#aaaaaa', '#999999', '#888888'];
 
 export default function SettingsPage() {
-  const { currentUser, sbStatus, lastPing, triggerSync, systemLogs, theme, toggleTheme, resetSystem } = useApp();
+  const { currentUser, pbStatus, lastPing, triggerSync, systemLogs, theme, toggleTheme, resetSystem } = useApp();
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('general');
@@ -176,7 +177,7 @@ export default function SettingsPage() {
     { id: 'tickets', label: 'Protocolos Tickets', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg> },
     { id: 'notifications', label: 'Red Alertas', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> },
     { id: 'appearance', label: 'Matriz Visual', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg> },
-    { id: 'supabase', label: 'Estructura DB', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
+    { id: 'database', label: 'Estructura DB', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
     { id: 'logs', label: 'Bitácora Núcleo', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> },
     { id: 'maintenance', label: 'Protocolo Limpieza', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> },
   ];
@@ -435,24 +436,24 @@ export default function SettingsPage() {
             </SectionCard>
           )}
 
-          {/* ── SUPABASE / DB ── */}
-          {activeSection === 'supabase' && (
+          {/* ── DATABASE / POCKETBASE ── */}
+          {activeSection === 'database' && (
             <SectionCard
               title="MONITOR DE INFRAESTRUCTURA"
-              description="ESTADO DE ENLACE CON SUPABASE"
+              description="ESTADO DE ENLACE CON POCKETBASE"
               icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-8 rounded-3xl border transition-all ${sbStatus === 'connected' ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/2 border-white/5 animate-pulse'}`}>
+                <div className={`p-8 rounded-3xl border transition-all ${pbStatus === 'connected' ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/2 border-white/5 animate-pulse'}`}>
                    <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-black uppercase tracking-[4px] text-[#8888aa]">ESTADO_ENLACE</span>
-                      <div className={`w-3 h-3 rounded-full ${sbStatus === 'connected' ? 'bg-white shadow-[0_0_15px_white]' : 'bg-gray-600 shadow-[0_0_15px_#666666]'}`} />
+                      <div className={`w-3 h-3 rounded-full ${pbStatus === 'connected' ? 'bg-white shadow-[0_0_15px_white]' : 'bg-gray-600 shadow-[0_0_15px_#666666]'}`} />
                    </div>
-                   <div className={`text-2xl font-black font-orbitron tracking-widest uppercase ${sbStatus === 'connected' ? 'text-white' : 'text-gray-400'}`}>
-                      {sbStatus === 'connected' ? 'ACTIVO_OK' : 'DISCONNECT'}
+                   <div className={`text-2xl font-black font-orbitron tracking-widest uppercase ${pbStatus === 'connected' ? 'text-white' : 'text-gray-400'}`}>
+                      {pbStatus === 'connected' ? 'ACTIVO_OK' : 'DISCONNECT'}
                    </div>
                    <div className="text-[10px] font-bold text-[#8888aa] mt-2 uppercase tracking-widest leading-relaxed">
-                      {sbStatus === 'connected' ? 'Conexión bidireccional estable con el núcleo de datos.' : 'Error de enlace. Verifique configuración de red y credenciales.'}
+                      {pbStatus === 'connected' ? 'Conexión bidireccional estable con el núcleo de datos.' : 'Error de enlace. Verifique configuración de red y credenciales.'}
                    </div>
                 </div>
 
@@ -597,7 +598,7 @@ export default function SettingsPage() {
                       if (!confirm('SEGUNDA CONFIRMACIÓN REQUERIDA: ¿Está 100% seguro de reiniciar el sistema?')) return;
                       
                       try {
-                        if (isSupabaseConfigured()) {
+                        if (isPocketBaseConfigured()) {
                           await resetSystem(); 
                         }
                         

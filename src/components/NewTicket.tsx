@@ -60,7 +60,7 @@ export default function NewTicket() {
     setUploadingImage(true);
     let imageUrl: string | undefined;
     if (imageFile && imagePreview) {
-      // Usar base64 directamente (fallback estable sin Supabase Storage)
+      // Usar base64 directamente (fallback estable sin dependencia de storage externo)
       imageUrl = imagePreview;
     }
     setUploadingImage(false);

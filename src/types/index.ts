@@ -53,7 +53,7 @@ export interface Department {
   description: string;
   color: string;
   createdAt: string;
-  jefe?: string;         // jefe del departamento (campo real en Supabase)
+  jefe?: string;         // ID del usuario jefe del departamento
 }
 
 export interface AppSettings {

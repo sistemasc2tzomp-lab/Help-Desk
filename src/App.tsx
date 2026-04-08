@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import LandingPage from './pages/LandingPage';
@@ -12,24 +11,9 @@ import UsersPage from './pages/UsersPage';
 import ReportsRepository from './pages/ReportsRepository';
 import DepartmentsPage from './pages/DepartmentsPage';
 import SettingsPage from './pages/SettingsPage';
-import SetupPage from './pages/SetupPage';
-import { isSupabaseConfigured } from './lib/supabase';
 
 function AppContent() {
   const { currentUser, page, loading, theme } = useApp();
-  const [configured, setConfigured] = useState(isSupabaseConfigured());
-
-  if (!configured) {
-    return (
-      <SetupPage
-        onConfigured={() => {
-          setConfigured(true);
-          const recheck = (window as unknown as Record<string, unknown>).__sbRecheck;
-          if (typeof recheck === 'function') recheck();
-        }}
-      />
-    );
-  }
 
   if (!currentUser) {
     return <LoginPage />;

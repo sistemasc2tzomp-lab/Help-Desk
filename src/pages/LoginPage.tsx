@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { logoBase64 } from '../utils/logoBase64';
 
 export default function LoginPage() {
-  const { loginWithSupabase } = useApp();
+  const { loginWithPocketBase } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const err = await loginWithSupabase(email.trim(), password);
+      const err = await loginWithPocketBase(email.trim(), password);
       if (err) {
         setError(err);
         setLoading(false);

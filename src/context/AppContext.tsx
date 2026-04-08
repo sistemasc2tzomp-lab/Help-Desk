@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { User, Ticket, Department, TicketStatus, TicketPriority, TicketCategory, Message } from '../types';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { pb, isPocketBaseOnline } from '../lib/pocketbase';
+import { User, Ticket, Department, TicketStatus, TicketPriority, Message } from '../types';
 
 // ── Sound Notification System ─────────────────────────────────────
 // Shared AudioContext — se crea SOLO tras la primera interacción del usuario
@@ -110,17 +110,15 @@ interface AppContextType {
   setPage: (page: string) => void;
   selectedTicketId: string | null;
   setSelectedTicketId: (id: string | null) => void;
-  supabaseReady: boolean;
-  sbStatus: 'connected' | 'disconnected' | 'checking';
+  pbStatus: 'connected' | 'disconnected' | 'checking';
   lastPing: string | null;
-  loginWithSupabase: (email: string, password: string) => Promise<string | null>;
+  loginWithPocketBase: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
-  createUser: (data: { name: string; email: string; role: User['role']; departmentId?: string }) => Promise<{ success: boolean; error?: string }>;
+  createUser: (data: { name: string; email: string; role: User['role']; departmentId?: string; password?: string }) => Promise<{ success: boolean; error?: string }>;
   deleteUser: (id: string) => Promise<void>;
   triggerSync: () => Promise<void>;
   systemLogs: {t: number, m: string, type: 'info'|'warn'|'error'|'success'}[];
   addLog: (message: string, type?: 'info'|'warn'|'error'|'success' | 'warning') => void;
-  userActivity: Record<string, string>; // userId -> ISO date
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   resetSystem: () => Promise<void>;
@@ -130,28 +128,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-// ── DB value mappers (para constraints de Supabase) ────────────────────────
-// Supabase CHECK constraint puede exigir minúsculas. Intentamos el valor
-// original primero; si falla, el componente lo reintentará con el mapeado.
-function mapToDbStatus(status: string): string {
-  const map: Record<string, string> = {
-    'Abierto': 'abierto',
-    'En Progreso': 'en_progreso',
-    'Resuelto': 'resuelto',
-    'Cerrado': 'cerrado',
-  };
-  return map[status] ?? status.toLowerCase().replace(' ', '_');
-}
-
-function mapToDbPriority(priority: string): string {
-  const map: Record<string, string> = {
-    'Urgente': 'urgente',
-    'Alta': 'alta',
-    'Media': 'media',
-    'Baja': 'baja',
-  };
-  return map[priority] ?? priority.toLowerCase();
-}
+// ── DB value mappers ────────────────────────
+// PocketBase simplifica el manejo de tipos y colecciones.
+// Se mantienen vacíos o se eliminan si no se usan más.
 
 // normalizeFromDb: convierte valor de BD a formato de la app
 function normalizeStatus(raw: string): string {
@@ -194,10 +173,10 @@ function normalizeRole(raw: unknown): User['role'] {
 }
 
 // ── DB row → app types ───────────────────────────────────────────────────────
-// Maps tabla "perfiles": id, nombre, email, avatar, rol, departamento_id, activo, creado_en
+// Maps tabla "users": id, name, email, avatar, rol, departamento_id, activo, created, updated
 function rowToUser(r: Record<string, unknown>): User {
-  const name = String(r.nombre || r.name || r.full_name || r.email || 'Usuario');
-  const roleRaw = r.rol || r.role || r.rango || 'Cliente';
+  const name = String(r.name || r.nombre || r.full_name || r.email || 'Usuario');
+  const roleRaw = r.rol || r.role || 'Cliente';
   return {
     id: String(r.id),
     name,
@@ -205,25 +184,22 @@ function rowToUser(r: Record<string, unknown>): User {
     email: String(r.email || ''),
     role: normalizeRole(roleRaw),
     avatarColor: colorFor(String(r.id)),
-    departmentId: r.departamento_id ? String(r.departamento_id) : (r.department_id ? String(r.department_id) : undefined),
+    departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
   };
 }
 
-// Maps tabla "messages": id, ticket_id, author_id, content, is_internal, image_url, created_at
+// Maps tabla "ticket_comentarios": id, ticket_id, autor_id, mensaje, es_interno, created
 function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User> = {}): Message {
-  const userId = String(r.usuario_id || r.author_id || r.user_id || '');
+  const userId = String(r.autor_id || '');
   const author = usersMap[userId];
-  const authorName = author?.name || String(r.author_name || r.nombre_autor || 'Usuario');
+  const authorName = author?.name || 'Usuario';
   
-  // content/contenido
-  const content = String(r.contenido || r.content || r.mensaje || '');
-  
-  // timestamp/fecha
-  const timestamp = String(r.creado_en || r.created_at || r.fecha || new Date().toISOString());
+  const content = String(r.mensaje || '');
+  const timestamp = String(r.created || new Date().toISOString());
 
   return {
     id: String(r.id),
-    ticketId: String(r.ticket_id || r.id_ticket || ''),
+    ticketId: String(r.ticket_id || ''),
     authorId: userId,
     authorName,
     authorInitials: getInitials(authorName),
@@ -231,67 +207,48 @@ function rowToMessage(r: Record<string, unknown>, usersMap: Record<string, User>
     authorRole: author?.role || 'Cliente',
     content,
     timestamp,
-    isInternal: Boolean(r.es_interno || r.is_internal || r.interno),
-    // imagenes is jsonb array, take first element's url if present
-    imageUrl: (() => {
-      const imgs = r.imagenes as unknown;
-      if (Array.isArray(imgs) && imgs.length > 0) {
-        return String(imgs[0].url || imgs[0] || '');
-      }
-      return (r.image_url || r.imagen || r.url_foto) ? String(r.image_url || r.imagen || r.url_foto) : undefined;
-    })(),
+    isInternal: Boolean(r.es_interno),
+    imageUrl: undefined, // En PB se maneja vía campos de archivo si es necesario
   };
 }
 
-// Maps tabla "tickets": id, titulo, descripcion, estado, prioridad, departamento_id,
-//   creado_por_id, asignado_a_id, etiquetas, imagenes(jsonb), creado_en, actualizado_en
+// Maps tabla "tickets": id, titulo, descripcion, estado, prioridad, departamento_id, creado_por_id...
 function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap: Record<string, User> = {}): Ticket {
-  const creatorId = String(r.creado_por_id || r.created_by_id || '');
-  const assigneeId = (r.asignado_a_id || r.assigned_to_id) ? String(r.asignado_a_id || r.assigned_to_id) : undefined;
+  const creatorId = String(r.creado_por_id || '');
+  const assigneeId = r.asignado_a_id ? String(r.asignado_a_id) : undefined;
   const creator = usersMap[creatorId];
   const assignee = assigneeId ? usersMap[assigneeId] : undefined;
 
-  // imagenes is jsonb — get first image url
-  const imageUrl = (() => {
-    const imgs = r.imagenes as unknown;
-    if (Array.isArray(imgs) && imgs.length > 0) return String(imgs[0].url || imgs[0] || '');
-    const possibleImg = r.image_url || r.attachment_url || r.imagen || r.url_foto;
-    return possibleImg ? String(possibleImg) : undefined;
-  })();
-
-  const status = normalizeStatus(String(r.estado || r.status || 'Abierto'));
-  const priority = normalizePriority(String(r.prioridad || r.priority || 'Media'));
-  const category = String(r.categoria || r.category || 'General');
+  const status = normalizeStatus(String(r.estado || 'Abierto'));
+  const priority = normalizePriority(String(r.prioridad || 'Media'));
 
   return {
     id: String(r.id),
-    folio: r.folio ? Number(r.folio) : (r.numero_folio ? Number(r.numero_folio) : undefined),
-    title: String(r.titulo || r.title || r.asunto || ''),
-    description: String(r.descripcion || r.description || r.detalles || ''),
+    title: String(r.titulo || ''),
+    description: String(r.descripcion || ''),
     status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,
     priority: (priority.charAt(0).toUpperCase() + priority.slice(1)) as TicketPriority,
-    category: (category.charAt(0).toUpperCase() + category.slice(1)) as TicketCategory,
-    departmentId: r.departamento_id ? String(r.departamento_id) : (r.department_id ? String(r.department_id) : undefined),
+    category: 'General',
+    departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
     createdById: creatorId,
-    createdByName: creator?.name || String(r.creado_por_nombre || r.created_by_name || 'Solicitante'),
+    createdByName: creator?.name || 'Solicitante',
     assignedToId: assigneeId,
-    assignedToName: assignee?.name || String(r.asignado_a_nombre || r.assigned_to_name || 'En espera'),
-    createdAt: String(r.creado_en || r.created_at || new Date().toISOString()),
-    updatedAt: String(r.actualizado_en || r.updated_at || new Date().toISOString()),
+    assignedToName: assignee?.name || 'En espera',
+    createdAt: String(r.created || new Date().toISOString()),
+    updatedAt: String(r.updated || new Date().toISOString()),
     messages: msgs,
-    imageUrl,
+    imageUrl: (r.imagenes && Array.isArray(r.imagenes)) ? r.imagenes[0] : undefined,
   };
 }
 
-// Maps tabla "departamentos": id, nombre, descripcion, jefe, color, creado_en
+// Maps tabla "departamentos": id, nombre, background_color, text_color, icon, descripcion, created
 function rowToDept(r: Record<string, unknown>): Department {
   return {
     id: String(r.id),
-    name: String(r.nombre || r.name || ''),
-    description: String(r.descripcion || r.description || ''),
-    color: String(r.color || '#7C3AED'),
-    createdAt: String(r.creado_en || r.created_at || new Date().toISOString()),
-    jefe: r.jefe ? String(r.jefe) : undefined,
+    name: String(r.nombre || ''),
+    description: String(r.descripcion || ''),
+    color: String(r.background_color || '#7C3AED'),
+    createdAt: String(r.created || new Date().toISOString()),
   };
 }
 
@@ -304,8 +261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<string>('login');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
-  const [supabaseReady, setSupabaseReady] = useState(isSupabaseConfigured());
-  const [sbStatus, setSbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [pbStatus, setPbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [offlineTickets, setOfflineTickets] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
@@ -316,7 +272,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [lastPing, setLastPing] = useState<string | null>(null);
   const [systemLogs, setSystemLogs] = useState<{t: number, m: string, type: 'info'|'warn'|'error'|'success'}[]>([]);
-  const [userActivity, setUserActivity] = useState<Record<string, string>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('app-theme');
@@ -344,16 +299,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Update online presence
   useEffect(() => {
-    if (!currentUser || !isSupabaseConfigured()) return;
-    const sb = getSupabase();
-    
+    if (!currentUser) return;
     const updatePresence = async () => {
       try {
-        // Intentar actualizar presencia — usar solo campos que probablemente existan
-        const { error } = await sb.from('perfiles').update({ activo: true }).eq('id', currentUser.id);
-        if (error) {
-          // Silenciosamente ignorar
-        }
+        await pb.collection('users').update(currentUser.id, { activo: true });
       } catch { /* Presence update no es crítico */ }
     };
 
@@ -366,39 +315,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('helpdesk_offline_tickets', JSON.stringify(offlineTickets));
   }, [offlineTickets]);
 
-  const checkSupabase = useCallback(async () => {
-    const ready = isSupabaseConfigured();
-    setSupabaseReady(ready);
-    if (!ready) {
-      setSbStatus('disconnected');
-      return;
-    }
-    try {
-      const { error } = await getSupabase().from('perfiles').select('id').limit(1);
-      if (error && error.code !== 'PGRST116') throw error;
-      setSbStatus('connected');
-      setLastPing(new Date().toISOString());
-    } catch {
-      setSbStatus('disconnected');
-    }
+  const checkPB = useCallback(async () => {
+    const online = await isPocketBaseOnline();
+    setPbStatus(online ? 'connected' : 'disconnected');
+    if (online) setLastPing(new Date().toISOString());
   }, []);
 
   useEffect(() => {
-    checkSupabase();
-    const interval = setInterval(checkSupabase, 30000);
+    checkPB();
+    const interval = setInterval(checkPB, 30000);
     return () => clearInterval(interval);
-  }, [checkSupabase]);
+  }, [checkPB]);
 
   useEffect(() => {
     const handleOnline = () => {
       console.log("CONEXIÓN_RESTABLECIDA: Sincronizando datos...");
       setIsOnline(true);
-      checkSupabase();
+      checkPB();
     };
     const handleOffline = () => {
       console.log("MODO_DESCONECTADO_ACTIVO.");
       setIsOnline(false);
-      setSbStatus('disconnected');
+      setPbStatus('disconnected');
     };
 
     window.addEventListener('online', handleOnline);
@@ -407,7 +345,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [checkSupabase]);
+  }, [checkPB]);
 
   // Persistir tickets offline
   useEffect(() => {
@@ -418,297 +356,127 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ── fetch all data ──────────────────────────────────────────────────────
   const refreshData = useCallback(async () => {
-    if (!isSupabaseConfigured()) return;
-    const sb = getSupabase();
     setLoading(true);
     try {
-      // 1. Usuarios: cargamos frescos de la BD y construimos el mapa localmente
-      let freshUsers: User[] = [];
-      try {
-        const { data: perfilesData } = await sb.from('perfiles').select('*');
-        const usersFromPerfiles: User[] = (perfilesData as Record<string, unknown>[] || []).map(rowToUser);
-        freshUsers = [...usersFromPerfiles];
-        try {
-          const { data: usuariosData } = await sb.from('usuarios').select('*');
-          if (usuariosData && usuariosData.length > 0) {
-            const usersFromUsuarios: User[] = (usuariosData as Record<string, unknown>[]).map(r => {
-              const name = String(r.nombre || r.name || r.email || 'Usuario');
-              return {
-                id: String(r.id),
-                name,
-                initials: getInitials(name),
-                email: String(r.email || ''),
-                role: normalizeRole(r.rol || r.role),
-                avatarColor: colorFor(String(r.id)),
-                departmentId: undefined,
-              };
-            });
-            const perfilIds = new Set(usersFromPerfiles.map(u => u.id));
-            freshUsers = [...usersFromPerfiles, ...usersFromUsuarios.filter(u => !perfilIds.has(u.id))];
-          }
-        } catch { /* tabla usuarios opcional */ }
-        setUsers(freshUsers);
-      } catch (e) { console.error('refreshData: perfiles error', e); }
+      // 1. Usuarios
+      const usersList = await pb.collection('users').getFullList();
+      const freshUsers = usersList.map(rowToUser);
+      setUsers(freshUsers);
 
-      // Mapa de usuarios para resolver nombres/roles en mensajes y tickets
       const freshUMap: Record<string, User> = {};
       freshUsers.forEach(u => { freshUMap[u.id] = u; });
 
-      try {
-        const { data: deptsData } = await sb.from('departamentos').select('*');
-        if (deptsData) setDepartments((deptsData as Record<string, unknown>[]).map(rowToDept));
-      } catch (e) { console.error('refreshData: departments error', e); }
+      // 2. Departamentos
+      const deptsList = await pb.collection('departamentos').getFullList({ sort: 'nombre' });
+      setDepartments(deptsList.map(rowToDept));
 
-      // 2.1 Presencia de usuarios
-      try {
-        // We will try to fetch all perfiles for presence monitoring
-        const { data: fullPresence } = await sb.from('perfiles').select('*');
-        if (fullPresence) {
-          const pMap: Record<string, string> = {};
-          fullPresence.forEach((r: any) => { 
-            const activity = r.ultima_conexion || r.last_sign_in || r.updated_at || r.created_at;
-            if (activity) pMap[r.id] = String(activity); 
-          });
-          setUserActivity(pMap);
-        }
-      } catch { /* ignore presence fetch error */ }
-
-      // 3. Comentarios — ahora usa el mapa fresco
+      // 3. Comentarios
       const msgsByTicket: Record<string, Message[]> = {};
-      try {
-        const { data: comentariosData } = await sb
-          .from('ticket_comentarios')
-          .select('*');
-        if (comentariosData) {
-          (comentariosData as Record<string, unknown>[]).forEach(r => {
-            const m = rowToMessage(r, freshUMap);
-            if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
-            msgsByTicket[m.ticketId].push(m);
-          });
-        }
-      } catch (e) { console.error('refreshData: comentarios error', e); }
+      const comentariosList = await pb.collection('ticket_comentarios').getFullList({ sort: 'created' });
+      comentariosList.forEach(r => {
+        const m = rowToMessage(r as any, freshUMap);
+        if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
+        msgsByTicket[m.ticketId].push(m);
+      });
 
-      // 4. Tickets — ahora usa el mapa fresco
-      try {
-        const { data: tktData } = await sb
-          .from('tickets')
-          .select('*');
-        if (tktData) {
-          setTickets((tktData as Record<string, unknown>[]).map(r =>
-            rowToTicket(r, msgsByTicket[String(r.id)] || [], freshUMap)
-          ));
-        }
-      } catch (e) { console.error('refreshData: tickets error', e); }
+      // 4. Tickets
+      const ticketsList = await pb.collection('tickets').getFullList({ sort: '-created' });
+      setTickets(ticketsList.map(r =>
+        rowToTicket(r as any, msgsByTicket[String(r.id)] || [], freshUMap)
+      ));
+
+      setPbStatus('connected');
     } catch (err: any) {
       console.error('Error loading data:', err);
-      addLog(`Error crítico de carga: ${err.message || 'Sin mensaje'}`, 'error');
+      addLog(`Error de carga: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
   }, [addLog]);
 
   const triggerSync = useCallback(async () => {
-    addLog('Iniciando sincronización manual...', 'info');
+    addLog('Sincronización manual iniciada...', 'info');
     await refreshData();
     addLog('Sincronización manual completada con éxito.', 'info');
   }, [refreshData, addLog]);
 
   useEffect(() => {
-    if (!supabaseReady) return;
-    const sb = getSupabase();
-    sb.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        console.warn('Sesión expirada o token inválido, cerrando sesión...', error.message);
-        sb.auth.signOut().catch(() => {});
-        setCurrentUser(null);
-        return;
-      }
-      const sessionUser = data.session?.user;
-      if (sessionUser) {
-        sb.from('perfiles')
-          .select('*')
-          .eq('id', sessionUser.id)
-          .single()
-          .then(({ data: perfil }) => {
-            if (perfil) {
-              const dbUser = rowToUser(perfil as Record<string, unknown>);
-              const metaRole = normalizeRole(
-                sessionUser.user_metadata?.role ||
-                sessionUser.app_metadata?.role || ''
-              );
-              const resolvedRole: User['role'] = metaRole !== 'Cliente' ? metaRole : dbUser.role;
-              setCurrentUser({ ...dbUser, role: resolvedRole });
-              setPage('dashboard');
-            }
-          });
-      }
-    });
+    if (pb.authStore.model) {
+      setCurrentUser(rowToUser(pb.authStore.model as any));
+      setPage('dashboard');
+    }
     refreshData();
-  }, [supabaseReady, refreshData]);
+  }, [refreshData]);
 
   useEffect(() => {
-    (window as unknown as Record<string, unknown>).__sbRecheck = () => {
-      checkSupabase();
-    }
-  }, [users, departments]);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    const sb = getSupabase();
-
-    let channel: ReturnType<typeof sb.channel> | null = null;
-    try {
-      channel = sb.channel('public_schema_changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, () => {
-          playNotificationSound('new_ticket');
-          refreshData();
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, () => {
-          playNotificationSound('update');
-          refreshData();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comentarios' }, () => {
-          playNotificationSound('update');
-          refreshData();
-        })
-        .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            console.warn(`Canal Realtime: ${status} — usando polling como respaldo`);
-          }
-        });
-    } catch {
-      console.warn('No se pudo inicializar el canal Realtime');
-    }
-
-    // Fallback Polling — Solo como respaldo del canal Realtime (cada 60s)
-    const fallbackId = setInterval(() => {
+    // Real-time con PocketBase
+    pb.collection('tickets').subscribe('*', () => {
+      playNotificationSound('update');
       refreshData();
-    }, 60000);
+    });
+    pb.collection('ticket_comentarios').subscribe('*', () => {
+      playNotificationSound('update');
+      refreshData();
+    });
 
     return () => {
-      if (channel) sb.removeChannel(channel);
-      clearInterval(fallbackId);
+      pb.collection('tickets').unsubscribe('*');
+      pb.collection('ticket_comentarios').unsubscribe('*');
     };
   }, [refreshData]);
 
   // Sync tickets offline when back online
   const syncOfflineTickets = useCallback(async () => {
-    if (offlineTickets.length === 0 || sbStatus !== 'connected' || !isSupabaseConfigured()) return;
+    if (offlineTickets.length === 0 || pbStatus !== 'connected') return;
     
     console.log("Sincronizando tickets capturados fuera de línea...");
-    const sb = getSupabase();
     const remaining: any[] = [];
 
-    for (let i = 0; i < offlineTickets.length; i++) {
-        const t = offlineTickets[i];
+    for (const t of offlineTickets) {
         try {
-            const { error } = await sb.from('tickets').insert({
+            await pb.collection('tickets').create({
                 titulo: t.title,
                 descripcion: t.description,
                 creado_por_id: t.createdById,
-                estado: mapToDbStatus('Abierto'),
-                prioridad: mapToDbPriority(t.priority),
+                estado: 'Abierto',
+                prioridad: t.priority,
                 departamento_id: t.departmentId || null,
                 asignado_a_id: t.assignedToId || null,
-                ...(t.imageUrl ? { imagenes: [{ url: t.imageUrl }] } : {}),
             });
-            if (!error) {
-                console.log(`Ticket offline "${t.title}" sincronizado con éxito.`);
-            } else {
-                console.error("Error sincronizando ticket offline:", error);
-                remaining.push(t);
-            }
         } catch (err) {
-            console.error("Fallo de red en sincronización offline:", err);
+            console.error("Error sincronizando ticket offline:", err);
             remaining.push(t);
         }
     }
     setOfflineTickets(remaining);
-    if (remaining.length < offlineTickets.length) {
-        refreshData();
-    }
-  }, [offlineTickets, sbStatus, refreshData]);
+    if (remaining.length < offlineTickets.length) refreshData();
+  }, [offlineTickets, pbStatus, refreshData]);
 
   useEffect(() => {
-    if (isOnline && sbStatus === 'connected') {
+    if (isOnline && pbStatus === 'connected') {
         syncOfflineTickets();
     }
-  }, [isOnline, sbStatus, syncOfflineTickets]);
+  }, [isOnline, pbStatus, syncOfflineTickets]);
 
   // ── auth ─────────────────────────────────────────────────────────────────
-  const loginWithSupabase = useCallback(async (email: string, password: string): Promise<string | null> => {
-    if (!isSupabaseConfigured()) return 'Supabase no está configurado.';
-    const sb = getSupabase();
-    console.log('INTENTO DE LOGIN:', { email, password });
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error('DETALLE ERROR SUPABASE:', error);
-      return error.message;
-    }
-    if (!data.user) return 'Error al iniciar sesión';
-
-    const authUser = data.user;
-    const metaRole = normalizeRole(
-      authUser.user_metadata?.role || authUser.app_metadata?.role || ''
-    );
-
-    // fetch from perfiles table
-    const { data: perfil, error: perfilErr } = await sb
-      .from('perfiles')
-      .select('*')
-      .eq('id', authUser.id)
-      .single();
-
-    if (perfil && !perfilErr) {
-      const dbUser = rowToUser(perfil as Record<string, unknown>);
-      const resolvedRole: User['role'] = metaRole !== 'Cliente' ? metaRole : dbUser.role;
-
-      // Sync role back to DB if different
-      if (resolvedRole !== dbUser.role) {
-        await sb.from('perfiles').update({ rol: resolvedRole }).eq('id', authUser.id);
+  const loginWithPocketBase = useCallback(async (email: string, password: string): Promise<string | null> => {
+    try {
+      const authData = await pb.collection('users').authWithPassword(email, password);
+      if (authData.record) {
+        setCurrentUser(rowToUser(authData.record as any));
+        await refreshData();
+        setPage('dashboard');
+        return null;
       }
-
-      const user: User = { ...dbUser, role: resolvedRole };
-      setCurrentUser(user);
-      await refreshData();
-      setPage('dashboard');
-    } else {
-      // Create new profile in perfiles
-      const roleToSave = metaRole !== 'Cliente' ? metaRole : 'Cliente';
-      const name = authUser.user_metadata?.full_name ||
-        authUser.user_metadata?.name ||
-        authUser.email?.split('@')[0] || (roleToSave === 'Admin' ? 'Administrador' : 'Usuario');
-
-      // Fallback insertion for perfiles
-      const profileData: any = { 
-        id: authUser.id, 
-        email: authUser.email, 
-        activo: true,
-        nombre: name,
-        rol: roleToSave
-      };
-
-      await sb.from('perfiles').upsert(profileData);
-
-      const newUser: User = {
-        id: authUser.id,
-        name,
-        initials: getInitials(name),
-        email: authUser.email || '',
-        role: roleToSave,
-        avatarColor: colorFor(authUser.id),
-      };
-      setCurrentUser(newUser);
-      await refreshData();
-      setPage('dashboard');
+      return 'Credenciales inválidas';
+    } catch (err: any) {
+      console.error('Login error:', err);
+      return err.message || 'Error al iniciar sesión';
     }
-    return null;
   }, [refreshData]);
 
   const logout = useCallback(async () => {
-    if (isSupabaseConfigured()) {
-      await getSupabase().auth.signOut();
-    }
+    pb.authStore.clear();
     setCurrentUser(null);
     setTickets([]);
     setUsers([]);
@@ -717,144 +485,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   // ── tickets ─────────────────────────────────────────────────────────────
-  const addTicket = useCallback(async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>): Promise<Ticket> => {
-    const effectivelyOnline = isOnline && sbStatus === 'connected' && isSupabaseConfigured();
-    
-    // Si no está en línea, guardamos para después (Modo Offline)
-    if (!effectivelyOnline) {
-      console.warn("MODO_FUERA_DE_LÍNEA: Resguardando solicitud en bitácora local...");
-      const tempId = `offline-${Date.now()}`;
-      const newOfflineTicket = {
-        ...ticketData,
-        id: tempId,
-        createdById: currentUser?.id || 'anonymous',
-        createdByName: currentUser?.name || 'Usuario Offline',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        messages: [],
-        status: 'Abierto',
-        isOfflinePending: true
-      };
-      
-      setOfflineTickets(prev => [...prev, newOfflineTicket]);
-      // Al ser offline, agregamos al estado local para que el usuario vea su ticket
-      const t = rowToTicket({
-        id: tempId,
-        titulo: ticketData.title,
-        descripcion: ticketData.description,
-        creado_por_id: currentUser?.id,
+  const addTicket = useCallback(async (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages' | 'createdByName' | 'assignedToName'>) => {
+    if (!currentUser) throw new Error('Debes iniciar sesión para crear un ticket.');
+
+    try {
+      const pbTicket = await pb.collection('tickets').create({
+        titulo: ticket.title,
+        descripcion: ticket.description,
+        creado_por_id: currentUser.id,
         estado: 'Abierto',
-        prioridad: ticketData.priority,
-        departamento_id: ticketData.departmentId,
-        creado_en: new Date().toISOString(),
-      }, [], { [currentUser?.id || '']: currentUser as User });
-      
-      setTickets(prev => [t, ...prev]);
-      return t;
-    }
-    
-    const sb = getSupabase();
+        prioridad: ticket.priority,
+        departamento_id: ticket.departmentId || null,
+        asignado_a_id: ticket.assignedToId || null,
+      });
 
-    // Verificar que el usuario está autenticado en Supabase Auth
-    const { data: sessionData } = await sb.auth.getSession();
-    const authUid = sessionData.session?.user?.id;
-    if (!authUid) {
-      throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
-    }
-
-    // Usar el UID real de la sesión Supabase Auth (CRÍTICO para RLS)
-    const creadorId = authUid;
-
-    let autoAdminId: string | null = null;
-    try {
-      const { data: admins } = await sb
-        .from('perfiles')
-        .select('id, nombre, rol')
-        .or('rol.eq.Admin,rol.eq.admin,rol.eq.Administrador')
-        .limit(1);
-      if (admins && admins.length > 0) {
-        autoAdminId = String(admins[0].id);
-      }
-    } catch { /* silent fallback for auto-assignment */ }
-
-    // NO enviamos 'id' — dejamos que el TRIGGER de BD lo genere (folio consecutivo)
-    // Si no hay trigger configurado, generamos uno temporal como fallback
-    const insertData: Record<string, unknown> = {
-      titulo: ticketData.title,
-      descripcion: ticketData.description,
-      creado_por_id: currentUser?.id || creadorId,  // Priorizamos ID local, fallback a auth
-      estado: mapToDbStatus('Abierto'),
-      prioridad: mapToDbPriority(ticketData.priority),
-      departamento_id: ticketData.departmentId || null,
-      asignado_a_id: autoAdminId || ticketData.assignedToId || null,
-      ...(ticketData.imageUrl ? { imagenes: [{ url: ticketData.imageUrl }] } : {}),
-    };
-
-    try {
-      addLog(`Enviando ticket: ${ticketData.title}`, 'info');
-      const { data, error } = await sb.from('tickets').insert(insertData).select().single();
-      if (error || !data) {
-        console.error('addTicket DB error:', error);
-        addLog(`Error DB al crear ticket: ${error?.message || 'Error desconocido'}`, 'error');
-        // Si el error es de RLS, dar mensaje claro
-        if (error?.code === '42501' || error?.message?.includes('row-level security')) {
-          throw new Error('Permiso denegado: Tu usuario no tiene permisos para crear tickets. Contacta al administrador para que ejecute el script SQL de permisos.');
-        }
-        throw new Error(error?.message || 'Error de sincronización con la base central.');
-      }
-
-      const uMap: Record<string, User> = {};
-      users.forEach(u => { uMap[u.id] = u; });
-      const t = rowToTicket(data as Record<string, unknown>, [], uMap);
+      const t = rowToTicket(pbTicket as any, [], { [currentUser.id]: currentUser });
       setTickets(prev => [t, ...prev]);
       addLog(`Ticket creado exitosamente: ${t.id}`, 'success');
       return t;
     } catch (err: any) {
       console.error('addTicket failure:', err);
-      addLog(`Excepción al crear ticket: ${err.message}`, 'error');
-      throw new Error(`${err.message || 'Error de red. Verifica tu conexión.'}`);
+      // Offline fallback
+      if (!isOnline) {
+          const tempId = `off-${Date.now()}`;
+          const tempTicket: Ticket = {
+              ...ticket,
+              id: tempId,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              messages: [],
+              createdById: currentUser.id,
+              createdByName: currentUser.name,
+              assignedToName: 'Sincronizando...',
+              status: 'Abierto'
+          };
+          setOfflineTickets(prev => [...prev, tempTicket]);
+          setTickets(prev => [tempTicket, ...prev]);
+          addLog("Ticket guardado localmente (Sin conexión)", "warn");
+          return tempTicket;
+      }
+      throw new Error(`${err.message || 'Error de red.'}`);
     }
-  }, [users]);
+  }, [currentUser, isOnline, addLog]);
 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
-    if (isSupabaseConfigured()) {
+    try {
       addLog(`Actualizando estado ticket ${ticketId} a ${status}`, 'info');
-      const sb = getSupabase();
-      // Try lowercase first (constraint), fallback to capitalized
-      const { error } = await sb.from('tickets').update({ 
-        estado: mapToDbStatus(status),
-        actualizado_en: new Date().toISOString() 
-      }).eq('id', ticketId);
-      if (error) {
-        addLog(`Reintentando actualización de estado para ${ticketId}`, 'warning');
-        const { error: error2 } = await sb.from('tickets').update({ 
-          estado: status,
-          actualizado_en: new Date().toISOString() 
-        }).eq('id', ticketId);
-        if (error2) addLog(`Fallo al actualizar estado ticket ${ticketId}: ${error2.message}`, 'error');
-      } else {
-        addLog(`Estado de ticket ${ticketId} sincronizado: ${status}`, 'success');
-      }
+      await pb.collection('tickets').update(ticketId, { estado: status });
+      addLog(`Estado de ticket ${ticketId} sincronizado: ${status}`, 'success');
+    } catch (err: any) {
+      addLog(`Fallo al actualizar estado ticket ${ticketId}: ${err.message}`, 'error');
     }
-  }, []);
+  }, [addLog]);
 
   const updateTicketPriority = useCallback(async (ticketId: string, priority: TicketPriority) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
-    if (isSupabaseConfigured()) {
-      const sb = getSupabase();
-      const { error } = await sb.from('tickets').update({ 
-        prioridad: mapToDbPriority(priority),
-        actualizado_en: new Date().toISOString() 
-      }).eq('id', ticketId);
-      if (error) {
-        await sb.from('tickets').update({ 
-          prioridad: priority,
-          actualizado_en: new Date().toISOString() 
-        }).eq('id', ticketId);
-      }
+    try {
+      await pb.collection('tickets').update(ticketId, { prioridad: priority });
+    } catch (err: any) {
+      addLog(`Fallo al actualizar prioridad: ${err.message}`, 'error');
     }
-  }, []);
+  }, [addLog]);
 
 
   const assignTicket = useCallback(async (ticketId: string, userId: string) => {
@@ -864,15 +556,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ? { ...t, assignedToId: userId, assignedToName: user?.name, updatedAt: new Date().toISOString() }
         : t
     ));
-    if (isSupabaseConfigured()) {
-      const sb = getSupabase();
-      await sb.from('tickets').update({
+    try {
+      await pb.collection('tickets').update(ticketId, {
         asignado_a_id: userId || null,
-        asignado_a_nombre: user?.name || null,
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      });
+    } catch (err: any) {
+      addLog(`Error al asignar ticket: ${err.message}`, 'error');
     }
-  }, [users]);
+  }, [users, addLog]);
 
   // Auto-asigna al admin que está visualizando el ticket, si aún no tiene asignado
   const autoAssignAdminOnOpen = useCallback(async (ticketId: string) => {
@@ -880,21 +571,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentUser.role !== 'Admin' && currentUser.role !== 'Agente') return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
-    // Solo asignar si el ticket no tiene operador asignado
     if (ticket.assignedToId) return;
-    // Actualizar en BD y en estado
+    
     setTickets(prev => prev.map(t =>
       t.id === ticketId
         ? { ...t, assignedToId: currentUser.id, assignedToName: currentUser.name, updatedAt: new Date().toISOString() }
         : t
     ));
-    if (isSupabaseConfigured()) {
-      const sb = getSupabase();
-      await sb.from('tickets').update({
+    try {
+      await pb.collection('tickets').update(ticketId, {
         asignado_a_id: currentUser.id,
-        asignado_a_nombre: currentUser.name,
-        actualizado_en: new Date().toISOString(),
-      }).eq('id', ticketId);
+      });
+    } catch (err: any) {
+      console.error('autoAssign error:', err);
     }
   }, [currentUser, tickets]);
 
@@ -902,7 +591,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!currentUser) return;
     const now = new Date().toISOString();
     const message: Message = {
-      id: `msg-${Date.now()}`,
+      id: `msg-temp-${Date.now()}`,
       ticketId,
       authorId: currentUser.id,
       authorName: currentUser.name,
@@ -914,35 +603,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isInternal,
       imageUrl,
     };
-    // Optimistic update inmediato
+    
+    // Optimistic update
     setTickets(prev => prev.map(t =>
       t.id === ticketId
         ? { ...t, messages: [...t.messages, message], updatedAt: now }
         : t
     ));
-    if (isSupabaseConfigured()) {
+
+    try {
       addLog(`Enviando mensaje para ticket ${ticketId}`, 'info');
-      const sb = getSupabase();
-      // Guardamos imagen en campo imagenes (jsonb array) para que ambos lados la vean
-      const commentPayload: Record<string, unknown> = {
+      await pb.collection('ticket_comentarios').create({
         ticket_id: ticketId,
-        usuario_id: currentUser.id,
-        contenido: content,
+        autor_id: currentUser.id,
+        mensaje: content,
         es_interno: isInternal,
-      };
-      if (imageUrl) {
-        commentPayload.imagenes = [{ url: imageUrl }];
-      }
-      const { error: commentErr } = await sb.from('ticket_comentarios').insert(commentPayload);
-      if (!commentErr) {
-        addLog(`Mensaje sincronizado para ticket ${ticketId}`, 'success');
-        await sb.from('tickets').update({ actualizado_en: now }).eq('id', ticketId);
-        // Refrescar para sincronizar nombres/roles reales desde la BD
-        await refreshData();
-      } else {
-        console.error('addMessage error:', commentErr);
-        addLog(`Error al enviar mensaje ticket ${ticketId}: ${commentErr.message}`, 'error');
-      }
+      });
+      addLog(`Mensaje sincronizado para ticket ${ticketId}`, 'success');
+      await refreshData();
+    } catch (err: any) {
+      console.error('addMessage error:', err);
+      addLog(`Error al enviar mensaje ticket ${ticketId}: ${err.message}`, 'error');
     }
   }, [currentUser, refreshData, addLog]);
 
@@ -950,99 +631,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ── departments ─────────────────────────────────────────────────────────
   const addDepartment = useCallback(async (dept: Omit<Department, 'id' | 'createdAt'>) => {
-    if (isSupabaseConfigured()) {
-      const { data } = await getSupabase().from('departamentos').insert({
+    try {
+      const data = await pb.collection('departamentos').create({
         nombre: dept.name,
         descripcion: dept.description,
-        color: dept.color,
-        jefe: dept.jefe || null,
-      }).select().single();
-      if (data) {
-        setDepartments(prev => [...prev, rowToDept(data as Record<string, unknown>)]);
-        return;
-      }
+        background_color: dept.color,
+        text_color: '#ffffff',
+        icon: 'Building',
+      });
+      setDepartments(prev => [...prev, rowToDept(data as any)]);
+    } catch (err: any) {
+      addLog(`Error al crear departamento: ${err.message}`, 'error');
     }
-    const d: Department = { ...dept, id: `dept-${Date.now()}`, createdAt: new Date().toISOString() };
-    setDepartments(prev => [...prev, d]);
-  }, []);
+  }, [addLog]);
 
   const updateDepartment = useCallback(async (id: string, dept: Partial<Department>) => {
     setDepartments(prev => prev.map(d => d.id === id ? { ...d, ...dept } : d));
-    if (isSupabaseConfigured()) {
-      await getSupabase().from('departamentos').update({
+    try {
+      await pb.collection('departamentos').update(id, {
         nombre: dept.name,
         descripcion: dept.description,
-        color: dept.color,
-        jefe: dept.jefe || null,
-      }).eq('id', id);
+        background_color: dept.color,
+      });
+    } catch (err: any) {
+      addLog(`Error al actualizar departamento: ${err.message}`, 'error');
     }
-  }, []);
+  }, [addLog]);
 
   const deleteDepartment = useCallback(async (id: string) => {
     setDepartments(prev => prev.filter(d => d.id !== id));
-    if (isSupabaseConfigured()) {
-      await getSupabase().from('departamentos').delete().eq('id', id);
-    }
-  }, []);
-
-  const createUser = useCallback(async (userData: { name: string; email: string; role: User['role']; departmentId?: string }) => {
-    if (!isSupabaseConfigured()) return { success: false, error: 'Supabase no configurado' };
-    const sb = getSupabase();
-    const roleMap: Record<string, string> = { 'Admin': 'Admin', 'Agente': 'Agente', 'Cliente': 'Cliente' };
-    const resolvedRole = roleMap[userData.role] || 'Cliente';
-
-    // NOTA: Crear usuarios en Supabase Auth requiere la service_role key (solo servidor/Edge Function).
-    // Desde el cliente anon, usamos auth.signUp() con una contraseña temporal.
-    // Si falla la autenticación, insertamos solo el perfil con un UUID temporal.
-    let userId: string | null = null;
-    
     try {
-      const { data: authData, error: authError } = await sb.auth.signUp({
+      await pb.collection('departamentos').delete(id);
+    } catch (err: any) {
+      addLog(`Error al eliminar departamento: ${err.message}`, 'error');
+    }
+  }, [addLog]);
+
+  const createUser = useCallback(async (userData: { name: string; email: string; role: User['role']; departmentId?: string; password?: string }) => {
+    try {
+      await pb.collection('users').create({
         email: userData.email,
-        password: 'Tzomp2024!',
-        options: { data: { full_name: userData.name, role: resolvedRole } }
+        password: userData.password || 'Tzomp2026!',
+        passwordConfirm: userData.password || 'Tzomp2026!',
+        name: userData.name,
+        rol: userData.role,
+        departamento_id: userData.departmentId || '',
+        emailVisibility: true,
       });
-      
-      if (!authError && authData.user) {
-        userId = authData.user.id;
-      } else {
-        console.warn('Auth signup failed (normal si email ya existe o Supabase lo bloquea):', authError?.message);
-      }
-    } catch (e) {
-      console.warn('auth.signUp threw:', e);
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error creating user:', err);
+      return { success: false, error: err.message };
     }
-
-    // Si no se pudo crear en Auth, generamos un ID temporal para el perfil
-    if (!userId) {
-      userId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    }
-
-    const insertProfile = {
-      id: userId,
-      email: userData.email,
-      activo: true,
-      nombre: userData.name,
-      rol: resolvedRole,
-      departamento_id: userData.departmentId || null
-    };
-
-    const { error: profileError } = await sb.from('perfiles').upsert(insertProfile);
-
-    if (profileError) {
-      console.error('Error creating user profile:', profileError);
-      return { success: false, error: `Error al guardar perfil: ${profileError.message}` };
-    }
-    
-    await refreshData();
-    return { success: true };
   }, [refreshData]);
 
   const deleteUser = useCallback(async (id: string) => {
-    setUsers(prev => prev.filter(u => u.id !== id));
-    if (isSupabaseConfigured()) {
-      await getSupabase().from('perfiles').delete().eq('id', id);
+    try {
+      await pb.collection('users').delete(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+    } catch (err: any) {
+      addLog(`Error al eliminar usuario: ${err.message}`, 'error');
     }
-  }, []);
+  }, [addLog]);
 
   return (
     <AppContext.Provider value={{
@@ -1069,17 +720,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPage,
       selectedTicketId,
       setSelectedTicketId,
-      supabaseReady,
-      sbStatus,
+      pbStatus,
       lastPing,
-      loginWithSupabase,
+      loginWithPocketBase,
       logout,
       createUser,
       deleteUser,
       triggerSync,
       systemLogs,
       addLog,
-      userActivity,
       theme,
       toggleTheme,
       perfiles: users.map(u => ({
@@ -1088,45 +737,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         correo: u.email,
         rol: u.role.toLowerCase()
       })),
-      onlineUsers: (() => {
-        const online: Record<string, boolean> = {};
-        const now = Date.now();
-        Object.entries(userActivity).forEach(([uid, last]) => {
-          const lastTs = new Date(last).getTime();
-          if (now - lastTs < 300000) online[uid] = true;
-        });
-        return online;
-      })(),
+      onlineUsers: {}, // Fixed later or removed if not needed
       resetSystem: async () => {
-        if (!isSupabaseConfigured()) return;
-        const sb = getSupabase();
         setLoading(true);
         addLog('INICIANDO_PROTOCOLO_REINICIO_MAESTRO...', 'warn');
         try {
           // 1. Limpiar tickets
-          const { error: tErr } = await sb.from('tickets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-          if (tErr) throw tErr;
+          const ticketsList = await pb.collection('tickets').getFullList();
+          for (const t of ticketsList) await pb.collection('tickets').delete(t.id);
           
           // 2. Limpiar comentarios
-          await sb.from('ticket_comentarios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          const commentsList = await pb.collection('ticket_comentarios').getFullList();
+          for (const c of commentsList) await pb.collection('ticket_comentarios').delete(c.id);
 
-          // 3. Departamentos base (Expansion plan)
+          // 3. Departamentos base
           const depts = [
-            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', color: '#06b6d4' },
-            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', color: '#ec4899' },
-            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', color: '#f97316' },
-            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', color: '#10b981' },
-            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', color: '#3b82f6' },
-            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', color: '#6366f1' },
-            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', color: '#f59e0b' },
-            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', color: '#ef4444' }
+            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', background_color: '#06b6d4', text_color: '#ffffff', icon: 'Building' },
+            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', background_color: '#ec4899', text_color: '#ffffff', icon: 'Building' },
+            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', background_color: '#f97316', text_color: '#ffffff', icon: 'Shield' },
+            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', background_color: '#10b981', text_color: '#ffffff', icon: 'Cpu' },
+            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', background_color: '#3b82f6', text_color: '#ffffff', icon: 'Coins' },
+            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', background_color: '#6366f1', text_color: '#ffffff', icon: 'Droplets' },
+            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', background_color: '#f59e0b', text_color: '#ffffff', icon: 'Hammer' },
+            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', background_color: '#ef4444', text_color: '#ffffff', icon: 'Siren' }
           ];
 
           for (const d of depts) {
-            await sb.from('departamentos').upsert(d, { onConflict: 'nombre' });
+            try {
+              await pb.collection('departamentos').create(d);
+            } catch { /* exists */ }
           }
 
-          addLog(`PROTOCOL_RESET_COMPLETED: ${depts.length} departamentos configurados.`, 'success');
+          addLog(`PROTOCOL_RESET_COMPLETED.`, 'success');
           await refreshData();
         } catch (err: any) {
           addLog(`FALLO_PROTOCOLO_REINICIO: ${err.message}`, 'error');
