@@ -14,7 +14,7 @@ import {
 
 const statusColors: Record<TicketStatus, string> = {
   'Abierto':    'bg-blue-500/10 text-blue-400 border border-blue-500/25 shadow-[0_0_12px_rgba(59,130,246,0.12)]',
-  'En Progreso':'bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 shadow-[0_0_12px_rgba(99,102,241,0.12)]',
+  'En Proceso': 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 shadow-[0_0_12px_rgba(99,102,241,0.12)]',
   'Resuelto':   'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[0_0_12px_rgba(16,185,129,0.1)]',
   'Cerrado':    'bg-slate-500/10 text-slate-400 border border-slate-500/20',
 };
@@ -87,12 +87,17 @@ function RenderActiveShape(props: any) {
 }
 
 export default function Dashboard() {
-  const { tickets, users, currentUser, setPage, setSelectedTicketId, departments, onlineUsers } = useApp();
+  const { tickets, users, currentUser, setPage, setSelectedTicketId, departments, isOnline } = useApp();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
     setIsHydrated(true);
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Buenos días');
+    else if (hour < 19) setGreeting('Buenas tardes');
+    else setGreeting('Buenas noches');
   }, []);
 
   const onPieEnter = (_: any, index: number) => {
@@ -107,16 +112,22 @@ export default function Dashboard() {
 
   const agents = useMemo(() => users.filter(u => u.role === 'Agente' || u.role === 'Admin'), [users]);
 
+  const userDeptName = useMemo(() => {
+    if (!currentUser?.departmentId) return currentUser?.name || 'Sistemas / TI';
+    const dept = departments.find(d => d.id === currentUser.departmentId);
+    return dept ? dept.name : currentUser?.name || 'Sistemas / TI';
+  }, [currentUser, departments]);
+
   const stats = useMemo(() => ({
     total: filteredTickets.length,
     abiertos: filteredTickets.filter(t => t.status === 'Abierto').length,
-    progreso: filteredTickets.filter(t => t.status === 'En Progreso').length,
+    progreso: filteredTickets.filter(t => t.status === 'En Proceso').length,
     resueltos: filteredTickets.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length,
     activeAgents: agents.length,
     efficiency: filteredTickets.length > 0 ? Math.round((filteredTickets.filter(t => t.status === 'Resuelto' || t.status === 'Cerrado').length / filteredTickets.length) * 100) : 0,
   }), [filteredTickets, agents]);
 
-  const onlineCount = useMemo(() => Object.keys(onlineUsers || {}).length, [onlineUsers]);
+  const onlineCount = useMemo(() => users.filter(u => isOnline(u.updated)).length, [users, isOnline]);
 
   const recentTickets = useMemo(() => 
     [...filteredTickets]
@@ -125,14 +136,14 @@ export default function Dashboard() {
   , [filteredTickets]);
 
   const statusData = useMemo(() => {
-    const counts: Record<string, number> = { 'Abierto': 0, 'En Progreso': 0, 'Resuelto': 0 };
+    const counts: Record<string, number> = { 'Abierto': 0, 'En Proceso': 0, 'Resuelto': 0 };
     filteredTickets.forEach(t => { 
       const s = t.status === 'Cerrado' ? 'Resuelto' : t.status;
       if(counts[s] !== undefined) counts[s]++; 
     });
     return [
         { name: 'Abierto', value: counts['Abierto'], color: '#3b82f6' },
-        { name: 'En Progreso', value: counts['En Progreso'], color: '#6366f1' },
+        { name: 'En Proceso', value: counts['En Proceso'], color: '#6366f1' },
         { name: 'Resuelto', value: counts['Resuelto'], color: '#10b981' }
     ];
   }, [filteredTickets]);
@@ -169,40 +180,44 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 space-y-8 md:space-y-12 bg-[var(--bg-void)] min-h-screen text-[var(--text-secondary)] font-rajdhani">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-            <div className="relative w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-2xl border border-white/20">
-              <Shield className="text-white w-8 h-8 md:w-10 md:h-10" />
-            </div>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/5 relative z-10">
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[3px] border border-blue-500/20 flex items-center gap-2">
+              <Shield size={12} /> Terminal Operativa Activa
+            </span>
           </div>
-          <div>
-            <h1 className="text-3xl md:text-5xl font-black text-white font-orbitron tracking-tighter">
-              HELP<span className="text-blue-500">DESK</span>
-            </h1>
-            <p className="text-[#8888aa] text-[9px] md:text-[11px] font-black uppercase tracking-[5px] text-glow-blue flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              TZOMPANTEPEC_ADMIN_v2.5
-            </p>
-          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-tight font-orbitron uppercase">
+            {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-500">{userDeptName}</span>
+          </h1>
+          <p className="max-w-2xl text-[#8888aa] mt-3 font-medium flex items-center gap-3 text-sm md:text-base">
+            <Clock className="text-blue-500 animate-pulse" size={18} />
+            Gestión de infraestructura y servicios técnico-administrativos C2 Tzompantepec.
+          </p>
         </div>
-        
-        <div className="flex items-center gap-3 sm:gap-4 self-end md:self-auto">
-          <div className="px-5 py-3 md:px-7 md:py-4 glass-panel rounded-3xl border border-white/5 bg-white/5">
-            <div className="flex items-center gap-3">
+
+        {(currentUser?.role === 'Admin' || currentUser?.role === 'Agente') && (
+            <button 
+              onClick={() => triggerSync()}
+              className="px-8 py-5 glass-panel rounded-[2rem] border-white/5 bg-white/5 flex items-center gap-5 hover:bg-white/10 hover:border-cyan-500/30 transition-all group active:scale-95 shadow-2xl"
+              title="Sincronizar presencia de red"
+            >
               <div className="relative">
-                <Users className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
               </div>
-              <div>
-                <span className="text-[8px] md:text-[10px] font-black text-[#8888aa] uppercase tracking-widest block leading-none">Agentes_Online</span>
-                <span className="text-xl md:text-2xl font-black text-cyan-400 font-orbitron leading-none mt-1">{onlineCount}</span>
+              <div className="text-left">
+                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[4px] block leading-none mb-1">ONLINE_LIVE</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-black text-white font-orbitron leading-none">{onlineCount}</span>
+                  <span className="text-[9px] font-black text-cyan-500 uppercase tracking-widest bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">AGENTES_ACTIVOS</span>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </button>
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -225,7 +240,7 @@ export default function Dashboard() {
           sub={`${Math.round((stats.abiertos/stats.total)*100 || 0)}%`}
         />
         <StatCard 
-          label="En_Progreso" 
+          label="En_Proceso" 
           value={stats.progreso} 
           icon={Clock} 
           color="text-indigo-400" 
@@ -245,8 +260,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
         {/* Main Chart Section */}
         <div className="lg:col-span-2 space-y-6 md:space-y-10">
-          <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 relative overflow-hidden h-[300px] md:h-[400px]">
-            <div className="flex items-center justify-between mb-8">
+          <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px]">FLUJO_DE_TICKETS</h2>
                 <p className="text-[#8888aa] text-[9px] font-medium tracking-widest uppercase">Últimos 7 días</p>
@@ -254,8 +269,8 @@ export default function Dashboard() {
               <Activity className="text-blue-500/50 w-6 h-6" />
             </div>
             {isHydrated && (
-              <div style={{ width: '100%', height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
+              <div style={{ width: '100%', height: 240, minHeight: 240, minWidth: 200 }}>
+                <ResponsiveContainer width="100%" height={240} minHeight={240}>
                   <AreaChart data={timeData}>
                     <defs>
                       <linearGradient id="colorTickets" x1="0" y1="0" x2="0" y2="1">
@@ -288,11 +303,11 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
              {/* Status Distribution */}
-             <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
+             <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">DISTRIBUCION_STATUS</h2>
-                <div style={{ width: '100%', height: 240 }}>
+                <div style={{ width: '100%', height: 260, minHeight: 260, minWidth: 200 }}>
                   {isHydrated && (
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer width="100%" height={260} minHeight={260}>
                       <PieChart>
                          <PieComponent
                             activeIndex={activeIndex}
@@ -318,11 +333,11 @@ export default function Dashboard() {
              </div>
 
              {/* Dept Load */}
-             <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2 h-[350px]">
+             <div className="glass-panel p-6 md:p-8 rounded-[3rem] border border-white/5 bg-white/2">
                 <h2 className="text-[10px] font-black text-white uppercase tracking-[5px] mb-4">CARGA_DEPARTAMENTOS</h2>
-                <div style={{ width: '100%', height: 240 }}>
+                <div style={{ width: '100%', height: 260, minHeight: 260, minWidth: 200 }}>
                   {isHydrated && (
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer width="100%" height={260} minHeight={260}>
                       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={ticketsByDept}>
                          <PolarGrid stroke="#ffffff05" />
                          <PolarAngleAxis dataKey="subject" tick={{fill: '#8888aa', fontSize: 8}} />
@@ -367,7 +382,7 @@ export default function Dashboard() {
                     <div className="flex items-start gap-4">
                       <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
                         t.status === 'Abierto' ? 'bg-blue-500 shadow-[0_0_10px_#3b82f6]' : 
-                        t.status === 'En Progreso' ? 'bg-indigo-500 shadow-[0_0_10px_#6366f1]' : 
+                        t.status === 'En Proceso' ? 'bg-indigo-500 shadow-[0_0_10px_#6366f1]' : 
                         'bg-emerald-500 shadow-[0_0_10px_#10b981]'
                       }`} />
                       <div className="space-y-1">

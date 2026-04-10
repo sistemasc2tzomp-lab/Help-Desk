@@ -10,9 +10,9 @@ export interface User {
   departmentId?: string;
 }
 
-export type TicketStatus = 'Abierto' | 'En Progreso' | 'Resuelto' | 'Cerrado';
+export type TicketStatus = 'Abierto' | 'En Proceso' | 'Resuelto' | 'Cerrado';
 export type TicketPriority = 'Baja' | 'Media' | 'Alta' | 'Urgente';
-export type TicketCategory = 'Hardware' | 'Software' | 'Red' | 'Seguridad' | 'Acceso' | 'Impresora' | 'Correo' | 'Servidor' | 'Respaldo' | 'General';
+export type TicketCategory = 'Hardware' | 'Software' | 'Red' | 'Seguridad' | 'Acceso' | 'Impresora' | 'Correo' | 'Servidor' | 'Respaldo' | 'Prueba' | 'General';
 
 export interface Message {
   id: string;

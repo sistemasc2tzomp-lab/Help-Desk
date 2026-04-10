@@ -55,8 +55,19 @@ const adminNavItems: NavItem[] = [
     ),
   },
   {
+    id: 'monitoring',
+    label: 'Monitoreo de Infraestructura',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 11a9 9 0 0 1 8-7 9 9 0 0 1 8 7"/>
+        <path d="M4 11v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    ),
+  },
+  {
     id: 'reports',
-    label: 'ESTADÍSTICAS DEL SISTEMA',
+    label: 'CENTRO DE REPORTES',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
@@ -190,7 +201,7 @@ export default function Sidebar() {
         <Logo />
         <div>
           <div style={{fontFamily:'var(--font-display)'}} className="text-[var(--text)] font-black text-sm tracking-tighter leading-none">
-            {isAdmin ? 'ADMIN CONTROL' : 'USER CONTROL'}
+            {isAdmin ? 'ADMIN CONTROL' : 'PANEL USUARIO'}
           </div>
           <div style={{fontFamily:'var(--font-body)',color:'var(--primary-light)'}} className="text-[8px] font-semibold tracking-[3px] uppercase mt-1">TZOMPANTEPEC</div>
         </div>

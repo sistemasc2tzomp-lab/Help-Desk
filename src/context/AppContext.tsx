@@ -42,36 +42,33 @@ function playNotificationSound(type: 'new_ticket' | 'update') {
       gain.connect(ctx.destination);
       
       if (type === 'new_ticket') {
-        // Arpegio triple ascendente — Alerta de nuevo ticket — Más fuerte y claro
+        // ALERTA TÉCNICA URGENTE - Tono más alto e imperativo
         const now = ctx.currentTime;
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, now);         // La4
-        oscillator.frequency.setValueAtTime(554, now + 0.1);  // Do#5
-        oscillator.frequency.setValueAtTime(659, now + 0.2);  // Mi5
-        oscillator.frequency.setValueAtTime(880, now + 0.3);  // La5
-        
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
-        gain.gain.setValueAtTime(0.3, now + 0.35);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-        
-        oscillator.start(now);
-        oscillator.stop(now + 0.6);
-      } else {
-        // Doble pulso suave — Actualización / mensaje
-        const now = ctx.currentTime;
-        oscillator.type = 'triangle';
-        oscillator.frequency.setValueAtTime(523, now);   // Do5
-        oscillator.frequency.setValueAtTime(659, now + 0.1); // Mi5
+        oscillator.type = 'square'; // Sonido más agresivo y profesional
+        oscillator.frequency.setValueAtTime(880, now);   // La5
+        oscillator.frequency.exponentialRampToValueAtTime(1320, now + 0.1); // Mi6
+        oscillator.frequency.setValueAtTime(880, now + 0.15);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, now + 0.25);
         
         gain.gain.setValueAtTime(0, now);
         gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
-        gain.gain.linearRampToValueAtTime(0, now + 0.15);
-        gain.gain.linearRampToValueAtTime(0.2, now + 0.20);
-        gain.gain.linearRampToValueAtTime(0, now + 0.40);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
         
         oscillator.start(now);
         oscillator.stop(now + 0.4);
+      } else {
+        // PULSO DE NOTIFICACIÓN RÁPIDA
+        const now = ctx.currentTime;
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(660, now);
+        oscillator.frequency.linearRampToValueAtTime(440, now + 0.2);
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + 0.2);
+        
+        oscillator.start(now);
+        oscillator.stop(now + 0.2);
       }
     };
 
@@ -93,7 +90,7 @@ interface AppContextType {
   users: User[];
   departments: Department[];
   loading: boolean;
-  addTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages'>) => Promise<Ticket>;
+  addTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages' | 'createdByName' | 'assignedToName'>, file?: File) => Promise<Ticket>;
   updateTicketStatus: (ticketId: string, status: TicketStatus) => Promise<void>;
   updateTicketPriority: (ticketId: string, priority: TicketPriority) => Promise<void>;
   assignTicket: (ticketId: string, userId: string) => Promise<void>;
@@ -113,18 +110,20 @@ interface AppContextType {
   pbStatus: 'connected' | 'disconnected' | 'checking';
   lastPing: string | null;
   loginWithPocketBase: (email: string, password: string) => Promise<string | null>;
-  logout: () => Promise<void>;
+  logout: () => void;
   createUser: (data: { name: string; email: string; role: User['role']; departmentId?: string; password?: string }) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (id: string, data: Partial<User>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   triggerSync: () => Promise<void>;
-  systemLogs: {t: number, m: string, type: 'info'|'warn'|'error'|'success'}[];
+  systemLogs: {t: number, m: string, type: 'info'|'warn'|'error'|'success' | 'warning'}[];
   addLog: (message: string, type?: 'info'|'warn'|'error'|'success' | 'warning') => void;
+  userActivity: Record<string, string>;
+  isOnline: (updatedStr?: string) => boolean;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   resetSystem: () => Promise<void>;
   perfiles: any[];
-  userActivity: Record<string, string>;
-  onlineUsers: Record<string, string>;
+  isOnline: (updatedStr?: string) => boolean; // Mantener helper
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -155,14 +154,30 @@ function normalizePriority(raw: string): string {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────
-function getInitials(name: string) {
-  return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+const isOnline = (updatedStr?: string) => {
+  if (!updatedStr) return false;
+  const last = new Date(updatedStr).getTime();
+  const now = new Date().getTime();
+  return (now - last) < 600000; // 10 minutos de tolerancia para "Online"
+};
+
+function getInitials(name: string | undefined | null) {
+  if (!name || typeof name !== 'string') return '?';
+  return name.trim().split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase() || '?';
 }
+
 const COLORS = ['#7C3AED', '#2563EB', '#059669', '#DC2626', '#D97706', '#0891B2'];
 function colorFor(id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = id.charCodeAt(i) + ((h << 5) - h);
   return COLORS[Math.abs(h) % COLORS.length];
+}
+
+function generateId(length = 15) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+  return result;
 }
 
 // Normalize role regardless of case or spelling
@@ -191,19 +206,28 @@ function rowToUser(r: Record<string, unknown>): User {
 
 // Maps tabla "ticket_comentarios": id, ticket_id, autor_id, mensaje, es_interno, created
 function rowToMessage(r: any, usersMap: Record<string, User> = {}): Message {
-  const userId = String(r.usuario_id || r.autor_id || '');
+  const userId = String(r.usuario_id || '');
   const author = usersMap[userId];
-  const authorName = author?.name || 'Usuario';
+  
+  const authorName = author ? (author.role === 'Admin' ? author.email : author.name) : 'Usuario';
+  const authorRole = author ? author.role : 'Cliente';
   
   const content = String(r.mensaje || '');
   const timestamp = String(r.created || new Date().toISOString());
 
-  // Generate URLs for attachments
   const adjuntosLocal: string[] = [];
-  if (r.adjuntos && Array.isArray(r.adjuntos)) {
-    r.adjuntos.forEach((fname: string) => {
-      adjuntosLocal.push(pb.files.getURL(r, fname));
-    });
+  // Verificación extra segura para el campo adjuntos que parece faltar en el esquema
+  if (r.adjuntos) {
+    try {
+      const files = Array.isArray(r.adjuntos) ? r.adjuntos : [r.adjuntos];
+      files.forEach((fname: string) => {
+        if (fname && typeof fname === 'string') {
+          adjuntosLocal.push(pb.files.getURL(r, fname));
+        }
+      });
+    } catch (e) {
+      console.warn("Fallo al procesar adjuntos:", e);
+    }
   }
 
   return {
@@ -213,20 +237,22 @@ function rowToMessage(r: any, usersMap: Record<string, User> = {}): Message {
     authorName,
     authorInitials: getInitials(authorName),
     authorColor: author?.avatarColor || colorFor(userId),
-    authorRole: author?.role || 'Cliente',
+    authorRole,
     content,
     timestamp,
     isInternal: Boolean(r.es_interno),
-    imageUrl: adjuntosLocal[0], // Compatibilidad con UI existente
+    imageUrl: adjuntosLocal[0] || undefined,
     adjuntos: adjuntosLocal,
-    tipo: r.tipo as any || 'Mensaje'
+    tipo: (r.tipo as any) || 'Mensaje'
   };
 }
 
 // Maps tabla "tickets": id, titulo, descripcion, estado, prioridad, departamento_id, creado_por_id...
-function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap: Record<string, User> = {}): Ticket {
-  const creatorId = String(r.cliente_id || r.creado_por_id || '');
-  const assigneeId = r.agente_id ? String(r.agente_id) : (r.asignado_a_id ? String(r.asignado_a_id) : undefined);
+function rowToTicket(r: Record<string, any>, msgs: Message[] = [], usersMap: Record<string, User> = {}): Ticket {
+  const creatorId = String(r.cliente_id || '');
+  // Intentar mapear el agente desde múltiples nombres posibles para mayor compatibilidad
+  const assigneeId = r.agente_id ? String(r.agente_id) : (r.asignado_a ? String(r.asignado_a) : undefined);
+  
   const creator = usersMap[creatorId];
   const assignee = assigneeId ? usersMap[assigneeId] : undefined;
 
@@ -236,20 +262,20 @@ function rowToTicket(r: Record<string, unknown>, msgs: Message[] = [], usersMap:
   return {
     id: String(r.id),
     folio: r.folio ? Number(r.folio) : undefined,
-    title: String(r.titulo || ''),
+    title: String(r.titulo || 'Sin Título'),
     description: String(r.descripcion || ''),
     status: (status.charAt(0).toUpperCase() + status.slice(1)) as TicketStatus,
     priority: (priority.charAt(0).toUpperCase() + priority.slice(1)) as TicketPriority,
     category: String(r.categoria || 'General') as any,
     departmentId: r.departamento_id ? String(r.departamento_id) : undefined,
     createdById: creatorId,
-    createdByName: creator?.name || 'Solicitante',
-    assignedToId: assigneeId,
-    assignedToName: assignee?.name || 'En espera',
+    createdByName: creator ? (creator.name || creator.email) : 'Solicitante',
+    assignedToId: assigneeId || null,
+    assignedToName: assignee ? (assignee.name || assignee.email) : 'En espera',
     createdAt: String(r.created || new Date().toISOString()),
     updatedAt: String(r.updated || new Date().toISOString()),
     messages: msgs,
-    imageUrl: (r.imagenes && Array.isArray(r.imagenes)) ? r.imagenes[0] : undefined,
+    imageUrl: (r.adjuntos) ? (Array.isArray(r.adjuntos) && r.adjuntos[0] ? pb.files.getURL(r as any, r.adjuntos[0]) : undefined) : undefined,
   };
 }
 
@@ -275,7 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [page, setPage] = useState<string>('login');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [pbStatus, setPbStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [offlineTickets, setOfflineTickets] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('helpdesk_offline_tickets');
@@ -344,12 +370,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleOnline = () => {
       console.log("CONEXIÓN_RESTABLECIDA: Sincronizando datos...");
-      setIsOnline(true);
+      setIsNetworkOnline(true);
       checkPB();
     };
     const handleOffline = () => {
       console.log("MODO_DESCONECTADO_ACTIVO.");
-      setIsOnline(false);
+      setIsNetworkOnline(false);
       setPbStatus('disconnected');
     };
 
@@ -374,56 +400,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!silent) setLoading(true);
     try {
       // 1. Usuarios
-      const usersList = await pb.collection('users').getFullList({ requestKey: null });
+      const usersList = await pb.collection('users').getFullList();
       const freshUsers = usersList.map(rowToUser);
-      setUsers(freshUsers);
+      setUsers(prev => JSON.stringify(prev) === JSON.stringify(freshUsers) ? prev : freshUsers);
 
       const freshUMap: Record<string, User> = {};
       const activityMap: Record<string, string> = {};
-      
-      freshUsers.forEach(u => { 
-        freshUMap[u.id] = u; 
-      });
-      
-      usersList.forEach(r => {
-        if (r.updated) {
-          activityMap[r.id] = String(r.updated);
-        }
-      });
-      setUserActivity(activityMap);
+      freshUsers.forEach(u => { freshUMap[u.id] = u; });
+      usersList.forEach(r => { if (r.updated) activityMap[r.id] = String(r.updated); });
+      setUserActivity(prev => JSON.stringify(prev) === JSON.stringify(activityMap) ? prev : activityMap);
 
       // 2. Departamentos
-      const deptsList = await pb.collection('departamentos').getFullList({ sort: 'nombre', requestKey: null });
-      setDepartments(deptsList.map(rowToDept));
-
-      // 3. Tickets
-      const ticketsList = await pb.collection('tickets').getFullList({ sort: '-created', requestKey: null });
-
-      // 4. Comentarios — isolated so a 400/403 on this collection doesn't break the rest
-      const msgsByTicket: Record<string, Message[]> = {};
       try {
-        const comentariosList = await pb.collection('ticket_comentarios').getFullList({
-          sort: 'created',
-          requestKey: null,
-        });
-        comentariosList.forEach(r => {
-          const m = rowToMessage(r as any, freshUMap);
-          if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
-          msgsByTicket[m.ticketId].push(m);
-        });
-      } catch (commentErr: any) {
-        // Non-fatal: comentarios may require specific filters in some PB rule configs
-        console.warn('ticket_comentarios load skipped:', commentErr?.message);
+        const deptsList = await pb.collection('departamentos').getFullList();
+        const freshDepts = deptsList.map(rowToDept);
+        setDepartments(prev => JSON.stringify(prev) === JSON.stringify(freshDepts) ? prev : freshDepts);
+      } catch (e: any) {
+        if (!e.isAbort) console.warn('Departamentos fetch failed:', e.message);
       }
 
-      setTickets(ticketsList.map(r =>
-        rowToTicket(r as any, msgsByTicket[String(r.id)] || [], freshUMap)
-      ));
+      // 3. Tickets
+      let finalTickets: Ticket[] = [];
+      try {
+        const ticketsList = await pb.collection('tickets').getFullList();
+        const msgsByTicket: Record<string, Message[]> = {};
+        
+        try {
+          const comentariosList = await pb.collection('ticket_comentarios').getFullList();
+          comentariosList.forEach(r => {
+            try {
+              const m = rowToMessage(r as any, freshUMap);
+              if (!msgsByTicket[m.ticketId]) msgsByTicket[m.ticketId] = [];
+              msgsByTicket[m.ticketId].push(m);
+            } catch (innerErr) {
+              console.warn('Fallo al procesar comentario individual:', innerErr);
+            }
+          });
+        } catch (commentErr: any) {
+          if (!commentErr.isAbort) console.warn('ticket_comentarios load failed:', commentErr?.message);
+        }
 
+        finalTickets = ticketsList.map(r => rowToTicket(r as any, msgsByTicket[String(r.id)] || [], freshUMap));
+      } catch (ticketErr: any) {
+        if (!ticketErr.isAbort) console.error('Error cargando tickets:', ticketErr);
+      }
+
+      setTickets(prev => JSON.stringify(prev) === JSON.stringify(finalTickets) ? prev : finalTickets);
       setPbStatus('connected');
     } catch (err: any) {
-      console.error('Error loading data:', err);
-      addLog(`Error de carga: ${err.message}`, 'error');
+      if (err?.isAbort) return; // Silenciar autocancelaciones de PocketBase
+      
+      console.error('Nexo Database Error:', err);
+      if (err.data) console.error('Error data:', err.data);
+      
+      const msg = err?.status === 0 ? 'Servidor no responde (ERR_CONNECTION_REFUSED).' : 
+                   err?.status === 400 ? `Error 400 (Bad Request): Revisa la consola para detalles. [${err?.url}]` : err.message;
+      addLog(`Fallo de conexión: ${msg}`, 'error');
     } finally {
       if (!silent) setLoading(false);
     }
@@ -434,6 +466,89 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
     addLog('Sincronización manual completada con éxito.', 'info');
   }, [refreshData, addLog]);
+
+  // ── auth ─────────────────────────────────────────────────────────────────
+  const loginWithPocketBase = useCallback(async (email: string, password: string): Promise<string | null> => {
+    try {
+      const authData = await pb.collection('users').authWithPassword(email, password);
+      if (authData.record) {
+        setCurrentUser(rowToUser(authData.record as any));
+        await refreshData();
+        setPage('dashboard');
+        return null;
+      }
+      return 'Credenciales inválidas';
+    } catch (err: any) {
+      console.error('Login error:', err);
+      return err.message || 'Error al iniciar sesión';
+    }
+  }, [refreshData]);
+
+  const logout = useCallback(async () => {
+    pb.authStore.clear();
+    setCurrentUser(null);
+    setTickets([]);
+    setUsers([]);
+    setDepartments([]);
+    setPage('login');
+  }, []);
+
+  // ── Presence Heartbeat & Auto-Logout ─────────────────────────────────
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    // 1. Heartbeat con Metadatos Detallados
+    const sendPulse = async () => {
+      try {
+        let publicIp = 'Detectando...';
+        try {
+          const res = await fetch('https://api.ipify.org?format=json');
+          const data = await res.json();
+          publicIp = data.ip;
+        } catch(e) {}
+
+        const deviceType = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Móvil' : 
+                           /Tablet|iPad/i.test(navigator.userAgent) ? 'Tablet' : 'PC/Laptop';
+
+        await pb.collection('users').update(currentUser.id, { 
+          updated: new Date().toISOString(),
+          metadata: {
+            ip: publicIp,
+            dispositivo: deviceType,
+            navegador: navigator.appName,
+            plataforma: navigator.platform,
+            userAgent: navigator.userAgent
+          }
+        });
+      } catch (e) { /* silent pulse */ }
+    };
+
+    // 2. Temporizador de Inactividad (10 minutos)
+    let logoutTimer: any;
+    const resetTimer = () => {
+      if (logoutTimer) clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        if (pb.authStore.model) {
+          addLog('Sesión cerrada por inactividad.', 'warning');
+          logout();
+          alert('Tu sesión ha expirado tras 10 minutos de inactividad por seguridad.');
+        }
+      }, 600000); // 10 min
+    };
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(ev => window.addEventListener(ev, resetTimer));
+    resetTimer();
+
+    sendPulse();
+    const pulseInterval = setInterval(sendPulse, 120000); // Cada 2 min
+
+    return () => {
+      clearInterval(pulseInterval);
+      if (logoutTimer) clearTimeout(logoutTimer);
+      events.forEach(ev => window.removeEventListener(ev, resetTimer));
+    };
+  }, [currentUser, logout, addLog]);
 
   // ── Init: restore session from localStorage ──────────────────────────────
   useEffect(() => {
@@ -457,7 +572,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
           refreshData(true);
         });
-      } catch { /* ignorar errores de suscripción */ }
+      } catch { console.warn('SSE fallback: tickets'); }
 
       try {
         await pb.collection('ticket_comentarios').subscribe('*', (e) => {
@@ -465,17 +580,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           playNotificationSound(e.action === 'create' ? 'new_ticket' : 'update');
           refreshData(true);
         });
-      } catch { /* ignorar errores de suscripción */ }
+      } catch { console.warn('SSE fallback: comentarios'); }
     };
 
     subscribeToCollections();
+    
+    // Fallback: Robust Polling Every 3 Seconds para emular Real-time en View Collections
+    const pollInterval = setInterval(() => {
+        if (mounted && pbStatus === 'connected') {
+            refreshData(true);
+        }
+    }, 3000);
 
     return () => {
       mounted = false;
+      clearInterval(pollInterval);
       pb.collection('tickets').unsubscribe('*').catch(() => {});
       pb.collection('ticket_comentarios').unsubscribe('*').catch(() => {});
     };
-  }, [currentUser, refreshData]);
+  }, [currentUser, pbStatus, refreshData]);
 
   // Sync tickets offline when back online
   const syncOfflineTickets = useCallback(async () => {
@@ -505,62 +628,85 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [offlineTickets, pbStatus, refreshData]);
 
   useEffect(() => {
-    if (isOnline && pbStatus === 'connected') {
+    if (isNetworkOnline && pbStatus === 'connected') {
         syncOfflineTickets();
     }
-  }, [isOnline, pbStatus, syncOfflineTickets]);
-
-  // ── auth ─────────────────────────────────────────────────────────────────
-  const loginWithPocketBase = useCallback(async (email: string, password: string): Promise<string | null> => {
-    try {
-      const authData = await pb.collection('users').authWithPassword(email, password);
-      if (authData.record) {
-        setCurrentUser(rowToUser(authData.record as any));
-        await refreshData();
-        setPage('dashboard');
-        return null;
-      }
-      return 'Credenciales inválidas';
-    } catch (err: any) {
-      console.error('Login error:', err);
-      return err.message || 'Error al iniciar sesión';
-    }
-  }, [refreshData]);
-
-  const logout = useCallback(async () => {
-    pb.authStore.clear();
-    setCurrentUser(null);
-    setTickets([]);
-    setUsers([]);
-    setDepartments([]);
-    setPage('login');
-  }, []);
-
+  }, [isNetworkOnline, pbStatus, syncOfflineTickets]);
   // ── tickets ─────────────────────────────────────────────────────────────
-  const addTicket = useCallback(async (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages' | 'createdByName' | 'assignedToName'>) => {
+  const addTicket = useCallback(async (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'messages' | 'createdByName' | 'assignedToName'>, file?: File) => {
     if (!currentUser) throw new Error('Debes iniciar sesión para crear un ticket.');
 
-    const maxFolio = tickets.length > 0 ? Math.max(...tickets.map(t => t.folio || 0)) : 0;
-    const nextFolio = maxFolio + 1;
-
     try {
-      const pbTicket = await pb.collection('tickets').create({
-        folio: String(nextFolio), // Schema says text
-        titulo: ticket.title,
-        descripcion: ticket.description,
-        cliente_id: currentUser.id,
-        estado: 'Abierto',
-        prioridad: ticket.priority,
-        departamento_id: ticket.departmentId || null,
-        agente_id: ticket.assignedToId || null,
+      // Buscar el folio más alto REAL en el servidor para evitar duplicados 0001
+      const lastTickets = await pb.collection('tickets').getList(1, 1, {
+        sort: '-folio',
       });
+      const maxFolio = lastTickets.items.length > 0 ? (lastTickets.items[0].folio || 0) : 0;
+      const nextFolio = maxFolio + 1;
+
+      const formData = new FormData();
+      formData.append('folio', String(nextFolio));
+      formData.append('titulo', ticket.title);
+      formData.append('descripcion', ticket.description);
+      formData.append('cliente_id', currentUser.id);
+      formData.append('estado', 'Abierto');
+      formData.append('prioridad', ticket.priority);
+      formData.append('departamento_id', ticket.departmentId || '');
+      formData.append('agente_id', ticket.assignedToId || '');
+      
+      if (file) {
+        formData.append('adjuntos', file);
+      }
+
+      const pbTicket = await pb.collection('tickets').create(formData);
+
+      // NUEVO: Crear mensaje inicial en el chat para sincronía total de imágenes
+      const initialComment = new FormData();
+      initialComment.append('id', generateId());
+      initialComment.append('ticket_id', pbTicket.id);
+      initialComment.append('usuario_id', currentUser.id);
+      initialComment.append('autor_nombre', currentUser.name);
+      initialComment.append('autor_email', currentUser.email);
+      initialComment.append('mensaje', `INICIO DE SOLICITUD: ${ticket.description.substring(0, 100)}...`);
+      initialComment.append('es_interno', 'false');
+      initialComment.append('tipo', 'Sistema');
+      if (file) initialComment.append('adjuntos', file);
+      
+      await pb.collection('ticket_comentarios').create(initialComment).catch(() => {});
+
+      // SISTEMA: Auto-Respuesta Profesional de espera (Template Dto. SistemasC2)
+      const ticketFolio = `TZH-${String(nextFolio).padStart(4, '0')}`;
+      const msgC2 = `Dto. SistemasC2
+
+Estimado usuario, su solicitud fue recibida correctamente.
+
+• Estado:  Abierto
+• Prioridad: ${ticket.priority} 
+• Tiempo estimado de respuesta: 10 a 30 minutos ⏱️
+
+se genero un  número de ticket para seguimiento: ${ticketFolio}
+
+Para urgencias críticas, favor de contactar directamente al área ⚠️
+
+Gracias por su comprensión.
+Equipo de Soporte Técnico Dto. SistemasC2`;
+
+      const autoResponse = new FormData();
+      autoResponse.append('id', generateId());
+      autoResponse.append('ticket_id', pbTicket.id);
+      autoResponse.append('usuario_id', currentUser.id);
+      autoResponse.append('mensaje', msgC2);
+      autoResponse.append('es_interno', 'false');
+      autoResponse.append('tipo', 'Sistema');
+      
+      await pb.collection('ticket_comentarios').create(autoResponse).catch(() => {});
 
       const t = rowToTicket(pbTicket as any, [], { [currentUser.id]: currentUser });
       setTickets(prev => [t, ...prev]);
       addLog(`Ticket creado exitosamente: ${t.id}`, 'success');
       return t;
     } catch (err: any) {
-      console.error('addTicket failure:', err);
+      console.error('addTicket failure:', err.data || err);
       // Offline fallback
       if (!isOnline) {
           const tempId = `off-${Date.now()}`;
@@ -586,15 +732,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentUser, isOnline, addLog]);
 
   const updateTicketStatus = useCallback(async (ticketId: string, status: TicketStatus) => {
+    // Optimistic update
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
+    
     try {
       addLog(`Actualizando estado ticket ${ticketId} a ${status}`, 'info');
+      
+      // La base de datos espera "En Proceso" no "En Progreso"
       await pb.collection('tickets').update(ticketId, { estado: status });
+      
+      // Notificar en el chat sobre el cambio de estado con identidad explícita y profesional
+      if (currentUser) {
+        const formData = new FormData();
+        formData.append('id', generateId());
+        formData.append('ticket_id', ticketId);
+        formData.append('usuario_id', currentUser.id);
+        formData.append('autor_nombre', currentUser.name || currentUser.email);
+        formData.append('autor_email', currentUser.email);
+        formData.append('autor_rol', currentUser.role);
+        formData.append('mensaje', `ESTATUS ACTUALIZADO A: [${status.toUpperCase()}]`);
+        formData.append('es_interno', 'false');
+        formData.append('tipo', 'Sistema');
+        
+        await pb.collection('ticket_comentarios').create(formData).catch(e => console.warn('No se pudo crear mensaje de sistema:', e));
+        await refreshData(true);
+      }
+      
       addLog(`Estado de ticket ${ticketId} sincronizado: ${status}`, 'success');
     } catch (err: any) {
+      console.error('updateTicketStatus error:', err.data || err);
+      // Revertir cambio optimista en caso de error
+      await refreshData(true);
       addLog(`Fallo al actualizar estado ticket ${ticketId}: ${err.message}`, 'error');
     }
-  }, [addLog]);
+  }, [addLog, currentUser, refreshData]);
+
 
   const updateTicketPriority = useCallback(async (ticketId: string, priority: TicketPriority) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority, updatedAt: new Date().toISOString() } : t));
@@ -639,8 +811,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await pb.collection('tickets').update(ticketId, {
         agente_id: currentUser.id,
       });
+      refreshData(true);
     } catch (err: any) {
-      console.error('autoAssign error:', err);
+      if (!err.isAbort) console.error('autoAssign error:', err);
     }
   }, [currentUser, tickets]);
 
@@ -651,10 +824,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addLog(`Enviando mensaje (${tipo}) para ticket ${ticketId}`, 'info');
       
       const formData = new FormData();
+      // Generamos un ID manual para satisfacer la validación estricta de PocketBase 0.36.8
+      formData.append('id', generateId());
       formData.append('ticket_id', ticketId);
       formData.append('usuario_id', currentUser.id);
       formData.append('mensaje', content);
       formData.append('es_interno', String(isInternal));
+      
+      // NOTA: 'tipo' y 'adjuntos' se añaden solo si existen en el esquema tras el reinicio
       formData.append('tipo', tipo);
       if (file) {
         formData.append('adjuntos', file);
@@ -662,9 +839,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       await pb.collection('ticket_comentarios').create(formData);
       addLog(`Mensaje sincronizado para ticket ${ticketId}`, 'success');
-      await refreshData();
+      await refreshData(true);
     } catch (err: any) {
-      console.error('addMessage error:', err);
+      console.error('addMessage error details:', err.data || err);
+      // Fallback: si falla por campos desconocidos, intentamos versión básica
+      if (err.status === 400) {
+          try {
+             const basicForm = new FormData();
+             basicForm.append('id', generateId());
+             basicForm.append('ticket_id', ticketId);
+             basicForm.append('usuario_id', currentUser.id);
+             basicForm.append('mensaje', content);
+             basicForm.append('es_interno', String(isInternal));
+             await pb.collection('ticket_comentarios').create(basicForm);
+             await refreshData(true);
+             return;
+          } catch (inner) { console.error('Falló incluso el envio básico'); }
+      }
       addLog(`Error al enviar mensaje ticket ${ticketId}: ${err.message}`, 'error');
     }
   }, [currentUser, refreshData, addLog]);
@@ -728,9 +919,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [refreshData]);
 
+  const updateUser = useCallback(async (id: string, userData: Partial<User>) => {
+    try {
+      const updateData: any = {};
+      if (userData.name) updateData.name = userData.name;
+      if (userData.role) updateData.rol = userData.role;
+      if (userData.departmentId) updateData.departamento_id = userData.departmentId;
+      
+      await pb.collection('users').update(id, updateData);
+      addLog(`Usuario ${id} actualizado correctamente`, 'success');
+      await refreshData();
+    } catch (err: any) {
+      addLog(`Error al actualizar usuario: ${err.message}`, 'error');
+    }
+  }, [addLog, refreshData]);
+
   const deleteUser = useCallback(async (id: string) => {
     try {
       await pb.collection('users').delete(id);
+      addLog(`Usuario ${id} eliminado`, 'warning');
       setUsers(prev => prev.filter(u => u.id !== id));
     } catch (err: any) {
       addLog(`Error al eliminar usuario: ${err.message}`, 'error');
@@ -767,12 +974,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loginWithPocketBase,
       logout,
       createUser,
+      updateUser,
       deleteUser,
       triggerSync,
       systemLogs,
       addLog,
       userActivity,
-      onlineUsers: userActivity,
+      isOnline,
       theme,
       toggleTheme,
       perfiles: users.map(u => ({
@@ -793,22 +1001,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const commentsList = await pb.collection('ticket_comentarios').getFullList();
           for (const c of commentsList) await pb.collection('ticket_comentarios').delete(c.id);
 
-          // 3. Departamentos base
+          // 3. Departamentos base (HELP DESK)
           const depts = [
-            { nombre: 'Servicios Pub', descripcion: 'Servicios Públicos Municipales', color: '#06b6d4', activo: true, icono: 'Building' },
-            { nombre: 'Contraloria Inter', descripcion: 'Contraloría Interna Municipal', color: '#ec4899', activo: true, icono: 'Building' },
-            { nombre: 'ProtecCivil', descripcion: 'Protección Civil y Emergencias', color: '#f97316', activo: true, icono: 'Shield' },
-            { nombre: 'Sistemas / TI', descripcion: 'Soporte Técnico Especializado', color: '#10b981', activo: true, icono: 'Cpu' },
-            { nombre: 'Tesorería', descripcion: 'Gestión Financiera y Pagos', color: '#3b82f6', activo: true, icono: 'Coins' },
-            { nombre: 'Agua Potable', descripcion: 'Suministro y Redes Hidráulicas', color: '#6366f1', activo: true, icono: 'Droplets' },
-            { nombre: 'Obras Públicas', descripcion: 'Infraestructura y Desarrollo', color: '#f59e0b', activo: true, icono: 'Hammer' },
-            { nombre: 'Seguridad Pública', descripcion: 'Vigilancia y Orden Municipal', color: '#ef4444', activo: true, icono: 'Siren' }
+            { nombre: 'Soporte Administrativo', descripcion: 'Atención a usuarios y gestión administrativa', color: '#06b6d4', activo: true, icono: 'Building' },
+            { nombre: 'Sistemas / TI', descripcion: 'Infraestructura, Redes y Servidores', color: '#ec4899', activo: true, icono: 'Cpu' },
+            { nombre: 'Mantenimiento Preventivo', descripcion: 'Revisión periódica de equipos de cómputo', color: '#f97316', activo: true, icono: 'Settings' },
+            { nombre: 'Gestión de Licencias', descripcion: 'Control de software institucional', color: '#10b981', activo: true, icono: 'Code' },
+            { nombre: 'Ventas / Almacén', descripcion: 'Control de insumos y refacciones de TI', color: '#3b82f6', activo: true, icono: 'Package' },
+            { nombre: 'Dirección General', descripcion: 'Supervisión técnica y operativa', color: '#6366f1', activo: true, icono: 'Shield' },
+            { nombre: 'Recursos Humanos', descripcion: 'Gestión de personal y accesos', color: '#f59e0b', activo: true, icono: 'Users' }
           ];
 
           for (const d of depts) {
-            try {
-              await pb.collection('departamentos').create(d);
-            } catch { /* exists */ }
+            const exists = departments.find(existing => existing.name.toLowerCase() === d.nombre.toLowerCase());
+            if (!exists) {
+              await pb.collection('departamentos').create(d).catch(() => {});
+            }
           }
 
           addLog(`PROTOCOL_RESET_COMPLETED.`, 'success');

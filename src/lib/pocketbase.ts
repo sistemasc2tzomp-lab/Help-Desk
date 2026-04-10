@@ -1,15 +1,22 @@
 import PocketBase from 'pocketbase';
 
+// En producción (GitHub Pages), esta variable DEBE ser configurada en los Secrets del repositorio.
+// Si no se proporciona, el sistema intentará conectar a localhost (solo para desarrollo).
 const PB_URL = import.meta.env.VITE_PB_URL || 'http://127.0.0.1:8090';
 
 export const pb = new PocketBase(PB_URL);
 
-// Función para verificar si podemos conectar
+// Función para verificar si podemos conectar al servidor
 export async function isPocketBaseOnline(): Promise<boolean> {
     try {
-        const resp = await fetch(`${PB_URL}/api/health`);
+        const resp = await fetch(`${PB_URL}/api/health`, { 
+            method: 'GET',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' }
+        });
         return resp.ok;
-    } catch {
+    } catch (error) {
+        console.warn('PocketBase Nexo Offline:', PB_URL);
         return false;
     }
 }
@@ -21,5 +28,5 @@ export function getFileUrl(collectionId: string, recordId: string, fileName: str
 }
 
 export function isPocketBaseConfigured(): boolean {
-    return true; // For now always true, we use the hardcoded URL
+    return PB_URL !== 'http://127.0.0.1:8090' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 }

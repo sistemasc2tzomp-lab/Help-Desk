@@ -8,7 +8,7 @@ import { generateProfessionalTicketReport } from '../utils/pdfGenerator';
 
 const statusColors: Record<TicketStatus, string> = {
   'Abierto': 'bg-cyan-500/10 text-[#00f0ff] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,240,255,0.1)]',
-  'En Progreso': 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(123,47,255,0.1)]',
+  'En Proceso': 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(123,47,255,0.1)]',
   'Resuelto': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
   'Cerrado': 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
 };
@@ -20,16 +20,23 @@ const priorityColors: Record<string, string> = {
   'Baja': 'text-slate-400 border-slate-500/30 bg-slate-500/10',
 };
 const predefinedSolutions: Record<TicketCategory, string[]> = {
-  'Hardware': ['Reemplazo de equipo en proceso.', 'Mantenimiento preventivo completado.', 'Falla de hardware detectada, se solicita refacción.'],
-  'Software': ['Actualización de software completada.', 'Error de sistema corregido.', 'Instalación de aplicación exitosa.', 'Se requiere reinicio para aplicar cambios.'],
-  'Red': ['Restablecimiento de conexión exitoso.', 'Monitoreo de red activado, sin anomalías.', 'Ajuste en configuración de firewall aplicado.', 'Se detectó caída de enlace por proveedor externo.'],
-  'Seguridad': ['Análisis de vulnerabilidad concluido.', 'Permisos ajustados según políticas.', 'Incidente de seguridad mitigado.', 'Se aplicó bloqueo preventivo.'],
-  'Acceso': ['Credenciales restablecidas, favor de verificar.', 'Acceso a sistema concedido.', 'Usuario bloqueado/desbloqueado según solicitud.'],
-  'Impresora': ['Niveles de tinta y papel restablecidos.', 'Configuración de impresora en red corregida.', 'Atasco de papel resuelto.', 'Mantenimiento preventivo a equipo de impresión.'],
+  'Hardware': ['Reemplazo de equipo en proceso.', 'Mantenimiento preventivo completado.', 'Falla de hardware detectada, se solicita refacción.', 'Limpieza física de componentes realizada.'],
+  'Software': ['Actualización de software completada.', 'Error de sistema corregido.', 'Instalación de aplicación exitosa.', 'Se requiere reinicio para aplicar cambios.', 'Reconfiguración de ajustes de usuario finalizada.'],
+  'Red': ['Restablecimiento de conexión exitoso.', 'Monitoreo de red activado, sin anomalías.', 'Ajuste en configuración de firewall aplicado.', 'Se detectó caída de enlace por proveedor externo.', 'Cambio de nodo de red realizado.'],
+  'Seguridad': ['Análisis de vulnerabilidad concluido.', 'Permisos ajustados según políticas.', 'Incidente de seguridad mitigado.', 'Se aplicó bloqueo preventivo.', 'Escaneado masivo de virus completado.'],
+  'Acceso': ['Credenciales restablecidas, favor de verificar.', 'Acceso a sistema concedido.', 'Usuario bloqueado/desbloqueado según solicitud.', 'Reseteo de contraseña institucional exitoso.'],
+  'Impresora': ['Niveles de tinta y papel restablecidos.', 'Configuración de impresora en red corregida.', 'Atasco de papel resuelto.', 'Mantenimiento preventivo a equipo de impresión.', 'Actualización de drivers de impresión.'],
   'Correo': ['Buzón de correo restaurado.', 'Configuración de cliente de correo aplicada.', 'Problema de envío/recepción solucionado.', 'Contraseña de correo institucional restablecida.'],
-  'Servidor': ['Reinicio de servicio completado.', 'Espacio en disco liberado.', 'Parche de seguridad aplicado en servidor.', 'Monitoreo de CPU/RAM estabilizado.'],
+  'Servidor': ['Reinicio de servicio completado.', 'Espacio en disco liberado.', 'Parche de seguridad aplicado en servidor.', 'Monitoreo de CPU/RAM estabilizado.', 'Backup de logs de servidor realizado.'],
   'Respaldo': ['Respaldo de datos completado exitosamente.', 'Restauración de archivos realizada.', 'Configuración de backup automático ajustada.'],
-  'General': ['Solicitud procesada y resuelta.', 'Asistencia brindada.', 'Duda aclarada, ticket cerrado.']
+  'Prueba': ['PRUEBA DE RENDIMIENTO DE SISTEMA.', 'SIMULACIÓN DE INCIDENCIA TÉCNICA.', 'VERIFICACIÓN DE CONECTIVIDAD (TEST).', 'PRUEBA DE CARGA DE DATOS EXITOSA.'],
+  'General': ['ERROR DE CAPA 8 (MANEJO DEL USUARIO).', 'Solicitud procesada y resuelta.', 'Asistencia brindada en sitio.', 'Duda aclarada, ticket cerrado.', 'Se deriva a soporte de segundo nivel.']
+};
+
+const statusShortcuts: Record<string, string[]> = {
+  'En Proceso': ['Inicio de análisis técnico.', 'En traslado al área física.', 'Esperando confirmación de usuario.', 'En espera de refacciones.'],
+  'Resuelto': ['Servicio restablecido satisfactoriamente.', 'Se aplicó corrección definitiva tras pruebas.', 'Ajuste configurado y validado.', 'Solución aplicada remotamente.'],
+  'Cerrado': ['Sin respuesta del usuario.', 'Ticket duplicado.', 'Finalizado por política interna.', 'No se localizó al solicitante.']
 };
 
 const getDeptIcon = (category: string = 'General', size = 20) => {
@@ -212,10 +219,12 @@ export default function TicketDetail() {
           Regresar
         </button>
 
-        <button onClick={() => { const doc = new jsPDF(); generateProfessionalTicketReport(doc, ticket, dept?.name); }} className="flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          IMPRIMIR SOLICITUD
-        </button>
+        {(isAdmin || ticket.status === 'Cerrado') && (
+          <button onClick={() => { const doc = new jsPDF(); generateProfessionalTicketReport(doc, ticket, dept?.name); }} className="flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[3px] transition-all">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            IMPRIMIR SOLICITUD
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -318,7 +327,7 @@ export default function TicketDetail() {
                       </button>
 
                       {showSolutionsMenu && (
-                        <div className="absolute bottom-full right-0 mb-4 w-72 glass-panel border border-white/10 rounded-3xl p-4 shadow-2xl z-[100] max-h-96 overflow-y-auto animate-fade-up">
+                        <div className="absolute top-full right-0 mt-4 w-72 glass-panel border border-white/10 rounded-3xl p-4 shadow-2xl z-[100] max-h-96 overflow-y-auto animate-fade-down">
                           <p className="text-[8px] font-black text-[#8888aa] uppercase tracking-[3px] mb-4 border-b border-white/5 pb-2">Respuestas Rápidas</p>
                           <div className="space-y-2">
                             {predefinedSolutions[ticket.category]?.map((sol, idx) => (
@@ -369,20 +378,29 @@ export default function TicketDetail() {
             <div className="glass-panel border-white/5 rounded-[32px] p-8 space-y-6">
               <h3 className="text-white font-black font-orbitron tracking-[3px] text-[10px] uppercase border-l-2 border-white/20 pl-4">CONTROL_CENTRAL</h3>
               <div className="space-y-4">
-                <div>
-                  <label className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] ml-1 mb-1 block">Estado</label>
-                  <select 
-                    value={ticket.status} 
-                    disabled={!isAdmin}
-                    onChange={e => { setPendingStatus(e.target.value as TicketStatus); setShowStatusModal(true); }} 
-                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-[10px] font-black font-mono focus:outline-none ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'}`}
-                  >
-                    <option value="Abierto">Abierto</option>
-                    <option value="En Progreso">En Progreso</option>
-                    <option value="Resuelto">Resuelto</option>
-                    <option value="Cerrado">Cerrado</option>
-                  </select>
-                  {!isAdmin && <p className="text-[7px] text-pink-500/60 font-black mt-1 uppercase tracking-tighter">Nivel de autorización insuficiente para control de estado</p>}
+                <div className="relative">
+                  <label className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] ml-1 mb-1 block">Acciones de Estatus</label>
+                  {isAdmin ? (
+                    <div className="flex flex-wrap gap-2">
+                       {['Abierto', 'En Proceso', 'Resuelto', 'Cerrado'].map((s) => (
+                         <button
+                           key={s}
+                           type="button"
+                           onClick={() => { setPendingStatus(s as TicketStatus); setShowStatusModal(true); }}
+                           className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-tighter transition-all border ${
+                              ticket.status === s 
+                              ? 'bg-white text-black border-white' 
+                              : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                           }`}
+                         >
+                           {s}
+                         </button>
+                       ))}
+                    </div>
+                  ) : (
+                    <div className={statusColors[ticket.status] + " px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-center"}>{ticket.status}</div>
+                  )}
+                  {!isAdmin && <p className="text-[7px] text-pink-500/60 font-black mt-1 uppercase tracking-tighter text-center">Modo consulta — Sin control de estado</p>}
                 </div>
                 <div>
                   <label className="text-[8px] font-black text-[#8888aa] uppercase tracking-[2px] ml-1 mb-1 block">Prioridad</label>
@@ -437,8 +455,23 @@ export default function TicketDetail() {
           <div className="glass-panel border-white/10 p-8 sm:p-10 rounded-[40px] w-full max-w-lg relative z-10 space-y-6 shadow-2xl">
             <h3 className="text-xl font-black font-orbitron text-white tracking-[3px] uppercase">Cambio de Estado</h3>
             <p className="text-[#8888aa] text-xs font-bold leading-relaxed uppercase tracking-widest">Justifica el cambio a <span className="text-white">{pendingStatus}</span>:</p>
+            <div className="space-y-4">
+              <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Respuestas Rápidas para {pendingStatus}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {statusShortcuts[pendingStatus || '']?.map((txt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setStatusComment(txt)}
+                    className="p-3 text-left bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl transition-all"
+                  >
+                    <span className="text-[9px] font-bold text-white uppercase tracking-tight">{txt}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             <form onSubmit={confirmStatusChange} className="space-y-6">
-              <textarea autoFocus required value={statusComment} onChange={e => setStatusComment(e.target.value)} placeholder="Motivo/Observaciones..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-white/40 transition-all resize-none" />
+              <textarea autoFocus required value={statusComment} onChange={e => setStatusComment(e.target.value)} placeholder="Agregue una observación detallada..." rows={3} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-slate-700 text-sm focus:outline-none focus:border-white/40 transition-all resize-none" />
               <div className="flex gap-4 justify-end">
                 <button type="button" onClick={() => setShowStatusModal(false)} className="text-[9px] font-black text-[#8888aa] hover:text-white uppercase tracking-[2px]">Cancelar</button>
                 <button type="submit" disabled={!statusComment.trim() || isSubmittingStatus} className="btn-futuristic px-8 py-3 text-[10px] uppercase tracking-[3px]">

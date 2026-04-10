@@ -11,6 +11,7 @@ import UsersPage from './pages/UsersPage';
 import ReportsRepository from './pages/ReportsRepository';
 import DepartmentsPage from './pages/DepartmentsPage';
 import SettingsPage from './pages/SettingsPage';
+import InfrastructureMonitoring from './pages/InfrastructureMonitoring';
 
 function AppContent() {
   const { currentUser, page, loading, theme } = useApp();
@@ -28,15 +29,19 @@ function AppContent() {
       case 'users':         return <UsersPage />;
       case 'departments':   return <DepartmentsPage />;
       case 'reports':       return <ReportsRepository />;
+      case 'monitoring':    return <InfrastructureMonitoring />;
       case 'settings':      return <SettingsPage />;
       default:              return <Dashboard />;
     }
   };
 
   return (
-    <div className={`flex min-h-screen ${theme === 'dark' ? 'bg-[#030014]' : 'bg-[#f4f7f6]'}`} data-theme={theme || 'dark'}>
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto relative pt-16 lg:pt-0">
+    <div className="flex min-h-screen bg-[var(--bg-void)]" data-theme={theme || 'dark'}>
+      <div className="sidebar-container">
+        <Sidebar />
+      </div>
+      
+      <main className="flex-1 content-area relative overflow-x-hidden">
         {loading && (
           <div className="fixed top-20 lg:top-6 right-6 z-[100] animate-fade-in">
             <div className="flex items-center gap-3 bg-[#00f0ff]/10 backdrop-blur-md border border-[#00f0ff]/30 rounded-2xl px-5 py-2.5 shadow-[0_0_30px_rgba(0,240,255,0.05)]">

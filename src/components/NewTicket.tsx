@@ -75,8 +75,7 @@ export default function NewTicket() {
         departmentId: departmentId || undefined,
         createdById: currentUser.id,
         createdByName: currentUser.name,
-        imageUrl,
-      });
+      }, imageFile || undefined);
 
       setSubmitted(true);
       setTimeout(() => {
@@ -175,6 +174,7 @@ export default function NewTicket() {
               <option value="Correo">📧 Correo Electrónico</option>
               <option value="Servidor">🗄️ Servidor / Sistema</option>
               <option value="Respaldo">💾 Respaldo / Datos</option>
+              <option value="Prueba">🛠️ PRUEBA DEL SISTEMA</option>
               <option value="General">📋 General</option>
             </select>
           </div>
