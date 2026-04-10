@@ -19,18 +19,23 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const err = await loginWithPocketBase(email.trim(), password);
-      if (err) {
-        setError(err);
-        setLoading(false);
+      const authData = await pb.collection('users').authWithPassword(email, password);
+      
+      if (authData.record) {
+        setPage('dashboard');
       }
-      // Note: If successful, the App.tsx will switch to Dashboard
-    } catch (e: any) {
-      setError(e.message || 'Error inesperado en el terminal');
-      setLoading(false);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      if (err.isAbort) return;
+      
+      let msg = 'Credenciales no reconocidas por el núcleo.';
+      if (err.status === 0 || (err.name === 'ClientResponseError' && !err.status)) {
+        msg = `ERROR DE CONEXIÓN: No se detecta el servidor en: ${pb.baseUrl}`;
+      }
+      
+      setError(msg);
     } finally {
-      // Small delay to ensure we don't snap back too fast if redirected
-      setTimeout(() => setLoading(false), 2000);
+      setLoading(false);
     }
   };
 
